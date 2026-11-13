@@ -74,6 +74,18 @@ A real quantum backend (hardware or QPE) plugs in as `ActiveSpaceBackend(solver=
 `f(h1, h2, ncas, nelecas, nroots, spin) -> energies`, or by replacing the functions in
 `quantum_pl.py`, which already work on the qubit Hamiltonian.
 
+## Running on a Linux server (e.g. a lab machine)
+
+```bash
+git clone git@github.com:pifparfait/psscreen.git && cd psscreen
+bash scripts/setup_server.sh          # installs Miniforge if needed, creates the env, runs quick tests
+bash scripts/run_validation_server.sh # classical + quantum + CASCI/NEVPT2 reference, in the background
+```
+
+Memory guide: the 60-atom aza-BODIPY run needs about 12 GB with `PSS_EWIN_SINGLETS=25` and
+considerably more with the default full space (60 eV window). Set `OMP_NUM_THREADS` to the number
+of cores you want to use.
+
 ## Validation set
 
 | Molecule | Experiment | Reference |
