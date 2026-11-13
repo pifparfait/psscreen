@@ -104,3 +104,15 @@ of cores you want to use.
 ## Cost
 
 A 43-atom molecule on 4 cores takes on the order of 10-45 min; 60 atoms about 1 h or more.
+
+## Screening a candidate list on a server
+
+```bash
+bash scripts/run_screen_server.sh screening/candidates_round1.csv          # background, resumable
+AUTO_PUSH=1 OMP_NUM_THREADS=32 bash scripts/run_screen_server.sh screening/candidates_round1.csv
+```
+
+Results (one JSON per molecule, `ranking.md`, geometries) go to `screening/runs/<csv name>/`. With
+`AUTO_PUSH=1` they are pushed to the `results-tars` branch when the run finishes. `screening/candidates_round1.csv`
+holds heavy-atom variants of the validated BDP scaffold (Cl/Br/I), a distyryl-I2 red-shifted dye, and
+Br/I-substituted aza-BODIPYs. Rankings are predictions: the validation set has only four molecules.
