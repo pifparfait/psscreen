@@ -113,9 +113,9 @@ Computed on a 64-core server (def2-SVP, density-fitted RHF orbitals, S1 from the
 | I2-BDP | 537 / 2.31 | 4.32 | 2.04 (609) |
 | azaBDP_Ph4 | 650 / 1.91 | 3.35 | 1.99 (622) |
 
-CASCI alone overestimates S1 by 1.4-1.9 eV. SC-NEVPT2 brings it to within 0.2-0.3 eV of experiment for
-three molecules, but it is not systematic: it is 0.25 eV too high for the BODIPY core and 0.27 eV too low
-for I2-BDP, so it is not better than the TDDFT + ΔSCF results above (0.02-0.08 eV).
+CASCI alone overestimates S1 by 1.4-1.9 eV. SC-NEVPT2 brings it to within 0.06-0.27 eV of experiment for
+all four molecules, but the error changes sign: +0.25 eV for the BODIPY core, +0.06 for BDP, -0.27 for
+I2-BDP and +0.08 for the aza-BODIPY, so it is not better than the TDDFT + ΔSCF results above (0.02-0.08 eV).
 
 Wall time per molecule (s): BODIPY_core 241, BDP 2589, I2-BDP 2473, azaBDP_Ph4 3775
 
@@ -129,7 +129,7 @@ Wall time per molecule (s): BODIPY_core 241, BDP 2589, I2-BDP 2473, azaBDP_Ph4 3
    window the projected weight is 0 for every molecule at CAS(4,4)/(6,6), because the CASCI S1 lies at
    260-340 nm. A paper-sized active space does not fix this by itself: CASCI(12e,11o) on the BODIPY core
    gives S1 = 3.97 eV against 2.46 eV measured (3.35-4.32 eV across the four molecules). Adding SC-NEVPT2
-   brings it to 1.99-2.71 eV, with errors of 0.1-0.3 eV. Dynamic
+   brings it to 1.99-2.71 eV, with errors of 0.06-0.27 eV. Dynamic
    correlation is therefore not optional for this property, and an exact quantum solver on a CASCI
    Hamiltonian would not by itself beat the classical TDDFT + ΔSCF results above.
 3. **The ISC proxy ranks the heavy-atom effect correctly but not the mechanism.** At CAS(4,4) the largest
