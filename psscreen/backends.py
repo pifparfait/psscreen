@@ -52,7 +52,7 @@ class PySCFTDA(ExcitedStateBackend):
 
     def __init__(self, xc="b3lyp", basis="def2-svp", nstates=6, solvent=None,
                  density_fit=True, verbose=0, max_memory=12000, ewin=10.0, rpa=True,
-                 max_occ=60, max_vir=80, nsinglets=2, ewin_singlets=60.0, grid_level=1,
+                 max_occ=40, max_vir=60, nsinglets=2, ewin_singlets=60.0, grid_level=1,
                  scf_grid_level=2, delta_scf=True):
         self.xc, self.basis, self.nstates = xc, basis, nstates
         self.ewin, self.rpa, self.max_occ, self.max_vir = ewin, rpa, max_occ, max_vir

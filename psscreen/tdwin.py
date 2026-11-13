@@ -35,7 +35,7 @@ def _mo_df(mf, Co, Cv, auxbasis):
     no, nv = Co.shape[1], Cv.shape[1]
     naux = cderi.shape[0]
     Lov = np.empty((naux, no, nv)); Loo = np.empty((naux, no, no)); Lvv = np.empty((naux, nv, nv))
-    blk = max(1, int(2e8 // (mol.nao ** 2)))
+    blk = max(1, int(4e7 // (mol.nao ** 2)))
     for p0 in range(0, naux, blk):
         L = lib.unpack_tril(np.asarray(cderi[p0:p0 + blk]))
         Lov[p0:p0 + blk] = lib.einsum("Lpq,pi,qa->Lia", L, Co, Cv)
@@ -58,7 +58,7 @@ def _xc_kernels(mf, Co, Cv, grid_level=None):
     deriv = 0 if xctype == "LDA" else 1
     nvar = 1 if xctype == "LDA" else 4
     dm_a = mf.make_rdm1() * 0.5
-    for ao, mask, weight, coords in ni.block_loop(mol, grids, mol.nao, deriv, max_memory=2000):
+    for ao, mask, weight, coords in ni.block_loop(mol, grids, mol.nao, deriv, max_memory=400):
         rho_a = ni.eval_rho(mol, ao, dm_a, mask, xctype, hermi=1)
         rho = np.stack([rho_a, rho_a])
         if xctype == "LDA":
