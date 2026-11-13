@@ -57,4 +57,34 @@ if "BDP" in R and "I2-BDP" in R:
         a = photophysics(R["BDP"]["E_S1_eV"], R["BDP"]["f_osc"][0], R["BDP"]["E_triplets_eV"], R["BDP"]["SOC_S1_Tn_cm"], p=p, n_refr=1.496)
         b = photophysics(R["I2-BDP"]["E_S1_eV"], R["I2-BDP"]["f_osc"][0], R["I2-BDP"]["E_triplets_eV"], R["I2-BDP"]["SOC_S1_Tn_cm"], p=p, n_refr=1.496)
         print(f"| {ls} | {hw} | {S} | {a['k_isc']:.1e} | {b['k_isc']:.1e} | {b['phi_ISC']:.2f} | {b['k_isc'] / max(a['k_isc'], 1e-30):.1e} |")
+
+# ---------------------------------------------------------------------------
+# Quantum backend (PennyLane simulator) vs classical vs experiment
+qnames = [n for n in ["BODIPY_core", "BDP", "I2-BDP", "azaBDP_Ph4"]
+          if os.path.exists(os.path.join(here, "runs", f"{n}.quantum.json"))]
+if qnames:
+    Q = {n: json.load(open(os.path.join(here, "runs", f"{n}.quantum.json"))) for n in qnames}
+    print("\n## Quantum backend (PennyLane, simulator): CASCI active spaces, no dynamic correlation\n")
+    print("| Molecule | CAS | qubits (tapered) | λ(S1) CASCI (nm) | λ exp (nm) | window weight, paper 700-850 nm | window weight around S1 (QSVT / exact) | ISC proxy: best channel V (cm⁻¹), QSVT-Trotter vs exact |")
+    print("|---|---|---|---|---|---|---|---|")
+    for n in qnames:
+        for c, r in Q[n]["cas"].items():
+            a = r["absorption"]
+            w700 = a["paper_700_850nm"]["weight_quantum"]
+            ws = a["casS1_pm0.25eV"]
+            best = max(r["isc"], key=lambda p: p["V_exact_cm"])
+            print(f"| {n} | ({c},{c}) | {r['taper']['qubits']} ({r['taper']['qubits_tapered']}) | {r['lambda_S1_nm']:.0f} | "
+                  f"{ref[n]['lambda_abs_nm']} | {w700:.3f} | {ws['weight_quantum']:.3f} / {ws['weight_exact_smooth']:.3f} | "
+                  f"T{best['triplet']}: {best['V_proxy_cm'][0]:.3f} vs {best['V_exact_cm']:.3f} |")
+    print("\nISC proxy ranking (largest S1→Tn V over the first three triplets, CAS(4,4)):\n")
+    for n in qnames:
+        r = Q[n]["cas"].get("4")
+        if r:
+            print(f"- {n}: " + ", ".join(f"T{p['triplet']} V={p['V_exact_cm']:.3f} cm⁻¹ (ΔE={p['dE_ST_eV']:+.2f} eV)" for p in r["isc"]))
+    fq = [(n, Q[n]["ftqc_cas_12_11"]) for n in qnames if "logical_qubits" in Q[n].get("ftqc_cas_12_11", {})]
+    if fq:
+        print("\nFTQC resource estimate for a CAS(12,11) active space (PennyLane double factorization, error 1.6 mHa):\n")
+        for n, f in fq:
+            print(f"- {n}: {f['logical_qubits']} logical qubits, {f['toffoli_gates']:.2e} Toffolis per QPE run, λ = {f['lambda']:.1f} Ha")
+
 print("\nWall time per molecule (s): " + ", ".join(f"{x['name']} {x['t']:.0f}" for x in rows))

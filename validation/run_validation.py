@@ -8,7 +8,7 @@ from molecules import SMILES
 
 names = sys.argv[1:] or list(SMILES)
 for n in names:
-    r = screen_molecule(n, SMILES[n], backend=PySCFTDA(xc="b3lyp", basis="def2-svp", nstates=5),
+    r = screen_molecule(n, SMILES[n], backend=PySCFTDA(xc="b3lyp", basis="def2-svp", nstates=5, ewin_singlets=float(os.environ.get("PSS_EWIN_SINGLETS", 60))),
                         workdir=os.path.join(here, "runs"), n_refr=1.496)  # tolueno
     p = r["photophysics"]
     print(f"{n}: lam={r['lambda_max_nm']:.0f} nm f={r['f_osc'][0]:.2f} S1={r['E_S1_eV']:.2f} T={['%.2f'%e for e in r['E_triplets_eV']]} "
