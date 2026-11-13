@@ -1,5 +1,5 @@
-"""El hueco del backend cuántico: CASCI exacto vs un 'solver externo' (aquí FCI de PySCF
-invocado a través de la interfaz de callable) deben coincidir; se exporta FCIDUMP."""
+"""The quantum-backend slot: exact CASCI vs an 'external solver' (here PySCF FCI called through
+the callable interface) must agree; FCIDUMP is exported."""
 import numpy as np, sys, os, tempfile
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from psscreen.backends import ActiveSpaceBackend
@@ -7,7 +7,7 @@ from psscreen.backends import ActiveSpaceBackend
 ATOM = "C 0 0 0\nO 0 0 1.205\nH 0 0.94 -0.587\nH 0 -0.94 -0.587"
 
 def external_solver(h1, h2, ncas, nelecas, nroots, spin):
-    """Ejemplo de solver externo: aquí iría QPE/QSP. Firma: devuelve energías activas (Ha)."""
+    """Example of an external solver: QPE/QSP would go here. Signature: returns active-space energies (Ha)."""
     from pyscf import fci
     s = fci.direct_spin1.FCI(); s.nroots = nroots
     fci.addons.fix_spin_(s, ss=spin / 2 * (spin / 2 + 1))

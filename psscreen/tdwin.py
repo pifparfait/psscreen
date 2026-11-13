@@ -1,11 +1,11 @@
-"""TDDFT/TDA explícito en una ventana de orbitales (híbridos globales, LDA/GGA).
+"""Explicit TDDFT/TDA in an orbital window (global hybrids, LDA/GGA).
 
-Motivo: el Davidson de PySCF reevalúa el kernel XC en la rejilla para cada vector de prueba
-(~1 s/vector incluso en moléculas de 20 átomos con 4 núcleos). Aquí se construyen las matrices
-A y B completas en el subespacio de pares (i,a) de la ventana, evaluando los productos de
-orbitales en la rejilla una sola vez. Es la aproximación estándar de truncar el espacio de
-excitaciones por energía (como en sTDA, pero sin simplificar las integrales). El error de
-truncamiento se controla con `ewin` y se comprueba frente a PySCF completo en tests/.
+Motivation: PySCF's Davidson re-evaluates the XC kernel on the grid for every trial vector
+(~1 s/vector even for 20-atom molecules on 4 cores). Here the full A and B matrices are built
+in the window's (i,a) pair subspace, evaluating the orbital products on the grid only once.
+This is the standard approximation of truncating the excitation space by energy (as in sTDA,
+but without simplifying the integrals). The truncation error is controlled by `ewin` and is
+checked against full PySCF in tests/.
 
 Convenciones (capa cerrada, orbitales reales):
   A_S = de + 2(ia|jb) - c_x (ij|ab) + (f_aa + f_ab)
@@ -45,7 +45,7 @@ def _mo_df(mf, Co, Cv, auxbasis):
 
 
 def _xc_kernels(mf, Co, Cv, grid_level=None):
-    """Devuelve (K_S, K_T) en la base de pares, (npair, npair)."""
+    """Return (K_S, K_T) in the pair basis, each (npair, npair)."""
     mol, ni, grids = mf.mol, mf._numint, mf.grids
     if grid_level is not None:
         from pyscf import dft
@@ -87,7 +87,7 @@ def window_td(mf, ewin_ev=8.0, nstates=6, rpa_singlets=True, max_occ=60, max_vir
     ni = mf._numint
     omega, alpha, hyb = ni.rsh_and_hybrid_coeff(mf.xc, mol.spin)
     if omega != 0:
-        raise NotImplementedError("Solo híbridos globales (B3LYP, PBE0, BHandHLYP...)")
+        raise NotImplementedError("Only global hybrids are supported (B3LYP, PBE0, BHandHLYP...)")
     nocc = mol.nelectron // 2
     occ, vir = select_window(mf.mo_energy, nocc, ewin_ev, max_occ, max_vir)
     Co, Cv = mf.mo_coeff[:, occ], mf.mo_coeff[:, vir]
@@ -100,7 +100,7 @@ def window_td(mf, ewin_ev=8.0, nstates=6, rpa_singlets=True, max_occ=60, max_vir
     KS, KT = _xc_kernels(mf, Co, Cv, grid_level)
     A_S = np.diag(de) + 2 * J - hyb * Kx + KS
     A_T = np.diag(de) - hyb * Kx + KT
-    # dipolos de transición
+    # transition dipoles
     with mol.with_common_orig((0, 0, 0)):
         dip = mol.intor_symmetric("int1e_r", comp=3)
     mu = np.einsum("xpq,pi,qa->xia", dip, Co, Cv).reshape(3, npair)
@@ -132,16 +132,16 @@ def window_td(mf, ewin_ev=8.0, nstates=6, rpa_singlets=True, max_occ=60, max_vir
 
 
 # ---------------------------------------------------------------------------
-# RPA (TDDFT) de singletes en el espacio completo (o casi) con Davidson propio.
-# Intercambio exacto en base MO con tensores DF (barato), kernel XC por la ruta AO de
-# PySCF sobre una rejilla secundaria gruesa. Algoritmo de Stratmann-Scuseria-Frisch.
+# Singlet RPA (TDDFT) in the full (or nearly full) space with our own Davidson solver.
+# Exact exchange in the MO basis with DF tensors (cheap), XC kernel through PySCF's AO route
+# on a coarse secondary grid. Stratmann-Scuseria-Frisch algorithm.
 # ---------------------------------------------------------------------------
 def _fxc_singlet_op(mf, Co, Cv, grid_level=1):
     from pyscf import dft
     mol, ni = mf.mol, mf._numint
     g = dft.gen_grid.Grids(mol); g.level = grid_level; g.build(with_non0tab=True)
     rho0, vxc, fxc = ni.cache_xc_kernel(mol, g, mf.xc, mf.mo_coeff, mf.mo_occ, 1)
-    fxc = fxc * 0.5  # como en pyscf.scf._response_functions (singlete)
+    fxc = fxc * 0.5  # as in pyscf.scf._response_functions (singlet)
 
     def op(X):  # X: (nvec, no, nv) -> (nvec, no, nv), devuelve (f_aa+f_ab) X
         dms = np.einsum("pi,nia,qa->npq", Co, X, Cv)
@@ -169,8 +169,8 @@ def rpa_singlets_davidson(mf, nstates=3, ewin_ev=40.0, nfrozen_core=None, grid_l
         J4 = 4 * (Lov.reshape(len(Lov), -1).T @ LX).T.reshape(X.shape)
         K1 = np.empty_like(X); K2 = np.empty_like(X)
         naux = Lov.shape[0]
-        blk = max(1, int(1.5e8 // (nv * nv)))   # ~1.2 GB como máximo por intermedio
-        for n in range(len(X)):  # vector a vector y por bloques de L: los intermedios (L,v,v) son grandes
+        blk = max(1, int(1.5e8 // (nv * nv)))   # at most ~1.2 GB per intermediate
+        for n in range(len(X)):  # one vector at a time and in blocks of L: the (L,v,v) intermediates are large
             k1 = np.zeros((no, nv)); k2 = np.zeros((no, nv))
             for p0 in range(0, naux, blk):
                 sl = slice(p0, p0 + blk)
@@ -182,14 +182,14 @@ def rpa_singlets_davidson(mf, nstates=3, ewin_ev=40.0, nfrozen_core=None, grid_l
         AmB = de * X - hyb * (K1 - K2)
         return ApB, AmB
 
-    # vectores iniciales: menores diferencias orbitales
+    # initial vectors: smallest orbital energy differences
     nguess = min(npair, max(2 * nstates, nstates + 3))
     idx = np.argsort(de.ravel())[:nguess]
     V = np.zeros((nguess, npair)); V[np.arange(nguess), idx] = 1.0
     P_list, M_list, B_list = [], [], []
     conv = False
     for it in range(max_iter):
-        # ortonormalizar nuevos contra la base
+        # orthonormalize new vectors against the basis
         Bmat = np.array(B_list) if B_list else np.zeros((0, npair))
         new = []
         for v in V:

@@ -1,4 +1,4 @@
-"""Ejecuta el pipeline sobre el conjunto de validación. Uso: python run_validation.py [nombres...]"""
+"""Run the pipeline on the validation set. Usage: python run_validation.py [names...]"""
 import sys, os, json
 here = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(here)); sys.path.insert(0, here)

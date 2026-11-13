@@ -1,5 +1,5 @@
-"""Backend PennyLane en formaldehído CAS(4,4): energías = CASCI de PySCF, QSVT = peso exacto,
-proxy ISC = |<T|H_SOC|S>|^2 t^2."""
+"""PennyLane backend on formaldehyde CAS(4,4): energies = PySCF CASCI, QSVT = exact weight,
+ISC proxy = |<T|H_SOC|S>|^2 t^2."""
 import numpy as np, sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pyscf import gto, dft, mcscf
@@ -16,7 +16,7 @@ def test_formaldehyde():
     lo, hi = st["E_S"][2] - 0.3, st["E_S"][2] + 0.3   # S2 (pi->pi*, permitido)
     r = threshold_projection(asp, st, lo, hi, edge_ev=0.05, max_degree=1500)
     print(r)
-    assert abs(r["weight_quantum"] - r["weight_exact_smooth"]) < 1e-4   # error de interpolación del polinomio
+    assert abs(r["weight_quantum"] - r["weight_exact_smooth"]) < 1e-4   # polynomial interpolation error
     p0 = isc_proxy(asp, st, times=(10.0,), triplet=0)   # S1(n pi*)-T1(n pi*): El-Sayed prohibido
     assert p0["V_exact_cm"] < 1e-6
     p = isc_proxy(asp, st, times=(10.0, 20.0), triplet=1)   # S1(n pi*)-T2(pi pi*): permitido

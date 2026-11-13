@@ -1,5 +1,5 @@
-"""Backend cuántico (PennyLane, simulador) sobre el conjunto de validación.
-Uso: python run_quantum.py NOMBRE [NCAS ...]"""
+"""Quantum backend (PennyLane, simulator) on the validation set.
+Usage: python run_quantum.py NAME [NCAS ...]"""
 import sys, os, json, time
 here = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(here))
@@ -28,7 +28,7 @@ for n in ncas_list:
     st = eigenstates(asp, H)
     r = {"E_S_eV": st["E_S"][:4].tolist(), "E_T_eV": st["E_T"][:4].tolist(),
          "lambda_S1_nm": EV_NM / st["E_S"][1]}
-    # absorción: ventana del paper (700-850 nm), ventana en torno al experimento, ventana en torno a S1(CASCI)
+    # absorption: the paper's window (700-850 nm), a window around the experiment, and one around the CASCI S1
     wins = {"paper_700_850nm": (EV_NM / 850, EV_NM / 700),
             "exp_pm0.15eV": (E_exp - 0.15, E_exp + 0.15),
             "casS1_pm0.25eV": (st["E_S"][1] - 0.25, st["E_S"][1] + 0.25)}
@@ -52,7 +52,7 @@ for n in ncas_list:
     out["cas"][n] = r
     print(name, n, "taper", r["taper"], f"t={r['wall_s']:.0f}s", flush=True)
     json.dump(out, open(os.path.join(here, "runs", f"{name}.quantum.json"), "w"), indent=1, default=float)
-# recursos FTQC para un espacio activo del tamaño del paper (11 orbitales)
+# FTQC resources for a paper-sized active space (11 orbitals)
 try:
     asp11 = active_space(mf, 11, 12, basis)
     out["ftqc_cas_12_11"] = ftqc_resources(asp11)

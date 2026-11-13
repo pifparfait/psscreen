@@ -1,12 +1,12 @@
 {
- "BODIPY_core": {"lambda_abs_nm": 503, "solvent": "varios (Schmitt 2009)", "phi_F": "~1 (casi unidad)", "phi_T": "~0", "k_isc_s": null,
+ "BODIPY_core": {"lambda_abs_nm": 503, "solvent": "various (Schmitt 2009)", "phi_F": "~1 (near unity)", "phi_T": "~0", "k_isc_s": null,
    "ref": "Schmitt et al., J. Fluoresc. 19, 755 (2009), doi:10.1007/s10895-008-0446-7"},
- "BDP": {"lambda_abs_nm": 503, "solvent": "tolueno", "phi_F": 0.45, "phi_T": "no observado", "k_isc_s": "no observado (<~1e7)",
+ "BDP": {"lambda_abs_nm": 503, "solvent": "toluene", "phi_F": 0.45, "phi_T": "not observed", "k_isc_s": "not observed (<~1e7)",
    "k_r_s": 1.2e8, "k_nr_s": 1.5e8, "dE_ST_eV": 0.77,
    "ref": "Ly et al., Phys. Chem. Chem. Phys. 2021, doi:10.1039/D0CP05904H (tabla 2)"},
- "I2-BDP": {"lambda_abs_nm": 537, "solvent": "tolueno", "phi_F": 0.03, "phi_T": 0.84, "k_isc_s": 3.5e9,
+ "I2-BDP": {"lambda_abs_nm": 537, "solvent": "toluene", "phi_F": 0.03, "phi_T": 0.84, "k_isc_s": 3.5e9,
    "k_r_s": 1.3e8, "k_nr_s": 5.4e8, "dE_ST_eV": 0.59,
    "ref": "Ly et al., Phys. Chem. Chem. Phys. 2021, doi:10.1039/D0CP05904H (tabla 2)"},
- "azaBDP_Ph4": {"lambda_abs_nm": 650, "solvent": "CHCl3 (655 nm según tabla de Loudet 2008)", "phi_F": 0.34, "phi_T": "bajo (no cuantificado aquí)", "k_isc_s": null,
+ "azaBDP_Ph4": {"lambda_abs_nm": 650, "solvent": "CHCl3 (655 nm per Loudet 2008 table)", "phi_F": 0.34, "phi_T": "low (not quantified here)", "k_isc_s": null,
    "ref": "Killoran et al., Chem. Commun. 2002, 1862; Gorman et al., JACS 126, 10619 (2004); Loudet et al., Tetrahedron 64, 3642 (2008)"}
 }

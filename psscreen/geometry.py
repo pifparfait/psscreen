@@ -1,4 +1,4 @@
-"""SMILES -> geometría 3D (RDKit ETKDG/MMFF) -> optimización GFN2-xTB (tblite + ASE)."""
+"""SMILES -> 3D geometry (RDKit ETKDG/MMFF) -> GFN2-xTB optimization (tblite + ASE)."""
 from __future__ import annotations
 import numpy as np
 
@@ -8,7 +8,7 @@ def smiles_to_xyz(smiles: str, seed: int = 7) -> tuple[list[str], np.ndarray]:
     from rdkit.Chem import AllChem
     mol = Chem.AddHs(Chem.MolFromSmiles(smiles))
     if AllChem.EmbedMolecule(mol, randomSeed=seed) != 0:
-        raise RuntimeError(f"Embedding falló para {smiles}")
+        raise RuntimeError(f"Embedding failed for {smiles}")
     if AllChem.MMFFHasAllMoleculeParams(mol):
         AllChem.MMFFOptimizeMolecule(mol, maxIters=2000)
     else:
@@ -19,7 +19,7 @@ def smiles_to_xyz(smiles: str, seed: int = 7) -> tuple[list[str], np.ndarray]:
 
 
 def xtb_optimize(sym, xyz, charge: int = 0, fmax: float = 0.02, steps: int = 500):
-    """Optimiza con GFN2-xTB. Devuelve (sym, xyz_Å, energía_eV)."""
+    """Optimize with GFN2-xTB. Returns (sym, xyz_Å, energy_eV)."""
     from ase import Atoms
     from ase.optimize import BFGS
     from tblite.ase import TBLite

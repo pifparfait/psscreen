@@ -1,24 +1,24 @@
-"""Backend cuántico en PennyLane siguiendo arXiv:2512.15889 (Xanadu), ejecutado en simulador.
+"""PennyLane quantum backend following arXiv:2512.15889 (Xanadu), run on a simulator.
 
-Dos algoritmos del paper, sobre un espacio activo pequeño (CAS(n,n) -> 2n qubits, Jordan-Wigner):
+Two algorithms from the paper, on a small active space (CAS(n,n) -> 2n qubits, Jordan-Wigner):
 
-1) Proyección por umbral para absorción acumulada en una ventana de energías.
-   Paper: |phi> = mu|Psi0>/||mu Psi0||, block-encoding (THC + qubitización) y QSP generalizado
-   con dos escalones de Heaviside; P(éxito) = peso dipolar del espectro dentro de la ventana.
-   Aquí: block-encoding por inmersión (qml.BlockEncode) del Hamiltoniano restringido al sector
-   N fijo, S=0 (base de funciones de espín adaptadas, equivalente a CSFs), y QSVT (qml.QSVT +
-   qml.PCPhase) con UN polinomio par que aproxima la ventana completa sobre x=(H-E_c)/alpha. La
-   parte real del bloque se obtiene con una LCU de dos QSVT (ángulos +phi y -phi). Ángulos de grado
-   alto por iteración de punto fijo (qsp_angles.py). Mismo observable que el paper.
+1) Threshold projection for cumulative absorption in an energy window.
+   Paper: |phi> = mu|Psi0>/||mu Psi0||, block encoding (THC + qubitization) and generalized QSP
+   with two Heaviside steps; P(success) = dipole spectral weight inside the window.
+   Here: embedding block encoding (qml.BlockEncode) of the Hamiltonian restricted to the fixed-N,
+   S=0 sector (spin-adapted basis, equivalent to CSFs), and QSVT (qml.QSVT + qml.PCPhase) with
+   ONE even polynomial approximating the whole window on x=(H-E_c)/alpha. The real part of the
+   block is obtained with an LCU of two QSVTs (angles +phi and -phi). High-degree angles come
+   from fixed-point iteration (qsp_angles.py). Same observable as the paper.
 
-2) Proxy de ISC por evolución temporal.
-   Paper: k(t) = |<T1,M| exp(-i H_SOC t) |S1>|^2  ~ t^2 |<T1,M|H_SOC|S1>|^2 a tiempos cortos.
-   Aquí: H_SOC monoelectrónico en espín-orbitales (integrales calibradas de soc.py) -> qubits,
-   evolución con qml.TrotterProduct, estados S1 y T1(M=-1,0,+1) del Hamiltoniano activo exacto
-   cargados con qml.StatePrep (el paper los prepara con sum-of-Slaters).
+2) ISC proxy by time evolution.
+   Paper: k(t) = |<T1,M| exp(-i H_SOC t) |S1>|^2  ~ t^2 |<T1,M|H_SOC|S1>|^2 at short times.
+   Here: one-electron H_SOC in spin-orbitals (integrals calibrated in soc.py) -> qubits,
+   evolved with qml.TrotterProduct; the S1 and T1(M=-1,0,+1) states of the exact active-space
+   Hamiltonian are loaded with qml.StatePrep (the paper prepares them with sum-of-Slaters).
 
-Además (estrategia de Atchade-Adelomou & Coronas, Electronics 2025): tapering Z2 del Hamiltoniano
-de qubits y estimación de recursos FTQC con qml.resource para espacios activos mayores.
+In addition (strategy of Atchade-Adelomou & Coronas, Electronics 2025): Z2 tapering of the qubit
+Hamiltonian and FTQC resource estimation with qml.resource for larger active spaces.
 """
 from __future__ import annotations
 import numpy as np
@@ -33,7 +33,7 @@ HARTREE_EV = 27.211386245988
 EV_NM = 1239.84198
 
 
-# ----------------------------------------------------------------------------- espacio activo
+# ----------------------------------------------------------------------------- active space
 def active_space(mf, ncas, nelecas, basis):
     mc = mcscf.CASCI(mf, ncas, nelecas)
     h1, ecore = mc.get_h1eff()
@@ -44,7 +44,7 @@ def active_space(mf, ncas, nelecas, basis):
     mol = mf.mol
     with mol.with_common_orig((0, 0, 0)):
         r = mol.intor_symmetric("int1e_r", comp=3)
-    dip = -np.einsum("xpq,pi,qj->xij", r, C, C)   # operador dipolar electrónico (carga -1)
+    dip = -np.einsum("xpq,pi,qj->xij", r, C, C)   # electronic dipole operator (charge -1)
     h_soc_mo, scales = soc_mo_integrals(mol, mf.mo_coeff, basis)
     h_soc = h_soc_mo[:, idx][:, :, idx]
     return dict(h1=h1, h2=h2, ecore=float(ecore), dip=dip, soc=h_soc, ncas=ncas,
@@ -58,7 +58,7 @@ def qubit_hamiltonian(asp):
 
 
 def qubit_onebody(mat_spin_summed=None, soc=None, n=None):
-    """Operador de un cuerpo en espín-orbitales (wire 2p = p alfa, 2p+1 = p beta)."""
+    """One-body operator in spin-orbitals (wire 2p = p alpha, 2p+1 = p beta)."""
     fs = qml.fermi.FermiSentence({})
     if mat_spin_summed is not None:
         n = mat_spin_summed.shape[0]
@@ -82,7 +82,7 @@ def qubit_onebody(mat_spin_summed=None, soc=None, n=None):
 
 
 def _sector(nq, nelec, sz2):
-    """Índices de la base computacional con N electrones y 2*Sz = sz2 (wire 0 = bit más significativo)."""
+    """Computational-basis indices with N electrons and 2*Sz = sz2 (wire 0 = most significant bit)."""
     out = []
     for i in range(2 ** nq):
         bits = [(i >> (nq - 1 - w)) & 1 for w in range(nq)]
@@ -122,14 +122,14 @@ def eigenstates(asp, H=None):
         idx, e, v, s2 = res[sz2]
         tr = [j for j in range(len(e)) if abs(s2[j] - 2) < 1e-3]
         for n in range(ntrip):
-            assert abs(e[tr[n]] - e0[trip0[n]]) < 1e-6, "T_n no degenerado entre M (casi-degeneración?)"
+            assert abs(e[tr[n]] - e0[trip0[n]]) < 1e-6, "T_n not degenerate across M (near-degeneracy?)"
             states["T"][n][M] = full(idx, v[:, tr[n]])
     states["T1"] = states["T"][0]
     states["Hs"], states["S2"], states["sector0"] = Hs, S2, (idx0, e0, v0, s20)
     return states
 
 
-# ----------------------------------------------------------------------------- 1) absorción QSVT
+# ----------------------------------------------------------------------------- 1) QSVT absorption
 def window_poly(x_lo, x_hi, sigma, degree, amp=0.98):
     """Polinomio par en Chebyshev ~ amp * ventana suave en |x| in [x_lo, x_hi] (x_lo puede ser 0)."""
     from numpy.polynomial import chebyshev as C
@@ -144,12 +144,12 @@ def window_poly(x_lo, x_hi, sigma, degree, amp=0.98):
 
 
 def threshold_projection(asp, states, e_lo_ev, e_hi_ev, edge_ev=0.05, max_degree=2000, shots=None):
-    """Peso dipolar en la ventana [e_lo, e_hi] (energía de excitación) con QSVT en PennyLane."""
+    """Dipole weight inside the window [e_lo, e_hi] (excitation energy) with QSVT in PennyLane."""
     idx0, e0, v0, s20 = states["sector0"]
     sing = [k for k in range(len(e0)) if abs(s20[k]) < 1e-3]
     B = v0[:, sing]                                          # base S=0 (autoestados = CSF-like)
     Hsing = np.diag(e0[sing])                               # H en esa base (classically diag: ver nota)
-    # para no "hacer trampa" con la base propia, rotamos a una base S=0 genérica (aleatoria fija)
+    # to avoid "cheating" with the eigenbasis, rotate to a generic (fixed random) S=0 basis
     rng = np.random.default_rng(0)
     Q, _ = np.linalg.qr(rng.standard_normal((len(sing), len(sing))))
     Hb = Q.T @ Hsing @ Q
@@ -166,7 +166,7 @@ def threshold_projection(asp, states, e_lo_ev, e_hi_ev, edge_ev=0.05, max_degree
     alpha = 1.01 * np.max(np.abs(evals - e_c))
     w_half = 0.5 * (e_hi_ev - e_lo_ev) / HARTREE_EV / alpha
     sigma = edge_ev / HARTREE_EV / alpha
-    if 6.0 / sigma > max_degree:        # el grado disponible no resuelve ese borde: se ensancha
+    if 6.0 / sigma > max_degree:        # the available degree cannot resolve that edge: widen it
         sigma = 6.0 / max_degree
         edge_ev = sigma * alpha * HARTREE_EV
     degree = int(max(20, 6.0 / sigma))
@@ -175,12 +175,13 @@ def threshold_projection(asp, states, e_lo_ev, e_hi_ev, edge_ev=0.05, max_degree
     phases, err, _ = qsp_phases_fpi(ceven, degree)
     ang = to_pennylane_qsvt(phases)
     dim = len(sing); m = int(np.ceil(np.log2(dim))) if dim > 1 else 1; pad = 2 ** m
-    A = np.eye(pad) * 0.999                                   # relleno fuera de la ventana
+    A = np.eye(pad) * 0.999                                   # padding outside the window
     A[:dim, :dim] = (Hb - e_c * np.eye(dim)) / alpha
     sys_w = list(range(2, 2 + m)); anc, ctl = 1, 0
-    # Unitario de block-encoding U = [[A, sqrt(1-A^2)], [sqrt(1-A^2), -A]] (el mismo que define
-    # qml.BlockEncode). Se construye con la descomposición espectral de A porque scipy.sqrtm, que usa
-    # qml.BlockEncode, pierde precisión en matrices > ~100x100 (error de bloque ~0.3 medido aquí).
+    # Block-encoding unitary U = [[A, sqrt(1-A^2)], [sqrt(1-A^2), -A]] (the same one qml.BlockEncode
+    # defines). Built from the spectral decomposition of A because scipy.sqrtm, which
+    # qml.BlockEncode uses, loses accuracy for matrices larger than ~100x100 (block error ~0.3
+    # measured here).
     ea, va = np.linalg.eigh(A)
     Sq = (va * np.sqrt(np.clip(1 - ea ** 2, 0, None))) @ va.T
     UA = np.block([[A, Sq], [Sq, -A]])
@@ -203,7 +204,7 @@ def threshold_projection(asp, states, e_lo_ev, e_hi_ev, edge_ev=0.05, max_degree
     ev_vecs = np.linalg.eigh(Hb)[1]
     tot_w, q_w, ex_smooth, ex_sharp = 0.0, 0.0, 0.0, 0.0
     for a in range(3):
-        phi = mus[a] @ psi0 - (psi0 @ mus[a] @ psi0) * psi0        # parte de transición
+        phi = mus[a] @ psi0 - (psi0 @ mus[a] @ psi0) * psi0        # transition part
         w = float(phi @ phi)
         if w < 1e-14:
             continue
@@ -226,7 +227,7 @@ def isc_proxy(asp, states, times=(20.0, 40.0), trotter_steps=4, triplet=0):
     Hsoc = qubit_onebody(soc=asp["soc"], n=asp["ncas"])
     Hsoc = qml.simplify(Hsoc)
     coeffs, ops = Hsoc.terms()
-    assert np.allclose(np.imag(coeffs), 0, atol=1e-12), "H_SOC en qubits debe ser hermítico (coef. reales)"
+    assert np.allclose(np.imag(coeffs), 0, atol=1e-12), "qubit H_SOC must be Hermitian (real coefficients)"
     Hsoc = qml.dot(np.real(coeffs), ops)
     dev = qml.device("default.qubit", wires=nq)
 
@@ -236,7 +237,7 @@ def isc_proxy(asp, states, times=(20.0, 40.0), trotter_steps=4, triplet=0):
         qml.TrotterProduct(Hsoc, time=t, n=trotter_steps, order=2)
         return qml.state()
 
-    # referencia clásica exacta
+    # exact classical reference
     Hm = Hsoc.sparse_matrix(wire_order=range(nq))
     T = states["T"][triplet]
     V2 = sum(abs(np.vdot(T[M], Hm @ states["S1"])) ** 2 for M in (-1, 0, 1))
@@ -261,8 +262,8 @@ def taper_report(asp, H=None):
 
 
 def ftqc_resources(asp, error=0.0016):
-    """QPE por qubitización con doble factorización (qml.resource) para este espacio activo."""
+    """QPE by qubitization with double factorization (qml.resource) for this active space."""
     from pennylane.estimator.qpe_resources.second_quantization import DoubleFactorization
-    # PennyLane espera las integrales en el mismo orden que electron_integrals (como fermionic_observable)
+    # PennyLane expects the integrals in the same order as electron_integrals (like fermionic_observable)
     df = DoubleFactorization(asp["h1"], asp["h2"].transpose(0, 2, 3, 1), error=error)
     return {"logical_qubits": int(df.qubits), "toffoli_gates": float(df.gates), "lambda": float(df.lamb)}

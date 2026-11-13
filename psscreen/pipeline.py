@@ -1,4 +1,4 @@
-"""Pipeline de cribado: geometría -> estados excitados -> SOC -> tasas -> puntuación PDT."""
+"""Screening pipeline: geometry -> excited states -> SOC -> rates -> PDT score."""
 from __future__ import annotations
 import json, os, time
 import numpy as np
@@ -8,7 +8,7 @@ from .soc import soc_mo_integrals, soc_singlet_triplet, soc_ground_triplet
 from .rates import photophysics, MLJParams
 
 EV_NM = 1239.84198
-E_O2_SINGLET = 0.98  # eV, energía de 1Δg del O2: T1 debe superarla para fotosensibilizar tipo II
+E_O2_SINGLET = 0.98  # eV, O2 1Δg energy: T1 must exceed it for type II photosensitization
 
 
 def nm(e):
@@ -16,7 +16,7 @@ def nm(e):
 
 
 def pdt_score(lam_nm, f, phi_isc, E_T1, window=(650, 850)):
-    """Puntuación 0-1 orientativa: absorción en ventana terapéutica x rendimiento triplete x T1>1Δg."""
+    """Indicative 0-1 score: absorption in the therapeutic window x triplet yield x (T1 > 1Δg)."""
     lo, hi = window
     w = 1.0 if lo <= lam_nm <= hi else float(np.exp(-((min(abs(lam_nm - lo), abs(lam_nm - hi))) / 50.0) ** 2))
     bright = min(1.0, f / 0.3)
@@ -44,12 +44,12 @@ def screen_molecule(name, smiles=None, xyz_path=None, backend: ExcitedStateBacke
     h_mo, scales = soc_mo_integrals(res.mol, res.mo_coeff, backend.basis)
     V = soc_singlet_triplet(res, h_mo)
     V0 = soc_ground_triplet(res, h_mo)
-    # S1 = primer singlete brillante entre los dos más bajos (en BODIPY es S1)
+    # S1 = lowest singlet (the bright state in BODIPY dyes)
     iS1 = 0
     corr = dict(corrections or {})
     d = res.meta.get("delta_scf")
     if d and d.get("converged") and not corr:
-        # S1/T1 de ΔSCF sustituyen a los de TDDFT; el resto de la escalera se desplaza igual
+        # ΔSCF S1/T1 replace the TDDFT ones; the rest of the ladder is shifted rigidly
         corr = {"S": d["E_S1_dscf"] - res.e_singlets[0], "T": d["E_T1_dscf"] - res.e_triplets[0],
                 "source": "delta-SCF"}
     ph = photophysics(res.e_singlets[iS1], res.f_osc[iS1], res.e_triplets, V[iS1], k_ic=k_ic,

@@ -61,7 +61,7 @@
   "ewin_eV": 10.0,
   "n_occ_win": 42,
   "n_vir_win": 39,
-  "singlets": "RPA Davidson, ventana 60.0 eV, npair 15372",
+  "singlets": "RPA Davidson, window 60.0 eV, npair 15372",
   "triplets": "TDA expl\u00edcito, ventana 10.0 eV",
   "S_TDA_window_eV": [
    3.5891293813929686,

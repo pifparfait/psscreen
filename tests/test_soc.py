@@ -1,4 +1,4 @@
-"""Pruebas físicas del módulo SOC: reglas de El-Sayed en formaldehído e invariancia rotacional."""
+"""Physics tests of the SOC module: El-Sayed rules in formaldehyde and rotational invariance."""
 import numpy as np, sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from psscreen.backends import PySCFTDA
@@ -23,7 +23,7 @@ def test_el_sayed_and_rotation():
     th = 0.7; R = np.array([[1, 0, 0], [0, np.cos(th), -np.sin(th)], [0, np.sin(th), np.cos(th)]]) @ \
         np.array([[np.cos(1.1), 0, np.sin(1.1)], [0, 1, 0], [-np.sin(1.1), 0, np.cos(1.1)]])
     _, V2, V02 = run(R)
-    # solo estados bajos: Davidson puede capturar raíces altas distintas tras rotar
+    # lowest states only: Davidson may capture different high roots after rotation
     assert np.allclose(V[:2, :2], V2[:2, :2], atol=0.05) and np.allclose(V0[:2], V02[:2], atol=0.05)
 
 if __name__ == "__main__":

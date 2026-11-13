@@ -1,4 +1,4 @@
-"""Construye la tabla predicho vs experimental y el análisis de sensibilidad a partir de runs/*.json."""
+"""Build the predicted-vs-experimental tables and the sensitivity analysis from runs/*.json."""
 import json, os, sys, itertools
 import numpy as np
 here = os.path.dirname(os.path.abspath(__file__))
@@ -19,23 +19,23 @@ for n in names:
                      phiT=p["phi_ISC"], phiT_exp=e.get("phi_T"), phiF=p["phi_F"], phiF_exp=e.get("phi_F"),
                      kr=p["k_r"], kr_exp=e.get("k_r_s"), proxy=r["proxy_xanadu_sum_V2"], ch=p["channels"], t=r["wall_s"]["total"]))
 
-print("## Absorción (S0->S1, vertical, B3LYP/def2-SVP, gas, geometría GFN2-xTB)\n")
-print("| Molécula | λ calc (nm) | λ exp (nm) | E calc (eV) | E exp (eV) | Error (eV) | f |")
+print("## Absorption (S0->S1, vertical, B3LYP/def2-SVP, gas phase, GFN2-xTB geometry)\n")
+print("| Molecule | λ calc (nm) | λ exp (nm) | E calc (eV) | E exp (eV) | Error (eV) | f |")
 print("|---|---|---|---|---|---|---|")
 for x in rows:
     print(f"| {x['name']} | {x['lam']:.0f} | {x['lam_exp']} | {x['E']:.2f} | {x['E_exp']:.2f} | {x['dE']:+.2f} | {x['f']:.2f} |")
 errs = np.array([x["dE"] for x in rows])
-print(f"\nError medio {errs.mean():+.2f} eV, desviación {errs.std():.2f} eV.")
+print(f"\nMean error {errs.mean():+.2f} eV, standard deviation {errs.std():.2f} eV.")
 if len(rows) >= 3:
-    print("\nCorrección sistemática con validación cruzada dejando-uno-fuera (desplazamiento constante):\n")
-    print("| Molécula | λ corregida LOO (nm) | λ exp (nm) | Error LOO (eV) |\n|---|---|---|---|")
+    print("\nSystematic correction with leave-one-out cross-validation (constant shift):\n")
+    print("| Molecule | LOO-corrected λ (nm) | λ exp (nm) | LOO error (eV) |\n|---|---|---|---|")
     for i, x in enumerate(rows):
         sh = np.mean([y["dE"] for j, y in enumerate(rows) if j != i])
         Ec = x["E"] - sh
         print(f"| {x['name']} | {EV / Ec:.0f} | {x['lam_exp']} | {Ec - x['E_exp']:+.2f} |")
 
-print("\n## Tripletes, SOC e ISC\n")
-print("| Molécula | T1..T3 (eV) | ΔE(S1-T1) calc / exp | SOC S1-Tn (cm⁻¹) | k_r calc / exp (s⁻¹) | k_ISC calc / exp (s⁻¹) | Φ_T calc / exp | Φ_F calc / exp | proxy Σ|V|² |")
+print("\n## Triplets, SOC and ISC\n")
+print("| Molecule | T1..T3 (eV) | ΔE(S1-T1) calc / exp | SOC S1-Tn (cm⁻¹) | k_r calc / exp (s⁻¹) | k_ISC calc / exp (s⁻¹) | Φ_T calc / exp | Φ_F calc / exp | proxy Σ|V|² |")
 print("|---|---|---|---|---|---|---|---|---|")
 fmt = lambda v: "—" if v is None else (f"{v:.1e}" if isinstance(v, float) and (v > 100 or v < 1e-2) else str(v))
 for x in rows:
@@ -43,18 +43,18 @@ for x in rows:
           f"{', '.join(f'{v:.2f}' for v in x['soc'][:3])} | {x['kr']:.1e} / {fmt(x['kr_exp'])} | {x['kisc']:.1e} / {fmt(x['kisc_exp'])} | "
           f"{x['phiT']:.2f} / {x['phiT_exp']} | {x['phiF']:.2f} / {x['phiF_exp']} | {x['proxy']:.2f} |")
 
-print("\n### Canales S1→Tn dominantes\n")
+print("\n### Dominant S1→Tn channels\n")
 for x in rows:
     top = sorted(x["ch"], key=lambda c: -c["k"])[:2]
     print(f"- {x['name']}: " + "; ".join(f"T{c['T']} (ΔE={c['dE_eV']:+.2f} eV, V={c['V_cm']:.2f} cm⁻¹, k={c['k']:.1e} s⁻¹)" for c in top))
 
 if "BDP" in R and "I2-BDP" in R:
-    print("\n## Sensibilidad del cociente k_ISC(I2-BDP)/k_ISC(BDP) a los parámetros MLJ\n")
-    print("Experimento: 3.5e9 frente a 'no observado' (Φ_F 0.45 sin ISC detectable, cota k_ISC ≲ 1e7 s⁻¹).\n")
-    print("| λ_s (eV) | ħω (eV) | S | k_ISC BDP | k_ISC I2-BDP | Φ_T I2-BDP | cociente |\n|---|---|---|---|---|---|---|")
+    print("\n## Sensitivity of the k_ISC(I2-BDP)/k_ISC(BDP) ratio to the MLJ parameters\n")
+    print("Experiment: 3.5e9 vs 'not observed' (Φ_F 0.45 with no detectable ISC, bound k_ISC ≲ 1e7 s⁻¹).\n")
+    print("| λ_s (eV) | ħω (eV) | S | k_ISC BDP | k_ISC I2-BDP | Φ_T I2-BDP | ratio |\n|---|---|---|---|---|---|---|")
     for ls, hw, S in itertools.product([0.05, 0.1, 0.2], [0.17], [0.5, 0.8, 1.2]):
         p = MLJParams(lambda_s=ls, hw=hw, S=S)
         a = photophysics(R["BDP"]["E_S1_eV"], R["BDP"]["f_osc"][0], R["BDP"]["E_triplets_eV"], R["BDP"]["SOC_S1_Tn_cm"], p=p, n_refr=1.496)
         b = photophysics(R["I2-BDP"]["E_S1_eV"], R["I2-BDP"]["f_osc"][0], R["I2-BDP"]["E_triplets_eV"], R["I2-BDP"]["SOC_S1_Tn_cm"], p=p, n_refr=1.496)
         print(f"| {ls} | {hw} | {S} | {a['k_isc']:.1e} | {b['k_isc']:.1e} | {b['phi_ISC']:.2f} | {b['k_isc'] / max(a['k_isc'], 1e-30):.1e} |")
-print("\nTiempo de cálculo por molécula (s): " + ", ".join(f"{x['name']} {x['t']:.0f}" for x in rows))
+print("\nWall time per molecule (s): " + ", ".join(f"{x['name']} {x['t']:.0f}" for x in rows))

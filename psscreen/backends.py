@@ -1,14 +1,14 @@
-"""Backends de estados excitados.
+"""Excited-state backends.
 
-Contrato común (ExcitedStateResult): energías verticales de singletes y tripletes (eV),
-fuerzas de oscilador, y amplitudes TDA X[nocc,nvir] en la base de MOs, más los MOs.
-Con eso, el módulo SOC y el de tasas funcionan igual sea cual sea el backend.
+Common contract (ExcitedStateResult): vertical singlet and triplet energies (eV),
+oscillator strengths, and TDA amplitudes X[nocc, nvir] in the MO basis, plus the MOs.
+The SOC and rate modules then work the same regardless of the backend.
 
-- PySCFTDA: TDDFT (RPA) para singletes y TDA para tripletes, en ventana de orbitales (tdwin.py).
-- ActiveSpaceBackend: hueco para un backend cuántico (QPE/QSP sobre un espacio activo).
-  Exporta el Hamiltoniano activo (FCIDUMP) y, como referencia clásica del mismo problema,
-  lo resuelve exactamente con CASCI (lo que un ordenador cuántico tolerante a fallos haría
-  con QPE) y opcionalmente añade correlación dinámica con NEVPT2.
+- PySCFTDA: TDDFT (RPA) for singlets and TDA for triplets, in an orbital window (tdwin.py).
+- ActiveSpaceBackend: slot for a quantum backend (QPE/QSP on an active space).
+  It exports the active-space Hamiltonian (FCIDUMP) and, as a classical reference for the same
+  problem, solves it exactly with CASCI (what a fault-tolerant quantum computer would do
+  with QPE), optionally adding dynamic correlation with NEVPT2.
 """
 from __future__ import annotations
 from dataclasses import dataclass, field
@@ -26,7 +26,7 @@ class ExcitedStateResult:
     e_singlets: np.ndarray            # eV
     f_osc: np.ndarray
     e_triplets: np.ndarray            # eV
-    x_singlets: list = field(default_factory=list)   # cada uno [nocc, nvir], norma 1
+    x_singlets: list = field(default_factory=list)   # each [nocc, nvir], unit norm
     x_triplets: list = field(default_factory=list)
     meta: dict = field(default_factory=dict)
 
@@ -42,7 +42,7 @@ _HEAVY = {"Rb", "Sr", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Pt", "Au",
 
 
 def _ecp(atom: str, basis: str):
-    """ECP solo para elementos pesados (def2: Z>36)."""
+    """ECP only for heavy elements (def2: Z>36)."""
     els = {l.split()[0] for l in atom.strip().splitlines()}
     return {e: basis for e in els if e in _HEAVY} or None
 
@@ -71,25 +71,25 @@ class PySCFTDA(ExcitedStateBackend):
         if self.density_fit:
             mf = mf.density_fit()
         if self.solvent:
-            raise NotImplementedError("PCM aún no conectado al TDDFT en ventana")
+            raise NotImplementedError("PCM is not yet wired into the windowed TDDFT")
         mf.conv_tol = 1e-9
         mf.kernel()
         if not mf.converged:
-            raise RuntimeError("SCF no convergió")
+            raise RuntimeError("SCF did not converge")
         from .tdwin import window_td, rpa_singlets_davidson
         import time
         nocc = mol.nelectron // 2
         t0 = time.time()
-        # tripletes (y singletes TDA de control) en ventana: convergen rápido con la ventana
+        # triplets (and TDA singlets as a control) in an orbital window: they converge quickly with the window
         r = window_td(mf, ewin_ev=self.ewin, nstates=self.nstates, rpa_singlets=False,
                       max_occ=self.max_occ, max_vir=self.max_vir, grid_level=self.grid_level)
         t1 = time.time()
-        # singletes RPA en espacio (casi) completo: el estado brillante necesita la respuesta
-        # de los virtuales altos (en ventanas pequeñas sale ~0.2-0.4 eV demasiado alto)
+        # RPA singlets in the (nearly) full space: the bright state needs the response of the
+        # high virtuals (in small windows it comes out ~0.2-0.4 eV too high)
         s = rpa_singlets_davidson(mf, nstates=self.nsinglets, ewin_ev=self.ewin_singlets,
                                   grid_level=0 if self.grid_level is None else min(self.grid_level, 1))
         if not s["converged"]:
-            raise RuntimeError("Davidson RPA no convergió")
+            raise RuntimeError("RPA Davidson did not converge")
         t2 = time.time()
         dscf = None
         if self.delta_scf:
@@ -103,24 +103,24 @@ class PySCFTDA(ExcitedStateBackend):
                                   meta={"backend": self.name, "xc": self.xc, "basis": self.basis,
                                         "e_scf": mf.e_tot, "nao": mol.nao, "ewin_eV": self.ewin,
                                         "n_occ_win": len(r["occ"]), "n_vir_win": len(r["vir"]),
-                                        "singlets": f"RPA Davidson, ventana {self.ewin_singlets} eV, npair {s['npair']}",
-                                        "triplets": f"TDA explícito, ventana {self.ewin} eV",
+                                        "singlets": f"RPA Davidson, window {self.ewin_singlets} eV, npair {s['npair']}",
+                                        "triplets": f"explicit TDA, window {self.ewin} eV",
                                         "S_TDA_window_eV": (r["e_S"] * HARTREE_EV).tolist(),
                                         "t_triplets_s": t1 - t0, "t_singlets_s": t2 - t1,
                                         "delta_scf": dscf, "t_dscf_s": t3 - t2})
 
 
 class ActiveSpaceBackend(ExcitedStateBackend):
-    """Hueco para el backend cuántico.
+    """Slot for the quantum backend.
 
-    `solver` decide quién diagonaliza el Hamiltoniano del espacio activo:
-      - "casci" (por defecto): diagonalización exacta clásica = resultado ideal de QPE.
-      - un callable externo f(h1, h2, ncas, nelecas, nroots, spin) -> energías (Ha),
-        p.ej. un estimador QPE/QSP en hardware o simulador.
-    `nevpt2=True` añade correlación dinámica (SC-NEVPT2) sobre CASCI, que es lo que el
-    artículo de Xanadu no incluye.
-    Devuelve solo energías (sin amplitudes TDA), así que el SOC/ISC se toma del backend TDA
-    salvo que se proporcione un modelo SOC propio.
+    `solver` decides who diagonalizes the active-space Hamiltonian:
+      - "casci" (default): exact classical diagonalization = the ideal QPE result.
+      - an external callable f(h1, h2, ncas, nelecas, nroots, spin) -> energies (Ha),
+        e.g. a QPE/QSP estimator on hardware or in a simulator.
+    `nevpt2=True` adds dynamic correlation (SC-NEVPT2) on top of CASCI, which the Xanadu
+    paper does not include.
+    Returns energies only (no TDA amplitudes), so SOC/ISC must come from the TDA backend
+    unless a SOC model of your own is supplied.
     """
     name = "active-space"
 

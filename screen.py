@@ -1,6 +1,6 @@
-"""CLI de cribado. Ejemplo:
-    python screen.py candidatos.csv --out resultados/
-candidatos.csv con columnas: name,smiles
+"""Screening CLI. Example:
+    python screen.py candidates.csv --out results/
+candidates.csv with columns: name,smiles
 """
 import argparse, csv, json, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -10,9 +10,9 @@ from psscreen.backends import PySCFTDA
 ap = argparse.ArgumentParser()
 ap.add_argument("csv"); ap.add_argument("--out", default="runs")
 ap.add_argument("--xc", default="b3lyp"); ap.add_argument("--basis", default="def2-svp")
-ap.add_argument("--k-ic", type=float, default=1.5e8, help="conversión interna S1->S0 (s^-1), empírica")
-ap.add_argument("--n-refr", type=float, default=1.496, help="índice de refracción del disolvente")
-ap.add_argument("--window", default="650,850", help="ventana terapéutica en nm")
+ap.add_argument("--k-ic", type=float, default=1.5e8, help="S1->S0 internal conversion rate (s^-1), empirical")
+ap.add_argument("--n-refr", type=float, default=1.496, help="solvent refractive index")
+ap.add_argument("--window", default="650,850", help="therapeutic window in nm")
 a = ap.parse_args()
 win = tuple(float(v) for v in a.window.split(","))
 rows = list(csv.DictReader(open(a.csv)))

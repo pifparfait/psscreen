@@ -1,4 +1,4 @@
-"""El TDDFT en ventana reproduce PySCF completo cuando la ventana abarca todo el espacio."""
+"""The windowed TDDFT reproduces full PySCF when the window spans the whole space."""
 import numpy as np, sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pyscf import gto, dft, tdscf
@@ -23,8 +23,8 @@ def test_rpa_davidson_matches_pyscf():
     mol = gto.M(atom="C 0 0 0; O 0 0 1.205; H 0 0.94 -0.587; H 0 -0.94 -0.587", basis="6-31g*", verbose=0)
     mf = dft.RKS(mol, xc="b3lyp").density_fit().run()
     r = rpa_singlets_davidson(mf, nstates=3, ewin_ev=1e4, grid_level=3, tol=1e-6)
-    # referencia: diagonalización exacta del espacio completo (el Davidson de PySCF
-    # a veces se salta una raíz casi degenerada, como S3 aquí)
+    # reference: exact diagonalization of the full space (PySCF's Davidson sometimes skips
+    # a nearly degenerate root, like S3 here)
     ref = window_td(mf, ewin_ev=1e4, nstates=3, max_occ=999, max_vir=999)
     print(r["e_S"] * 27.2114, ref["e_S"] * 27.2114, r["f"], ref["f"])
     assert np.allclose(r["e_S"], ref["e_S"], atol=1e-5)
