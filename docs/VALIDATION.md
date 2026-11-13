@@ -102,11 +102,20 @@ FTQC resource estimate for a CAS(12,11) active space (PennyLane double factoriza
 - I2-BDP: 601 logical qubits, 4.39e+07 Toffolis per QPE run, λ = 11.5 Ha
 - azaBDP_Ph4: 601 logical qubits, 4.09e+07 Toffolis per QPE run, λ = 10.8 Ha
 
-## Paper-sized active space (12e,11o) on BODIPY_core (classical reference)
+## Paper-sized active space (12e,11o): classical CASCI / SC-NEVPT2 reference (all four molecules)
 
-- Experiment: 503 nm (2.46 eV)
-- CASCI (12e,11o): S1 = 3.97 eV (312 nm)
-- CASCI + SC-NEVPT2: S1 = 2.71 eV (458 nm)
+Computed on a 64-core server (def2-SVP, density-fitted RHF orbitals, S1 from the lowest excited root).
+
+| Molecule | Experiment (nm / eV) | CASCI(12,11) S1 (eV) | CASCI + SC-NEVPT2 S1 (eV, nm) |
+|---|---|---|---|
+| BODIPY_core | 503 / 2.46 | 3.97 | 2.71 (458) |
+| BDP | 503 / 2.46 | 4.14 | 2.52 (492) |
+| I2-BDP | 537 / 2.31 | 4.32 | 2.04 (609) |
+| azaBDP_Ph4 | 650 / 1.91 | 3.35 | 1.99 (622) |
+
+CASCI alone overestimates S1 by 1.4-1.9 eV. SC-NEVPT2 brings it to within 0.2-0.3 eV of experiment for
+three molecules, but it is not systematic: it is 0.25 eV too high for the BODIPY core and 0.27 eV too low
+for I2-BDP, so it is not better than the TDDFT + ΔSCF results above (0.02-0.08 eV).
 
 Wall time per molecule (s): BODIPY_core 241, BDP 2589, I2-BDP 2473, azaBDP_Ph4 3775
 
@@ -119,7 +128,8 @@ Wall time per molecule (s): BODIPY_core 241, BDP 2589, I2-BDP 2473, azaBDP_Ph4 3
 2. **The window observable is only as good as the active-space energies.** With the paper's 700-850 nm
    window the projected weight is 0 for every molecule at CAS(4,4)/(6,6), because the CASCI S1 lies at
    260-340 nm. A paper-sized active space does not fix this by itself: CASCI(12e,11o) on the BODIPY core
-   gives S1 = 3.97 eV against 2.46 eV measured. Adding SC-NEVPT2 brings it to 2.71 eV. Dynamic
+   gives S1 = 3.97 eV against 2.46 eV measured (3.35-4.32 eV across the four molecules). Adding SC-NEVPT2
+   brings it to 1.99-2.71 eV, with errors of 0.1-0.3 eV. Dynamic
    correlation is therefore not optional for this property, and an exact quantum solver on a CASCI
    Hamiltonian would not by itself beat the classical TDDFT + ΔSCF results above.
 3. **The ISC proxy ranks the heavy-atom effect correctly but not the mechanism.** At CAS(4,4) the largest
