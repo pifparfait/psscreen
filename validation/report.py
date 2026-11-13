@@ -87,4 +87,15 @@ if qnames:
         for n, f in fq:
             print(f"- {n}: {f['logical_qubits']} logical qubits, {f['toffoli_gates']:.2e} Toffolis per QPE run, λ = {f['lambda']:.1f} Ha")
 
+
+# Paper-sized active space reference (classical CASCI / NEVPT2)
+import glob
+for f in sorted(glob.glob(os.path.join(here, "runs", "*.casci_ref.json"))):
+    c = json.load(open(f))
+    print(f"\n## Paper-sized active space {c['CAS']} on {c['name']} (classical reference)\n")
+    print(f"- Experiment: {c['lambda_exp_nm']} nm ({1239.84198 / c['lambda_exp_nm']:.2f} eV)")
+    print(f"- CASCI {c['CAS']}: S1 = {c['E_CASCI_eV'][1]:.2f} eV ({c['lambda_CASCI_nm'][0]:.0f} nm)")
+    if "E_NEVPT2_eV" in c:
+        print(f"- CASCI + SC-NEVPT2: S1 = {c['E_NEVPT2_eV'][1]:.2f} eV ({c['lambda_NEVPT2_nm'][0]:.0f} nm)")
+
 print("\nWall time per molecule (s): " + ", ".join(f"{x['name']} {x['t']:.0f}" for x in rows))
