@@ -1,0 +1,6 @@
+SMILES = {
+    "BODIPY_core": "F[B-]1(F)n2cccc2C=C2C=CC=[N+]12",
+    "BDP": "Cc1cc(C)n2c1C(c1ccccc1)=C1C(C)=CC(C)=[N+]1[B-]2(F)F",
+    "I2-BDP": "Cc1c(I)c(C)n2c1C(c1ccccc1)=C1C(C)=C(I)C(C)=[N+]1[B-]2(F)F",
+    "azaBDP_Ph4": "F[B-]1(F)n2c(-c3ccccc3)cc(-c3ccccc3)c2N=C2C(-c3ccccc3)=CC(-c3ccccc3)=[N+]12",
+}

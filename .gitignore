@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+*.chk
+.pytest_cache/
+validation/runs/*.log

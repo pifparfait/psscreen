@@ -1,0 +1,18 @@
+# Entorno para macOS (Apple Silicon) o Linux. conda-forge tiene binarios arm64 de todo.
+#   conda env create -f environment.yml && conda activate psscreen
+name: psscreen
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - numpy
+  - scipy
+  - pyscf>=2.6
+  - rdkit
+  - tblite-python      # GFN2-xTB (paquete python "tblite")
+  - ase
+  - geometric
+  - pip
+  - pip:
+      - pennylane>=0.45
+      - pytest
