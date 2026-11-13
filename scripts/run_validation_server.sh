@@ -13,6 +13,7 @@ cd "$(dirname "$0")/../validation"
 source "$(conda info --base)/etc/profile.d/conda.sh" && conda activate psscreen
 export OMP_NUM_THREADS="${OMP_NUM_THREADS:-$(nproc)}"
 export PSS_EWIN_SINGLETS="${PSS_EWIN_SINGLETS:-60}"
+export PSS_MAX_MEMORY_MB="${PSS_MAX_MEMORY_MB:-100000}"  # PySCF memory limit (MB)
 export FORCE="${FORCE:-0}" AUTO_PUSH="${AUTO_PUSH:-0}"
 mkdir -p runs
 if [ "$FORCE" = "1" ]; then
