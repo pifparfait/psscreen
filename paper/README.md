@@ -17,4 +17,4 @@ Build: `latexmk -pdf main.tex` (needs a TeX distribution with `achemso`, e.g. Te
 2. Re-check experimental values against Ly et al. (PCCP 2021) Table 2.
 3. Source of the logical-qubit difference with arXiv:2512.15889 (601 vs 180-350).
 4. MLJ sensitivity table and remaining SI material.
-5. Corresponding e-mail, funding, Zenodo DOI.
+5. Funding, Zenodo DOI.
