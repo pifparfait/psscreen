@@ -150,11 +150,20 @@ What this shows:
   by only 3 nm between them. The calculated difference of 36 nm points to sensitivity to the single GFN2-xTB
   conformer of the styryl groups, not to the chemistry. Conformer sampling is needed for styryl dyes.
 - **The heavy-atom effect is reproduced for I3-BDP** (k_ISC 1.8 times too high, as for I2-BDP).
-- **The method fails for the distyryl-diiodo dye.** I2-BDP-0 has Φ_T = 0.76 and k_ISC = 4.5e8 s⁻¹
-  measured; the calculation gives k_ISC = 9.6e7 s⁻¹ (4.7 times too low) and Φ_T = 0.18. The large SOC
-  (57 cm⁻¹) is to T2, which the calculation places 0.55 eV above S1, so that channel is closed. T2 and
-  higher triplets come from TDA without the ΔSCF correction, and the likely culprit is their energy. This
-  has not been tested yet.
+- **The method underestimates ISC for the distyryl-diiodo dye.** I2-BDP-0 has Φ_T = 0.76 and
+  k_ISC = 4.5e8 s⁻¹ measured; the calculation gives k_ISC = 9.6e7 s⁻¹ (4.7 times too low) and Φ_T = 0.18.
+  The calculated S1-T1 coupling is only 1.0 cm⁻¹ (13 cm⁻¹ in I2-BDP); the large coupling (57 cm⁻¹) is to T2,
+  0.55 eV above S1, a closed channel. Three things were checked with the stored results:
+  1. *MLJ parameters:* over λ_s = 0.05-0.2 eV and S = 0.5-1.2, k_ISC spans 1.6e7 to 2.1e8 s⁻¹ and never
+     reaches 4.5e8, so the parameters alone do not explain it.
+  2. *Fixed k_ic and calculated k_r:* with k_ic = 0, Φ_T rises only to 0.25; k_r is about 2 times too high
+     (2.9e8 vs 1.4e8 s⁻¹ derived from the measured Φ_F and Φ_T).
+  3. *Shifting T2 and higher like S1* (instead of like T1) was tested as a possible fix and **it does not
+     work**: it would give the BODIPY core Φ_T = 0.87, BDP 0.56 and I2-BDP k_ISC = 3e11 s⁻¹, all
+     contradicting experiment (`validation/analysis_higher_triplets.py`).
+  The cause is therefore open. Untested candidates: Herzberg-Teller (vibronic) spin-orbit coupling, the
+  conformation of the styryl groups (single GFN2-xTB conformer), and the TDDFT description of the extended
+  chromophore.
 - No triplet phosphorescence was observed for the styryl dyes, so T1 and ΔE(S1-T1) cannot be checked there.
 
 ## Findings about the quantum workflow of arXiv:2512.15889

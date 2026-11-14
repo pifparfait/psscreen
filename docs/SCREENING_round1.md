@@ -45,7 +45,7 @@ For reference, the validated I2-BDP gave k_ISC = 6.9e9 s⁻¹ (experiment 3.5e9)
    long (+4 to +50 nm). The aza candidates at 687-701 nm may realistically lie around 660-675 nm; they
    should still fall inside the window.
 3. **Styryl-extended dyes are not reliable yet.** The second validation set shows that for the
-   distyryl-diiodo dye the method gets Φ_T = 0.18 against 0.76 measured, and that the absorption of
+   distyryl-diiodo dye the method gets Φ_T = 0.18 against 0.76 measured (cause open), and that the absorption of
    styryl dyes depends strongly on the conformer (see `docs/VALIDATION.md`). No styryl candidate is in
    this round for that reason.
 4. **T1 margin for singlet oxygen.** The aza-BODIPY triplets sit at 1.07-1.12 eV, only 0.09-0.14 eV above
