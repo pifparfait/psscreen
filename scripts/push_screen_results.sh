@@ -9,5 +9,12 @@ git checkout -B "$BRANCH"
 git add "$out"/*.json "$out"/*.xyz "$out"/ranking.md "$out"/*.log 2>/dev/null || true
 if git diff --cached --quiet; then echo "Nothing new to commit."
 else git commit -m "Add screening results for $(basename "$out") ($(date -u +%Y-%m-%d))"; fi
-git push -u origin "$BRANCH" --force-with-lease || git push -u origin "$BRANCH" --force
+# Never force-push. If the remote branch has commits this clone does not have, publish to a new
+# timestamped branch instead so that nothing already on GitHub is overwritten.
+if ! git push -u origin "$BRANCH"; then
+  alt="$BRANCH-$(date -u +%Y%m%d-%H%M%S)"
+  echo "Push to $BRANCH rejected; not forcing. Publishing to $alt instead." >&2
+  git push -u origin "HEAD:refs/heads/$alt"
+  BRANCH="$alt"
+fi
 echo "Pushed screening results to branch $BRANCH."
