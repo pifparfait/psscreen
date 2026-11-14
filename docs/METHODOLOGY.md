@@ -42,8 +42,9 @@ used for the rankings: CASCI(12e,11o) puts S1 1.4-1.9 eV too high, and CASCI + S
 - Not independent: Φ_F (k_ic is taken from BDP).
 - Assumed, not fitted: the MLJ parameters. For I2-BDP they move k_ISC between about 2e9 and 3e10 s⁻¹.
 - Not included: solvent, conformers, vibronic structure of the absorption band, aggregation.
-- A second validation set from the same source (toluene) is in `docs/VALIDATION.md`: the absorption offset
-  is systematic (mean -0.055 eV over six dyes). The three styryl-extended dyes are being recalculated after a
-  geometry error (missing E/Z labels in the SMILES) invalidated a first attempt.
-- Still to test: range-separated functionals, a solvent model, conformer sampling, and ΔSCF-quality energies
-  for higher triplets.
+- A second validation set from the same source (toluene) is in `docs/VALIDATION.md`. It shows that the ΔSCF
+  correction is accurate for compact dyes (S1 error -0.02 to -0.08 eV) but overshoots for styryl-extended dyes
+  (-0.21 to -0.23 eV), where k_ISC is also far too low. The method should not be used for extended chromophores
+  until that is resolved.
+- Still to test: range-separated functionals and a solvent model. Conformer sampling was tried for the styryl
+  dyes and does not explain the error.
