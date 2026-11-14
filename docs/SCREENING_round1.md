@@ -41,12 +41,15 @@ For reference, the validated I2-BDP gave k_ISC = 6.9e9 s⁻¹ (experiment 3.5e9)
 
 1. **These are predictions, not results.** Only four molecules were validated, and only one (I2-BDP) has
    a measured triplet yield. No candidate here has experimental data in this work.
-2. **Systematic λ error.** Over six validation dyes the calculated absorption is on average 0.055 eV too
-   long (+4 to +28 nm). The aza candidates at 687-701 nm may realistically lie around 660-675 nm; they
-   should still fall inside the window.
-3. **Styryl-extended dyes are not validated yet.** They have charge-transfer character, where B3LYP is
-   known to be less trustworthy, and a first attempt to validate three of them was withdrawn because of a
-   geometry error (see `docs/VALIDATION.md`); the recalculation is pending. No styryl candidate is in this round.
+2. **λ error is systematic for compact dyes, not for extended ones.** For six compact validation dyes the
+   calculated absorption is 0.02-0.08 eV (mean 0.055 eV) too long, but for three distyryl dyes it is 0.21-0.23 eV too
+   long, because the ΔSCF correction overshoots in extended chromophores (see `docs/VALIDATION.md`). The aza
+   candidates at 687-701 nm are somewhat larger than the aza-BODIPY used in validation, so their true
+   absorption may be shorter than predicted by more than the compact-dye offset; a prediction around
+   650-675 nm is plausible, which is at the edge of the window.
+3. **Styryl-extended dyes are not reliable.** For the measured distyryl-diiodo dye the method gives k_ISC 26 times
+   too low and λ 86 nm too long. No styryl candidate is in this round for that reason, and none should be
+   trusted until the extended-chromophore error is understood.
 4. **T1 margin for singlet oxygen.** The aza-BODIPY triplets sit at 1.07-1.12 eV, only 0.09-0.14 eV above
    the 0.98 eV of O2(1Δg). The ΔSCF error is probably of that size, so type II sensitization is not
    guaranteed for these candidates. The score only checks T1 > 1.03 eV, so it does not reflect this.
@@ -59,7 +62,7 @@ For reference, the validated I2-BDP gave k_ISC = 6.9e9 s⁻¹ (experiment 3.5e9)
 
 ## Suggested next steps
 
-- Recalculate the three styryl dyes of the second validation set with correct E geometries and a conformer
-  search, then test a range-separated functional and a solvent model.
+- Understand the ΔSCF overshoot in extended chromophores (e.g. compare with range-separated TDDFT, a
+  size-dependent correction, or a wavefunction reference), then test a solvent model.
 - Look for measured data on 2,6-dihalogenated aza-BODIPYs to validate the top remaining candidate.
 - Re-run the top candidates with an optimized (DFT) geometry.

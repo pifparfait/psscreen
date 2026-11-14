@@ -6,8 +6,16 @@ sys.path.insert(0, os.path.dirname(here))
 from psscreen.rates import photophysics, MLJParams
 
 ref = json.load(open(os.path.join(here, "references.json")))
-names = [n for n in ref if os.path.exists(os.path.join(here, "runs", f"{n}.json"))]
-R = {n: json.load(open(os.path.join(here, "runs", f"{n}.json"))) for n in names}
+def _path(n):
+    """Result file of a dye; flexible dyes use their lowest-energy conformer (set3/<name>_c0.json)."""
+    for cand in (f"{n}.json", os.path.join("set3", f"{n}_c0.json")):
+        if os.path.exists(os.path.join(here, "runs", cand)):
+            return os.path.join(here, "runs", cand)
+    return None
+
+
+names = [n for n in ref if _path(n)]
+R = {n: json.load(open(_path(n))) for n in names}
 EV = 1239.84198
 rows = []
 for n in names:
