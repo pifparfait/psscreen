@@ -123,48 +123,37 @@ I2-BDP and +0.08 for the aza-BODIPY, so it is not better than the TDDFT + ΔSCF 
 
 Wall time per molecule (s): BODIPY_core 241, BDP 2589, I2-BDP 2473, azaBDP_Ph4 3775
 
-## Second validation set: Ly et al., PCCP 2021 (toluene), including styryl-extended dyes
+## Second validation set: Ly et al., PCCP 2021 (toluene)
 
-Five more dyes from the same paper as I2-BDP (one source, one solvent). Experimental values were
-transcribed from the paper's table and should be re-checked against it before publication.
-Calculated with exactly the same protocol (`screen.py` defaults, 60 eV singlet window).
+Dyes from the same paper as I2-BDP (one source, one solvent). Experimental values were transcribed from the
+paper's table and should be re-checked against it before publication. Calculated with exactly the same
+protocol (`screen.py` defaults, 60 eV singlet window).
 
 | Molecule | λ calc / exp (nm) | Error (eV) | k_ISC calc / exp (s⁻¹) | Φ_T calc / exp | T1 calc (eV) |
 |---|---|---|---|---|---|
 | I-BDP (p-iodophenyl) | 519 / 505 | -0.06 | 2.9 / not reported | 0.00 / not reported | 1.70 |
 | I3-BDP (2,6-I2 + p-I) | 551 / 539 | -0.05 | 7.1e9 / 3.9e9 | 0.95 / 0.81 | 1.67 |
-| BDP-0 (3,5-distyryl) | 645 / 628 | -0.05 | 1.4e6 / not reported | 0.00 / not reported | 1.40 |
-| I-BDP-0 | 681 / 631 | **-0.14** | 1.9e6 / not reported | 0.00 / not reported | 1.31 |
-| I2-BDP-0 (3,5-distyryl, 2,6-I2) | 672 / 644 | -0.08 | 9.6e7 / 4.5e8 | **0.18 / 0.76** | 1.37 |
 
-Over all nine molecules the mean absorption error is -0.07 eV (calculated λ too long) with a standard
-deviation of 0.03 eV. Subtracting the mean of the other eight (leave-one-out) brings every molecule except
-I-BDP-0 to within 0.06 eV.
+Over the six dyes with a measured absorption the mean error is -0.055 eV (calculated λ too long) with a
+standard deviation of 0.02 eV, and the heavy-atom effect is reproduced for I3-BDP (k_ISC 1.8 times too
+high, as for I2-BDP).
 
-What this shows:
+### Withdrawn: the three styryl-extended dyes (BDP-0, I-BDP-0, I2-BDP-0)
 
-- **Absorption is a systematic offset, not random noise.** A constant shift of about 0.07 eV fixes eight of
-  nine dyes. Candidate wavelengths in `docs/SCREENING_round1.md` should be read with that shift
-  (about +15 to +30 nm too long at 650-700 nm).
-- **I-BDP-0 is an outlier (+50 nm)** while its close analogue BDP-0 is not (+17 nm), and measured values differ
-  by only 3 nm between them. The calculated difference of 36 nm points to sensitivity to the single GFN2-xTB
-  conformer of the styryl groups, not to the chemistry. Conformer sampling is needed for styryl dyes.
-- **The heavy-atom effect is reproduced for I3-BDP** (k_ISC 1.8 times too high, as for I2-BDP).
-- **The method underestimates ISC for the distyryl-diiodo dye.** I2-BDP-0 has Φ_T = 0.76 and
-  k_ISC = 4.5e8 s⁻¹ measured; the calculation gives k_ISC = 9.6e7 s⁻¹ (4.7 times too low) and Φ_T = 0.18.
-  The calculated S1-T1 coupling is only 1.0 cm⁻¹ (13 cm⁻¹ in I2-BDP); the large coupling (57 cm⁻¹) is to T2,
-  0.55 eV above S1, a closed channel. Three things were checked with the stored results:
-  1. *MLJ parameters:* over λ_s = 0.05-0.2 eV and S = 0.5-1.2, k_ISC spans 1.6e7 to 2.1e8 s⁻¹ and never
-     reaches 4.5e8, so the parameters alone do not explain it.
-  2. *Fixed k_ic and calculated k_r:* with k_ic = 0, Φ_T rises only to 0.25; k_r is about 2 times too high
-     (2.9e8 vs 1.4e8 s⁻¹ derived from the measured Φ_F and Φ_T).
-  3. *Shifting T2 and higher like S1* (instead of like T1) was tested as a possible fix and **it does not
-     work**: it would give the BODIPY core Φ_T = 0.87, BDP 0.56 and I2-BDP k_ISC = 3e11 s⁻¹, all
-     contradicting experiment (`validation/analysis_higher_triplets.py`).
-  The cause is therefore open. Untested candidates: Herzberg-Teller (vibronic) spin-orbit coupling, the
-  conformation of the styryl groups (single GFN2-xTB conformer), and the TDDFT description of the extended
-  chromophore.
-- No triplet phosphorescence was observed for the styryl dyes, so T1 and ΔE(S1-T1) cannot be checked there.
+A first version of this section reported these three dyes, with a large error in k_ISC for the diiodo
+one (Φ_T 0.18 vs 0.76 measured) and a +50 nm outlier for I-BDP-0. **Those results were wrong and have been
+removed.** The SMILES strings had no E/Z labels on the styryl C=C bonds, and the 3D embedding produced
+geometries with one or two **cis (Z) styryl groups** (ring-CH=CH-phenyl dihedrals of about 0°, instead of
+180°) for all three dyes. The measured compounds are the trans isomers. The apparent failures of the method
+for these dyes, and the conformer-sensitivity that was inferred from them, were artefacts of that error.
+
+Two earlier statements in this repository were therefore unfounded and were withdrawn: that the method
+underestimates ISC for the distyryl-diiodo dye, and that the higher-triplet shift hypothesis was a
+candidate explanation (that test, `validation/analysis_higher_triplets.py`, still stands as a check on the
+other dyes: shifting T2 and above like S1 breaks the BODIPY core, BDP and I2-BDP).
+
+The SMILES now carry E labels, `tests/test_molecule_stereo.py` checks that the generated geometries are
+trans, and the three dyes are being recalculated from a conformer search (`validation/conformers.py`).
 
 ## Findings about the quantum workflow of arXiv:2512.15889
 

@@ -9,10 +9,13 @@ here = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(here))
 from psscreen.rates import photophysics
 
-NAMES = ["BODIPY_core", "BDP", "I-BDP", "I2-BDP", "I3-BDP", "azaBDP_Ph4", "BDP-0", "I-BDP-0", "I2-BDP-0"]
+NAMES = ["BODIPY_core", "BDP", "I-BDP", "I2-BDP", "I3-BDP", "azaBDP_Ph4"]
 print("molecule | rigid shift: k_ISC, Phi_T | T2+ shifted like S1: k_ISC, Phi_T")
 for n in NAMES:
-    d = json.load(open(os.path.join(here, "runs", f"{n}.json"))); c = d["corrections"]
+    path = os.path.join(here, "runs", f"{n}.json")
+    if not os.path.exists(path):
+        continue
+    d = json.load(open(path)); c = d["corrections"]
     E = list(d["E_triplets_eV"])
     kw = dict(n_refr=1.496, shift_S=c["S"], shift_T=c["T"])
     a = photophysics(d["E_singlets_eV"][0], d["f_osc"][0], E, d["SOC_S1_Tn_cm"], **kw)
