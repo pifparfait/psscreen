@@ -41,12 +41,13 @@ For reference, the validated I2-BDP gave k_ISC = 6.9e9 s⁻¹ (experiment 3.5e9)
 
 1. **These are predictions, not results.** Only four molecules were validated, and only one (I2-BDP) has
    a measured triplet yield. No candidate here has experimental data in this work.
-2. **Systematic λ error.** On the validation set the absorption was overestimated by +4, +14, +11 and +28 nm
-   (the aza-BODIPY was the worst). The aza candidates at 687-701 nm may realistically lie around
-   660-675 nm; they should still fall inside the window.
-3. **Styryl-extended dyes are not validated yet.** They have charge-transfer character, where B3LYP is
-   known to be less trustworthy. The second validation set (`validation/set2.csv`) adds three of them
-   with measured data before any such candidate is trusted.
+2. **Systematic λ error.** Over nine validation dyes the calculated absorption is on average 0.07 eV too
+   long (+4 to +50 nm). The aza candidates at 687-701 nm may realistically lie around 660-675 nm; they
+   should still fall inside the window.
+3. **Styryl-extended dyes are not reliable yet.** The second validation set shows that for the
+   distyryl-diiodo dye the method gets Φ_T = 0.18 against 0.76 measured, and that the absorption of
+   styryl dyes depends strongly on the conformer (see `docs/VALIDATION.md`). No styryl candidate is in
+   this round for that reason.
 4. **T1 margin for singlet oxygen.** The aza-BODIPY triplets sit at 1.07-1.12 eV, only 0.09-0.14 eV above
    the 0.98 eV of O2(1Δg). The ΔSCF error is probably of that size, so type II sensitization is not
    guaranteed for these candidates. The score only checks T1 > 1.03 eV, so it does not reflect this.
@@ -59,7 +60,8 @@ For reference, the validated I2-BDP gave k_ISC = 6.9e9 s⁻¹ (experiment 3.5e9)
 
 ## Suggested next steps
 
-- Run the second validation set (Ly et al. dyes, toluene) and, depending on the errors, re-test a
-  range-separated functional (CAM-B3LYP or ωB97X-D) and a solvent model before ranking more candidates.
+- The second validation set is done (see `docs/VALIDATION.md`). Next: test whether applying the ΔSCF
+  correction (or a better treatment) to the higher triplets fixes the distyryl-diiodo k_ISC, add conformer
+  sampling for styryl dyes, and test a range-separated functional and a solvent model.
 - Look for measured data on 2,6-dihalogenated aza-BODIPYs to validate the top remaining candidate.
 - Re-run the top candidates with an optimized (DFT) geometry.

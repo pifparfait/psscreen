@@ -42,6 +42,8 @@ used for the rankings: CASCI(12e,11o) puts S1 1.4-1.9 eV too high, and CASCI + S
 - Not independent: Φ_F (k_ic is taken from BDP).
 - Assumed, not fitted: the MLJ parameters. For I2-BDP they move k_ISC between about 2e9 and 3e10 s⁻¹.
 - Not included: solvent, conformers, vibronic structure of the absorption band, aggregation.
-- Being added: a second validation set of ten more dyes from one consistent source (toluene), including
-  three styryl-extended ones (`validation/set2.csv`), and tests with range-separated functionals and a
-  solvent model.
+- A second validation set of five more dyes from one source (toluene), including three styryl-extended ones,
+  is in `docs/VALIDATION.md`: the absorption offset is systematic (mean -0.07 eV), but the method
+  underestimates k_ISC of the distyryl-diiodo dye 4.7 times and is conformer-sensitive for styryl dyes.
+- Still to test: range-separated functionals, a solvent model, conformer sampling, and ΔSCF-quality energies
+  for higher triplets.

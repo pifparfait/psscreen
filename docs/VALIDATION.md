@@ -123,6 +123,40 @@ I2-BDP and +0.08 for the aza-BODIPY, so it is not better than the TDDFT + ΔSCF 
 
 Wall time per molecule (s): BODIPY_core 241, BDP 2589, I2-BDP 2473, azaBDP_Ph4 3775
 
+## Second validation set: Ly et al., PCCP 2021 (toluene), including styryl-extended dyes
+
+Five more dyes from the same paper as I2-BDP (one source, one solvent). Experimental values were
+transcribed from the paper's table and should be re-checked against it before publication.
+Calculated with exactly the same protocol (`screen.py` defaults, 60 eV singlet window).
+
+| Molecule | λ calc / exp (nm) | Error (eV) | k_ISC calc / exp (s⁻¹) | Φ_T calc / exp | T1 calc (eV) |
+|---|---|---|---|---|---|
+| I-BDP (p-iodophenyl) | 519 / 505 | -0.06 | 2.9 / not reported | 0.00 / not reported | 1.70 |
+| I3-BDP (2,6-I2 + p-I) | 551 / 539 | -0.05 | 7.1e9 / 3.9e9 | 0.95 / 0.81 | 1.67 |
+| BDP-0 (3,5-distyryl) | 645 / 628 | -0.05 | 1.4e6 / not reported | 0.00 / not reported | 1.40 |
+| I-BDP-0 | 681 / 631 | **-0.14** | 1.9e6 / not reported | 0.00 / not reported | 1.31 |
+| I2-BDP-0 (3,5-distyryl, 2,6-I2) | 672 / 644 | -0.08 | 9.6e7 / 4.5e8 | **0.18 / 0.76** | 1.37 |
+
+Over all nine molecules the mean absorption error is -0.07 eV (calculated λ too long) with a standard
+deviation of 0.03 eV. Subtracting the mean of the other eight (leave-one-out) brings every molecule except
+I-BDP-0 to within 0.06 eV.
+
+What this shows:
+
+- **Absorption is a systematic offset, not random noise.** A constant shift of about 0.07 eV fixes eight of
+  nine dyes. Candidate wavelengths in `docs/SCREENING_round1.md` should be read with that shift
+  (about +15 to +30 nm too long at 650-700 nm).
+- **I-BDP-0 is an outlier (+50 nm)** while its close analogue BDP-0 is not (+17 nm), and measured values differ
+  by only 3 nm between them. The calculated difference of 36 nm points to sensitivity to the single GFN2-xTB
+  conformer of the styryl groups, not to the chemistry. Conformer sampling is needed for styryl dyes.
+- **The heavy-atom effect is reproduced for I3-BDP** (k_ISC 1.8 times too high, as for I2-BDP).
+- **The method fails for the distyryl-diiodo dye.** I2-BDP-0 has Φ_T = 0.76 and k_ISC = 4.5e8 s⁻¹
+  measured; the calculation gives k_ISC = 9.6e7 s⁻¹ (4.7 times too low) and Φ_T = 0.18. The large SOC
+  (57 cm⁻¹) is to T2, which the calculation places 0.55 eV above S1, so that channel is closed. T2 and
+  higher triplets come from TDA without the ΔSCF correction, and the likely culprit is their energy. This
+  has not been tested yet.
+- No triplet phosphorescence was observed for the styryl dyes, so T1 and ΔE(S1-T1) cannot be checked there.
+
 ## Findings about the quantum workflow of arXiv:2512.15889
 
 1. **The algorithms work in simulation.** The QSVT threshold projection reproduces the exact weight of
