@@ -1,0 +1,7 @@
+Reset branch 'results-tars'
+D	validation/runs/BDP.casci_ref.json
+D	validation/runs/BODIPY_core.casci_ref.json
+D	validation/runs/I2-BDP.casci_ref.json
+D	validation/runs/azaBDP_Ph4.casci_ref.json
+D	validation/runs/azaBDP_Ph4.quantum.json
+Your branch is up to date with 'origin/results-tars'.
