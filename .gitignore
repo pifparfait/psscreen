@@ -3,3 +3,4 @@ __pycache__/
 *.chk
 .pytest_cache/
 validation/runs/*.log
+screening/runs/*/inputs/
