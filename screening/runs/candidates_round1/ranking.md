@@ -1,6 +1,5 @@
 | Candidate | λ_max (nm) | Φ_T | T1 (eV) | PDT score |
 |---|---|---|---|---|
-| I2-distyryl-BDP | 673 | 0.98 | 1.34 | 0.98 |
 | azaBDP_Br2 | 687 | 0.97 | 1.12 | 0.97 |
 | azaBDP_IPh2 | 695 | 0.54 | 1.08 | 0.54 |
 | azaBDP_BrPh2 | 701 | 0.04 | 1.07 | 0.04 |

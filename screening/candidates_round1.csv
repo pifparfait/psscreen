@@ -3,7 +3,6 @@ Cl2-BDP,Cc1c(Cl)c(C)n2c1C(c1ccccc1)=C1C(C)=C(Cl)C(C)=[N+]1[B-]2(F)F
 Br2-BDP,Cc1c(Br)c(C)n2c1C(c1ccccc1)=C1C(C)=C(Br)C(C)=[N+]1[B-]2(F)F
 I1-BDP,Cc1cc(C)n2c1C(c1ccccc1)=C1C(C)=C(I)C(C)=[N+]1[B-]2(F)F
 I3-BDP,Cc1c(I)c(C)n2c1C(c1ccc(I)cc1)=C1C(C)=C(I)C(C)=[N+]1[B-]2(F)F
-I2-distyryl-BDP,C(=Cc1ccccc1)c1c(I)c(C)n2c1C(c1ccccc1)=C1C(C)=C(I)C(C=Cc3ccccc3)=[N+]1[B-]2(F)F
 azaBDP_Br2,F[B-]1(F)n2c(-c3ccccc3)c(Br)c(-c3ccccc3)c2N=C2C(-c3ccccc3)=C(Br)C(-c3ccccc3)=[N+]12
 azaBDP_BrPh2,F[B-]1(F)n2c(-c3ccc(Br)cc3)cc(-c3ccccc3)c2N=C2C(-c3ccccc3)=CC(-c3ccc(Br)cc3)=[N+]12
 azaBDP_IPh2,F[B-]1(F)n2c(-c3ccc(I)cc3)cc(-c3ccccc3)c2N=C2C(-c3ccccc3)=CC(-c3ccc(I)cc3)=[N+]12

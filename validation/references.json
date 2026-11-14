@@ -1,12 +1,82 @@
 {
- "BODIPY_core": {"lambda_abs_nm": 503, "solvent": "various (Schmitt 2009)", "phi_F": "~1 (near unity)", "phi_T": "~0", "k_isc_s": null,
-   "ref": "Schmitt et al., J. Fluoresc. 19, 755 (2009), doi:10.1007/s10895-008-0446-7"},
- "BDP": {"lambda_abs_nm": 503, "solvent": "toluene", "phi_F": 0.45, "phi_T": "not observed", "k_isc_s": "not observed (<~1e7)",
-   "k_r_s": 1.2e8, "k_nr_s": 1.5e8, "dE_ST_eV": 0.77,
-   "ref": "Ly et al., Phys. Chem. Chem. Phys. 2021, doi:10.1039/D0CP05904H (tabla 2)"},
- "I2-BDP": {"lambda_abs_nm": 537, "solvent": "toluene", "phi_F": 0.03, "phi_T": 0.84, "k_isc_s": 3.5e9,
-   "k_r_s": 1.3e8, "k_nr_s": 5.4e8, "dE_ST_eV": 0.59,
-   "ref": "Ly et al., Phys. Chem. Chem. Phys. 2021, doi:10.1039/D0CP05904H (tabla 2)"},
- "azaBDP_Ph4": {"lambda_abs_nm": 650, "solvent": "CHCl3 (655 nm per Loudet 2008 table)", "phi_F": 0.34, "phi_T": "low (not quantified here)", "k_isc_s": null,
-   "ref": "Killoran et al., Chem. Commun. 2002, 1862; Gorman et al., JACS 126, 10619 (2004); Loudet et al., Tetrahedron 64, 3642 (2008)"}
+ "BODIPY_core": {
+  "lambda_abs_nm": 503,
+  "solvent": "various (Schmitt 2009)",
+  "phi_F": "~1 (near unity)",
+  "phi_T": "~0",
+  "k_isc_s": null,
+  "ref": "Schmitt et al., J. Fluoresc. 19, 755 (2009), doi:10.1007/s10895-008-0446-7"
+ },
+ "BDP": {
+  "lambda_abs_nm": 503,
+  "solvent": "toluene",
+  "phi_F": 0.45,
+  "phi_T": "not observed",
+  "k_isc_s": "not observed (<~1e7)",
+  "k_r_s": 120000000.0,
+  "k_nr_s": 150000000.0,
+  "dE_ST_eV": 0.77,
+  "ref": "Ly et al., Phys. Chem. Chem. Phys. 2021, doi:10.1039/D0CP05904H (tabla 2)"
+ },
+ "I2-BDP": {
+  "lambda_abs_nm": 537,
+  "solvent": "toluene",
+  "phi_F": 0.03,
+  "phi_T": 0.84,
+  "k_isc_s": 3500000000.0,
+  "k_r_s": 130000000.0,
+  "k_nr_s": 540000000.0,
+  "dE_ST_eV": 0.59,
+  "ref": "Ly et al., Phys. Chem. Chem. Phys. 2021, doi:10.1039/D0CP05904H (tabla 2)"
+ },
+ "azaBDP_Ph4": {
+  "lambda_abs_nm": 650,
+  "solvent": "CHCl3 (655 nm per Loudet 2008 table)",
+  "phi_F": 0.34,
+  "phi_T": "low (not quantified here)",
+  "k_isc_s": null,
+  "ref": "Killoran et al., Chem. Commun. 2002, 1862; Gorman et al., JACS 126, 10619 (2004); Loudet et al., Tetrahedron 64, 3642 (2008)"
+ },
+ "I-BDP": {
+  "lambda_abs_nm": 505,
+  "solvent": "toluene",
+  "phi_F": 0.44,
+  "phi_T": "not reported",
+  "k_isc_s": null,
+  "dE_ST_eV": 0.76,
+  "ref": "Ly et al., Phys. Chem. Chem. Phys. 2021, doi:10.1039/D0CP05904H"
+ },
+ "I3-BDP": {
+  "lambda_abs_nm": 539,
+  "solvent": "toluene",
+  "phi_F": 0.03,
+  "phi_T": 0.81,
+  "k_isc_s": 3900000000.0,
+  "dE_ST_eV": 0.58,
+  "ref": "Ly et al., Phys. Chem. Chem. Phys. 2021, doi:10.1039/D0CP05904H"
+ },
+ "BDP-0": {
+  "lambda_abs_nm": 628,
+  "solvent": "toluene",
+  "phi_F": 0.84,
+  "phi_T": "not reported",
+  "k_isc_s": null,
+  "ref": "Ly et al., Phys. Chem. Chem. Phys. 2021, doi:10.1039/D0CP05904H (T1 phosphorescence not observed)"
+ },
+ "I-BDP-0": {
+  "lambda_abs_nm": 631,
+  "solvent": "toluene",
+  "phi_F": 0.71,
+  "phi_T": "not reported",
+  "k_isc_s": null,
+  "ref": "Ly et al., Phys. Chem. Chem. Phys. 2021, doi:10.1039/D0CP05904H (T1 phosphorescence not observed)"
+ },
+ "I2-BDP-0": {
+  "lambda_abs_nm": 644,
+  "solvent": "toluene",
+  "phi_F": 0.23,
+  "phi_T": 0.76,
+  "k_isc_s": 450000000.0,
+  "ref": "Ly et al., Phys. Chem. Chem. Phys. 2021, doi:10.1039/D0CP05904H (T1 phosphorescence not observed)"
+ }
 }

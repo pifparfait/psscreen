@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.dirname(here))
 from psscreen.rates import photophysics, MLJParams
 
 ref = json.load(open(os.path.join(here, "references.json")))
-names = [n for n in ["BODIPY_core", "BDP", "I2-BDP", "azaBDP_Ph4"] if os.path.exists(os.path.join(here, "runs", f"{n}.json"))]
+names = [n for n in ref if os.path.exists(os.path.join(here, "runs", f"{n}.json"))]
 R = {n: json.load(open(os.path.join(here, "runs", f"{n}.json"))) for n in names}
 EV = 1239.84198
 rows = []

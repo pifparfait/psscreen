@@ -1,0 +1,5 @@
+name,smiles
+I-BDP,Cc1cc(C)n2c1C(c1ccc(I)cc1)=C1C(C)=CC(C)=[N+]1[B-]2(F)F
+BDP-0,Cc1cc(C=Cc2ccccc2)n2c1C(c1ccccc1)=C1C(C)=CC(C=Cc3ccccc3)=[N+]1[B-]2(F)F
+I-BDP-0,Cc1cc(C=Cc2ccccc2)n2c1C(c1ccc(I)cc1)=C1C(C)=CC(C=Cc3ccccc3)=[N+]1[B-]2(F)F
+I2-BDP-0,Cc1c(I)c(C=Cc2ccccc2)n2c1C(c1ccccc1)=C1C(C)=C(I)C(C=Cc3ccccc3)=[N+]1[B-]2(F)F
