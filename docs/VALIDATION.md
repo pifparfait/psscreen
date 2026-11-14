@@ -27,6 +27,10 @@ geometry. No parameter was fitted to these four molecules, with one exception st
   framework replaces the TDDFT S1/T1 energies with ΔSCF ones.
 - The aza-BODIPY reference comes from secondary literature tables with slightly conflicting
   values (650 vs 655 nm) and no triplet yield; treat that row with care.
+- Singlet-window check: the aza-BODIPY was first run with a 25 eV singlet window (16,560 orbital pairs,
+  to fit 15 GB) and again on a 251 GB server with the full 60 eV window (33,670 pairs). λ_max (678 nm)
+  and S1 (1.829 eV) are unchanged to 10⁻⁹ eV, f(S1) moves from 0.647 to 0.641 and k_ISC from 1.5e5 to
+  1.4e5 s⁻¹, so the smaller window is adequate for these properties. The tables above use the 60 eV run.
 
 ## Absorption (S0->S1, vertical, B3LYP/def2-SVP, gas phase, GFN2-xTB geometry)
 
