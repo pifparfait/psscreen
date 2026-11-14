@@ -1,0 +1,14 @@
+I-BDP: cached
+I-BDP: λ=519 nm Φ_T=0.00 T1=1.67 eV score=0.00
+BDP-0: cached
+BDP-0: λ=645 nm Φ_T=0.00 T1=1.37 eV score=0.00
+I-BDP-0: cached
+I-BDP-0: λ=681 nm Φ_T=0.00 T1=1.28 eV score=0.00
+I2-BDP-0: cached
+I2-BDP-0: λ=672 nm Φ_T=0.18 T1=1.35 eV score=0.18
+
+Ranking PDT:
+  I2-BDP-0             score=0.18  λ=672 nm  Φ_T=0.18  T1=1.35 eV
+  I-BDP-0              score=0.00  λ=681 nm  Φ_T=0.00  T1=1.28 eV
+  BDP-0                score=0.00  λ=645 nm  Φ_T=0.00  T1=1.37 eV
+  I-BDP                score=0.00  λ=519 nm  Φ_T=0.00  T1=1.67 eV
