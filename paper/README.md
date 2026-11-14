@@ -12,8 +12,8 @@ Build: `latexmk -pdf main.tex` (needs a TeX distribution with `achemso`, e.g. Te
 
 ## Open items
 
-1. Styryl dyes (BDP-0, I-BDP-0, I2-BDP-0): results with trans geometries are being recalculated; fill
-   Table 1, Table 2 and the "Styryl-extended dyes" section.
+1. Styryl dyes: filled in as a documented limitation (ΔSCF overshoot). Update if a range-separated
+   functional or a size-dependent correction is tested.
 2. Re-check experimental values against Ly et al. (PCCP 2021) Table 2.
 3. Source of the logical-qubit difference with arXiv:2512.15889 (601 vs 180-350).
 4. MLJ sensitivity table and remaining SI material.

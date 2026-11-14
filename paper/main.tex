@@ -44,7 +44,10 @@ geometries, B3LYP/def2-SVP, $\Delta$SCF correction of S$_1$ and T$_1$, a one-ele
 operator calibrated on atomic spin--orbit constants, and Marcus--Levich--Jortner rates) reproduces
 the absorption maxima of six dyes with a mean error of $-0.055$~eV (standard deviation 0.02~eV) and
 the heavy-atom enhancement of ISC, with $\kisc$ of the di- and tri-iodinated dyes within a factor of
-two of experiment. We implemented both quantum algorithms in PennyLane and verified them against
+two of experiment. It does not transfer to three $\pi$-extended distyryl dyes: their absorption is
+predicted 0.21--0.23~eV too low and the triplet yield of the diiodo derivative 0.04 instead of
+0.76, because the $\Delta$SCF correction overshoots and closes a near-resonant S$_1\to$T$_2$
+channel. We implemented both quantum algorithms in PennyLane and verified them against
 exact diagonalization in small active spaces. Their accuracy, however, is bounded by the active-space
 Hamiltonian they act on: at the paper-sized (12e,11o) active space, CASCI places S$_1$ 1.4--2.0~eV
 above experiment, and SC-NEVPT2 reduces the error to 0.06--0.27~eV with a sign that varies across
@@ -209,11 +212,15 @@ $-0.055$~eV and a standard deviation of 0.02~eV over six dyes. The error is syst
 shift, assessed by leave-one-out cross-validation on the first four dyes, reduces the residuals to
 $\le0.05$~eV. Vertical energies are compared with band maxima and solvent is neglected, so part of
 this agreement may be fortuitous; with one functional and one family of dyes, we claim that the
-protocol works for BODIPYs, not that it is general.
+protocol works for compact BODIPYs, not that it is general. Indeed, it does not transfer to the
+$\pi$-extended styryl dyes, whose S$_1$ is 0.21--0.23~eV too low (Section~\ref{sec:styryl}); over
+all nine dyes the mean error is $-0.11$~eV with a standard deviation of 0.08~eV, but the errors
+form two distinct groups rather than one distribution.
 
 \begin{table}
   \caption{Lowest singlet excitation: TDDFT+$\Delta$SCF (B3LYP/def2-SVP, gas phase) versus
-  experimental absorption maxima.}
+  experimental absorption maxima. Styryl dyes: lowest-energy GFN2-xTB conformer of the
+  (E,E) isomer.}
   \label{tab:abs}
   \begin{tabular}{lrrrrr}
     \toprule
@@ -227,11 +234,12 @@ protocol works for BODIPYs, not that it is general.
     I3-BDP          & 551 & 539 & 2.25 & 2.30 & $-0.05$ \\
     aza-BDP-Ph$_4$  & 678 & 650 & 1.83 & 1.91 & $-0.08$ \\
     \midrule
-    BDP-0           & \todo{} & 628 & \todo{} & 1.97 & \todo{} \\
-    I-BDP-0         & \todo{} & 631 & \todo{} & 1.96 & \todo{} \\
-    I2-BDP-0        & \todo{} & 644 & \todo{} & 1.93 & \todo{} \\
+    BDP-0           & 705 & 628 & 1.76 & 1.97 & $-0.22$ \\
+    I-BDP-0         & 708 & 631 & 1.75 & 1.96 & $-0.21$ \\
+    I2-BDP-0        & 730 & 644 & 1.70 & 1.93 & $-0.23$ \\
     \midrule
-    mean (first six) &      &     &      &      & $-0.055$ \\
+    mean, six compact dyes &  &  &  &  & $-0.055$ \\
+    mean, all nine  &     &     &      &      & $-0.11$ \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -239,8 +247,8 @@ protocol works for BODIPYs, not that it is general.
 \begin{figure}
   \centering
   \includegraphics[width=0.48\textwidth]{figures/absorption_parity.pdf}
-  \caption{Calculated S$_1$ (TDDFT+$\Delta$SCF) versus experimental absorption energy. The
-  styryl dyes will be added when their recalculation is complete.}
+  \caption{Calculated S$_1$ (TDDFT+$\Delta$SCF) versus experimental absorption energy for the six
+  compact dyes (circles) and the three 3,5-distyryl dyes (squares).}
   \label{fig:abs}
 \end{figure}
 
@@ -280,7 +288,7 @@ larger than $10^{11}$ for every parameter set.
     I3-BDP         & 0.61 / 0.58  & 13.5 & $7.1\times10^{9}$ & $3.9\times10^{9}$ & 0.95 & 0.81 \\
     aza-BDP-Ph$_4$ & 0.73 / --    & 0.11 & $1.5\times10^{5}$ & -- & 0.00 & low \\
     \midrule
-    I2-BDP-0       & \todo{} / -- & \todo{} & \todo{} & $4.5\times10^{8}$ & \todo{} & 0.76 \\
+    I2-BDP-0       & 0.50 / --    & 0.43 & $1.7\times10^{7}$ & $4.5\times10^{8}$ & 0.04 & 0.76 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -288,13 +296,38 @@ larger than $10^{11}$ for every parameter set.
 \subsection{Styryl-extended dyes}
 \label{sec:styryl}
 
-\todo{Results for BDP-0, I-BDP-0 and I2-BDP-0 with trans (E) styryl geometries and conformer search
-(running). Report $\lambda$, and for I2-BDP-0 $\kisc$ and $\Phi_T$ against $4.5\times10^{8}$~s$^{-1}$
-and 0.76. Discuss whether the charge-transfer character of the styryl excitation degrades B3LYP.}
+The three 3,5-distyryl dyes (BDP-0, I-BDP-0, I2-BDP-0) were computed as (E,E) isomers from a
+conformer search, with the same protocol. They are the clearest limitation of the classical
+pipeline in this study. Absorption is predicted 77--86~nm (0.21--0.23~eV) too far to the red
+(Table~\ref{tab:abs}), and for the diiodo dye I2-BDP-0 the predicted
+$\kisc=1.7\times10^{7}$~s$^{-1}$ is 26 times smaller than the measured $4.5\times10^{8}$~s$^{-1}$, so
+that $\Phi_T$ is 0.04 instead of 0.76 (Table~\ref{tab:isc}). Conformers do not explain the
+discrepancy: across the conformers computed, $\lambda$ varies by 15--18~nm and $\kisc$ by less than a
+factor of 1.5.
 
-A methodological note belongs here. In a first calculation the SMILES strings of these dyes carried
-no E/Z labels and the 3D embedding produced cis (Z) styryl groups, which led to large apparent
-errors. Because 3D embedding silently assigns an arbitrary configuration to unlabeled double bonds,
+The numbers point to the $\Delta$SCF step. The error of the uncorrected TDDFT S$_1$ decreases as the
+chromophore grows (+0.76~eV for the BODIPY core, +0.23 to +0.27~eV for the distyryl dyes), whereas the
+$\Delta$SCF shift stays close to $-0.5$~eV for every dye ($-0.42$ to $-0.77$~eV for the compact dyes,
+$-0.46$ to $-0.49$~eV for the distyryl dyes). A correction of nearly constant size, adequate for
+compact cyanine-like chromophores, overshoots for extended ones. This diagnosis follows from the
+numbers above; we have not tested a remedy, such as a range-separated functional or a correction
+that depends on chromophore size. \todo{Update if a range-separated functional or size-dependent
+correction is tested.}
+
+The ISC failure has a specific origin that is relevant to the discussion of ISC proxies below. In
+the uncorrected TDDFT spectrum of I2-BDP-0, T$_2$ lies only 0.08~eV above S$_1$ and the S$_1$--T$_2$
+coupling is 8~cm$^{-1}$; this nearly resonant channel gives $\kisc=1.1\times10^{9}$~s$^{-1}$ and
+$\Phi_T=0.67$, close to experiment. Because the $\Delta$SCF correction lowers S$_1$ and T$_1$ but not
+the higher triplets, it moves T$_2$ 0.51~eV above S$_1$ and closes that channel, leaving only the
+weakly coupled S$_1\to$T$_1$ path ($V_1=0.43$~cm$^{-1}$). The agreement of the uncorrected rate may be
+partly fortuitous, since the same calculation places S$_1$ 0.23~eV too high, but it shows that
+$\kisc$ in this dye is controlled by the relative position of S$_1$ and an upper triplet to within a
+few tenths of an eV. A consistent treatment of all excited states, not a correction of S$_1$ and
+T$_1$ alone, is therefore needed for $\pi$-extended dyes.
+
+A methodological note also belongs here. In a first calculation the SMILES strings of these dyes
+carried no E/Z labels and the 3D embedding produced cis (Z) styryl groups. Those geometries happened
+to give absorption closer to experiment (645--681~nm), an agreement that was meaningless. Because 3D embedding silently assigns an arbitrary configuration to unlabeled double bonds,
 any automated screening of $\pi$-extended dyes should specify and verify the stereochemistry; our
 pipeline now does both (an automated test checks that the styryl dihedrals are near
 \SI{180}{\degree}).
@@ -377,9 +410,13 @@ difference (DF rank, rotation precision, \texttt{qml.resource} defaults) before 
 reproduce the quantities they target. For screening BODIPY photosensitizers, however, the
 limiting factor is not the solution of the active-space problem but the physics outside it.
 Absorption energies require dynamic correlation, which the active space lacks, and ISC rates require
-the singlet--triplet gap and vibronic Franck--Condon factors, which the evolution proxy omits. A
+the singlet--triplet gap and vibronic Franck--Condon factors, which the evolution proxy omits. The
+distyryl diiodo dye makes the point sharply: its ISC rate changes by almost two orders of magnitude
+depending on whether T$_2$ lies 0.08 or 0.5~eV above S$_1$, a difference to which a gap-free coupling
+proxy is blind. A
 classical pipeline that costs one to a few CPU-hours per molecule on a few cores already captures the
-absorption to within 0.1~eV and the heavy-atom ISC trend within a factor of two.
+absorption of compact BODIPYs to within 0.1~eV and their heavy-atom ISC trend within a factor of
+two, although it fails for the styryl-extended dyes.
 
 \paragraph{Where quantum algorithms could still help.} The case for quantum computation is stronger
 where the classical components used here are unreliable: photosensitizers with transition metals or
@@ -408,7 +445,11 @@ quantum algorithms work as designed in simulation, but exact active-space energi
 (12e,11o) level are 1.4--2.0~eV too high, and the ISC proxy lacks the energy gap that determines
 which channel is active. For this class of molecules, a quantum advantage in screening would require
 dynamic correlation and vibronic effects on top of the quantum calculation, and is most likely to
-appear for metal-containing or strongly correlated photosensitizers. \todo{Update with styryl results.}
+appear for metal-containing or strongly correlated photosensitizers. The classical pipeline itself
+does not transfer to $\pi$-extended styryl dyes, where the $\Delta$SCF correction overshoots S$_1$ by
+about 0.2~eV and closes a near-resonant S$_1\to$T$_2$ ISC channel; these dyes are a demanding test for
+any method, classical or quantum, because their ISC depends on the S$_1$--T$_2$ gap at the 0.1~eV
+level.
 
 % ---------------------------------------------------------------------------------------------
 \begin{acknowledgement}

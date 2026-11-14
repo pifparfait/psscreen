@@ -23,13 +23,19 @@ ABS_SET = ["BODIPY_core", "BDP", "I-BDP", "I2-BDP", "I3-BDP", "azaBDP_Ph4",
 LABEL = {"BODIPY_core": "BODIPY core", "azaBDP_Ph4": "aza-BODIPY-Ph$_4$"}
 
 
+STYRYL = {"BDP-0", "I-BDP-0", "I2-BDP-0"}
+
+
 def load(name):
-    p = RUNS / f"{name}.json"
-    return json.loads(p.read_text()) if p.exists() else None
+    """Result for one dye; styryl dyes use the lowest xTB conformer of the (E,E) isomer (set3/*_c0)."""
+    for p in (RUNS / f"{name}.json", RUNS / "set3" / f"{name}_c0.json"):
+        if p.exists():
+            return json.loads(p.read_text())
+    return None
 
 
 def fig_absorption():
-    xs, ys, names = [], [], []
+    xs, ys, names, sty = [], [], [], []
     for n in ABS_SET:
         d = load(n)
         if d is None:
@@ -37,12 +43,19 @@ def fig_absorption():
         xs.append(EV_NM / REF[n]["lambda_abs_nm"])
         ys.append(d["E_S1_eV"])
         names.append(LABEL.get(n, n))
+        sty.append(n in STYRYL)
     fig, ax = plt.subplots(figsize=(3.4, 3.2))
-    lo, hi = 1.7, 2.6
+    lo, hi = 1.6, 2.6
     ax.plot([lo, hi], [lo, hi], color="0.6", lw=0.8, ls="--", label="ideal")
-    ax.scatter(xs, ys, s=22, color="#2b6cb0", zorder=3, label=r"TDDFT+$\Delta$SCF")
+    c = [i for i, t in enumerate(sty) if not t]
+    q = [i for i, t in enumerate(sty) if t]
+    ax.scatter([xs[i] for i in c], [ys[i] for i in c], s=22, color="#2b6cb0", zorder=3,
+               label="compact dyes")
+    ax.scatter([xs[i] for i in q], [ys[i] for i in q], s=22, marker="s", color="#c05621", zorder=3,
+               label="distyryl dyes")
     offs = {"BODIPY core": (-10, 6), "BDP": (6, 2), "I-BDP": (6, -8), "I2-BDP": (-36, 4),
-            "I3-BDP": (6, -8)}
+            "I3-BDP": (6, -8), "BDP-0": (7, 3), "I-BDP-0": (7, -7), "I2-BDP-0": (7, -6),
+            "aza-BODIPY-Ph$_4$": (-30, 7)}
     for x, y, t in zip(xs, ys, names):
         ax.annotate(t, (x, y), textcoords="offset points", xytext=offs.get(t, (5, -9)), fontsize=6.5)
     ax.set_xlim(lo, hi); ax.set_ylim(lo, hi)
