@@ -190,3 +190,27 @@ python validation/run_quantum.py BDP 4 6       # quantum backend; CAS(6,6) takes
 python validation/run_casci_reference.py BODIPY_core --nevpt2
 python validation/report.py
 ```
+
+## Exact-exchange fraction scan (B3LYP 20 %, PBE0 25 %, BHandHLYP 50 %)
+
+Same GFN2-xTB geometries (lowest conformer for the styryl dyes), same pipeline, only the functional changes
+(`validation/run_xc_scan.py`; per-dye results in `validation/runs_xc/` on branch `results-tars`; table by
+`validation/report_xc.py`). Our TDDFT code supports global hybrids only, so range-separated functionals
+(CAM-B3LYP, ωB97X-D) were not tested.
+
+Absorption error of the ΔSCF-corrected S1 (eV, calc − exp):
+
+| Class | B3LYP (20 %) | PBE0 (25 %) | BHandHLYP (50 %) |
+|---|---|---|---|
+| Six compact dyes | −0.02 … −0.08 | 0.00 … +0.05 | +0.34 … +0.38 |
+| Three styryl dyes | −0.21 … −0.23 | −0.14 … −0.15 | +0.21 … +0.24 |
+
+Interpolating linearly, the error vanishes near 24 % HF for the compact dyes and near 35 % HF for the styryl dyes.
+This supports a chromophore-size dependence of the optimal exchange fraction, but it is an extrapolation from
+three functionals and nine dyes, not a validated correction.
+
+ISC does not follow the absorption fix. For I2-BDP-0 (k_ISC exp 4.5e8 s⁻¹) the calculated values are
+1.7e7 (B3LYP), 7.6e6 (PBE0) and 1.5e7 (BHandHLYP). In all three the dominant channel is S1→T1 with SOC ≈ 0.4 cm⁻¹
+or, with BHandHLYP, an uphill-resonant S1→T2 channel; with B3LYP/PBE0 T2 lies 0.4–0.5 eV above S1. The
+failure is the S1–T2 energy gap, not the exchange fraction. The compact heavy-atom dyes remain reasonable with PBE0
+(I2-BDP 1.6e9 vs 3.5e9 exp; I3-BDP 1.6e9 vs 3.9e9), with BHandHLYP they fail (kISC ≈ 2e6).

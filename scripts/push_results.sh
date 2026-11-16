@@ -13,7 +13,7 @@ if [ ! -d .git ]; then
 fi
 
 git checkout -B "$BRANCH"
-git add validation/runs/*.json docs/VALIDATION_server.md 2>/dev/null || true
+git add validation/runs/*.json validation/runs_xc/*/*.json docs/VALIDATION_server.md docs/XC_SCAN.md 2>/dev/null || true
 if git diff --cached --quiet; then
   echo "Nothing new to commit."
 else
