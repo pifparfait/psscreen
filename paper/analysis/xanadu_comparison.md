@@ -66,3 +66,18 @@ Values for the BODIPY core, CAS(12,11), from `resource_breakdown.py`:
 | β = 16 | 509 | 352 | 5.0×10⁷ | 15.9 |
 | β = 12 | 417 | 264 | 4.3×10⁷ | 15.9 |
 | error 4.3 mHa | 599 | 440 | 2.1×10⁷ | 15.9 |
+
+## THC check: the preprint's qubit count is reproduced
+
+With PennyLane's THC qubitization estimator (`qre.QubitizeTHC`, `paper/quantum/thc_pennylane_resources.py`,
+table in `paper/quantum/results/thc_pennylane_resources.md`) and the preprint's precision rules (20
+coefficient bits, 27 rotation bits), one walk step for CAS(12,11) costs about 3×10³ Toffolis. Its qubit
+count runs from 374 wires, when all Givens-rotation angles are loaded at once, down to 131-193 wires when they
+are loaded in 5-10 batches, for 10-30% more Toffolis. The preprint's 177 qubits for N = 11 lies inside this
+range. The difference from our 601 (double factorization, angles loaded in a single wide register) is a
+choice on the space-time trade-off, not a disagreement. For the paper: quote qubits together with the angle-
+loading choice, and compare Toffolis.
+
+Implied cost of the gap-resolved ISC filter on this encoding: about 3×10⁴ walk steps (d ≈ 4.76 λ'/Δ + 321,
+Δ ≈ 0.07 eV) × 3×10³ Toffolis ≈ 1×10⁸ Toffolis per shot. That is the same order as the preprint's ISC proxy
+(8×10⁷ for Orig-BDP, N = 11).
