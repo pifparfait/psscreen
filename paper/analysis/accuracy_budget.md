@@ -15,6 +15,13 @@ Error model `all`: every triplet shifted by delta relative to S1 (S-T gap error)
 | BDP-0 | 8.9e+03 | 0.00 | T1 (-0.55 eV) | 2.2, 0.51 | 0.078 | 0.379 | 1, 1 | 0.336 | >0.5 / >0.5 |
 | I-BDP-0 | 2.4e+04 | 0.00 | T1 (-0.55 eV) | 2.3, 0.51 | 0.077 | 0.352 | 1, 1 | 0.313 | >0.5 / >0.5 |
 | I2-BDP-0 | 1.7e+07 | 0.04 | T1 (-0.50 eV) | 1.7, 0.44 | 0.079 | 0.384 | 1, 1 | 0.337 | 0.41 / 0.40 |
+| *screening candidates (no experiment)* | | | | | | | | | |
+| Cl2-BDP | 2.6e+06 | 0.01 | T1 (-0.62 eV) | 2.1, 0.38 | 0.075 | 0.319 | 1, 1 | 0.250 | 0.47 / 0.47 |
+| Br2-BDP | 3.3e+08 | 0.48 | T1 (-0.61 eV) | 2.2, 0.4 | 0.080 | 0.316 | 1, 1 | 0.245 | 0.01 / 0.18 |
+| I1-BDP | 2.3e+09 | 0.87 | T1 (-0.67 eV) | 2, 0.36 | 0.062 | 0.277 | 1, 1 | 0.207 | >0.5 / >0.5 |
+| azaBDP_Br2 | 1.3e+10 | 0.97 | T2 (+0.11 eV) | 0.013, 21 | 0.016 | 0.051 | 0.0099, 21 | 0.016 | 0.08 / 0.08 |
+| azaBDP_BrPh2 | 1.5e+07 | 0.04 | T1 (-0.70 eV) | 2.3, 0.41 | 0.068 | 0.250 | 1, 1 | 0.186 | 0.28 / 0.28 |
+| azaBDP_IPh2 | 4.2e+08 | 0.54 | T1 (-0.71 eV) | 2.4, 0.41 | 0.070 | 0.305 | 1, 1 | 0.238 | 0.02 / >0.5 |
 
 ## Dependence of the ×2 tolerance on λ_s (error model `all`)
 
@@ -29,6 +36,12 @@ Error model `all`: every triplet shifted by delta relative to S1 (S-T gap error)
 | BDP-0 | 0.071 | 0.078 | 0.106 |
 | I-BDP-0 | 0.068 | 0.077 | 0.106 |
 | I2-BDP-0 | 0.046 | 0.079 | 0.117 |
+| Cl2-BDP | 0.031 | 0.075 | 0.093 |
+| Br2-BDP | 0.031 | 0.080 | 0.095 |
+| I1-BDP | 0.034 | 0.062 | 0.090 |
+| azaBDP_Br2 | 0.010 | 0.016 | 0.023 |
+| azaBDP_BrPh2 | 0.061 | 0.068 | 0.088 |
+| azaBDP_IPh2 | 0.074 | 0.070 | 0.085 |
 
 ## C. Absorption-window margin (650-850 nm = 1.459-1.907 eV)
 
@@ -53,6 +66,12 @@ Per-state error eps = tol/√2 (independent errors on S1 and T_n); Toffolis scal
 | I2-BDP | 0.083 | 2.16 | 3.3e+07 |
 | I3-BDP | 0.082 | 2.13 | 3.3e+07 |
 | I2-BDP-0 | 0.079 | 2.05 | 3.4e+07 |
+| Cl2-BDP | 0.075 | 1.95 | 3.6e+07 |
+| Br2-BDP | 0.080 | 2.08 | 3.4e+07 |
+| I1-BDP | 0.062 | 1.61 | 4.4e+07 |
+| azaBDP_Br2 | 0.016 | 0.42 | 1.7e+08 |
+| azaBDP_BrPh2 | 0.068 | 1.77 | 4.0e+07 |
+| azaBDP_IPh2 | 0.070 | 1.82 | 3.9e+07 |
 
 ## Functional dependence (ΔSCF-corrected S1 error and k_ISC)
 

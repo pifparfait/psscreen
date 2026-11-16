@@ -38,6 +38,8 @@ HA_EV = 27.211386245988
 REF = json.loads((ROOT / "validation" / "references.json").read_text())
 
 DYES = ["BODIPY_core", "BDP", "I-BDP", "I2-BDP", "I3-BDP", "azaBDP_Ph4", "BDP-0", "I-BDP-0", "I2-BDP-0"]
+CAND_DIR = ROOT / "screening" / "runs" / "candidates_round1"
+CANDIDATES = ["Cl2-BDP", "Br2-BDP", "I1-BDP", "azaBDP_Br2", "azaBDP_BrPh2", "azaBDP_IPh2"]
 WINDOW_EV = (EV_NM / 850.0, EV_NM / 650.0)          # 1.459 - 1.907 eV
 QPE_REF = {"eps_Ha": 1.6e-3, "toffoli": 4.4e7}     # CAS(12,11), I2-BDP, docs/VALIDATION.md
 MLJ_SETS = {"lambda_s=0.05": MLJParams(lambda_s=0.05), "lambda_s=0.10 (default)": MLJParams(),
@@ -106,14 +108,15 @@ def qpe_cost(gap_tol_eV):
     return eps_Ha, QPE_REF["toffoli"] * QPE_REF["eps_Ha"] / eps_Ha
 
 
-def analyse(base=RUNS):
+def analyse(base=RUNS, names=DYES):
     rows = []
-    for n in DYES:
+    for n in names:
         d = load(n, base)
         if d is None:
             continue
         k0, phi0 = rates(d)
-        r = {"name": n, "E_S1_eV": d["E_S1_eV"], "E_exp_eV": EV_NM / REF[n]["lambda_abs_nm"],
+        r = {"name": n, "E_S1_eV": d["E_S1_eV"],
+             "E_exp_eV": EV_NM / REF[n]["lambda_abs_nm"] if n in REF else None,
              "k_isc": k0, "phi_T": phi0,
              "dominant": max(d["photophysics"]["channels"], key=lambda c: c["k"])}
         for mode in ("all", "upper"):
@@ -129,8 +132,9 @@ def analyse(base=RUNS):
                 r.setdefault("phi_margin", {}).setdefault(mode, {})[lab] = phi_margin(d, mode, p)
         inside, m = window_margin(d["E_S1_eV"])
         r["window_inside"], r["window_margin_eV"] = inside, m
-        insx, mx = window_margin(r["E_exp_eV"])
-        r["window_inside_exp"], r["window_margin_exp_eV"] = insx, mx
+        if r["E_exp_eV"] is not None:
+            insx, mx = window_margin(r["E_exp_eV"])
+            r["window_inside_exp"], r["window_margin_exp_eV"] = insx, mx
         rows.append(r)
     return rows
 
@@ -182,6 +186,8 @@ def markdown(rows, xc_rows):
          "|---|---|---|---|---|---|---|---|---|---|"]
     D = "lambda_s=0.10 (default)"
     for r in rows:
+        if r["name"] == CANDIDATES[0]:
+            L.append("| *screening candidates (no experiment)* | | | | | | | | | |")
         dm = r["dominant"]
         L.append(f"| {r['name']} | {r['k_isc']:.2g} | {r['phi_T']:.2f} | T{dm['T']} ({dm['dE_eV']:+.2f} eV) | "
                  f"{r['factor_+0.1_all']:.2g}, {r['factor_-0.1_all']:.2g} | {r['tol2']['all'][D]:.3f} | "
@@ -195,6 +201,8 @@ def markdown(rows, xc_rows):
           "| Dye | E(S1) calc | inside (calc) | margin calc (eV) | E exp | inside (exp) | margin exp (eV) |",
           "|---|---|---|---|---|---|---|"]
     for r in rows:
+        if r["E_exp_eV"] is None:
+            continue
         L.append(f"| {r['name']} | {r['E_S1_eV']:.2f} | {r['window_inside']} | {r['window_margin_eV']:.2f} | "
                  f"{r['E_exp_eV']:.2f} | {r['window_inside_exp']} | {r['window_margin_exp_eV']:.2f} |")
     # D: QPE
@@ -225,8 +233,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--xc-dir", type=Path, default=None)
     a = ap.parse_args()
-    rows = analyse()
-    xc_rows = {"B3LYP": rows}
+    rows = analyse() + analyse(CAND_DIR, CANDIDATES)
+    xc_rows = {"B3LYP": [r for r in rows if r["name"] in DYES]}
     if a.xc_dir:
         for x in ("pbe0", "bhandhlyp"):
             if (a.xc_dir / x).exists():

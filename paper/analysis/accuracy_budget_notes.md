@@ -29,5 +29,15 @@ Marcus-Levich-Jortner parameters unless stated). Figure: `paper/figures/mlj_gap_
    compact dyes to 0.00-+0.05 eV and k_ISC of I2-BDP and I3-BDP to 1.6e9 s⁻¹ (3.5e9 and 3.9e9 measured), but
    the distyryl diiodo dye stays at 7.6e6 s⁻¹ (4.5e8 measured), because its T2 remains 0.44 eV above S1.
 
+6. **The top screening candidate is the most fragile prediction.** The 2,6-dibromo aza-BODIPY (Φ_T 0.97 in
+   round 1) owes its rate to an uphill S1→T2 channel: T2 lies only 0.11 eV above S1 with 47 cm⁻¹ of SOC.
+   A 0.1 eV error in that gap changes k_ISC by a factor of about 20 in either direction, the factor-2 tolerance
+   is 0.016 eV, and Φ_T drops below 0.5 if T2 is 0.08 eV higher. In addition, T2 keeps its TDDFT energy while
+   S1 is ΔSCF-corrected, the inconsistency that breaks the distyryl diiodo dye. Of the seven candidates, the
+   ones whose ISC goes through T1 (Cl2, Br2, I1, I3-BDP and the phenyl-substituted aza dyes) have tolerances of
+   0.06-0.08 eV like the validation dyes; two of them (Br2-BDP, azaBDP_IPh2) sit at Φ_T ≈ 0.5, where their
+   class flips for gap errors of 0.01-0.02 eV. A gap-free S1-T1 proxy would rank azaBDP_Br2 (V1² = 1.8 cm⁻²)
+   below azaBDP_IPh2 (26 cm⁻²) and Br2-BDP (8.6 cm⁻²), the opposite of the golden-rule order.
+
 Caveats: the budget is model-dependent (one effective MLJ mode, a uniform shift of the triplets, and fixed
 SOC and k_r); it treats energy errors as rigid shifts; and it uses only nine dyes.
