@@ -430,9 +430,30 @@ the budget. Quantum phase estimation on the bare active-space Hamiltonian would 
 energies, so a dynamic-correlation step on top of the quantum calculation is required for the
 observables to be useful.
 
-\todo{Insert SA-CASSCF(12e,11o)/SC-NEVPT2 S$_1$, T$_1$, T$_2$ for the nine dyes (running): gaps
-$\Delta E(\mathrm{S}_1-\mathrm{T}_1)$ and $\Delta E(\mathrm{T}_2-\mathrm{S}_1)$ against the 0.07~eV
-budget and against experiment for BDP and I2-BDP; check the T$_2$ position of I2-BDP-0.}
+State-averaged CASSCF orbitals do not close the gap (Table~\ref{tab:sanevpt2}). For the three dyes
+finished so far, SA-CASSCF(12e,11o)/SC-NEVPT2 places S$_1$ 0.53--0.66~eV above experiment, and the
+S$_1$--T$_1$ gap at 0.99 and 1.03~eV for BDP and I-BDP against the measured 0.77 and 0.76~eV: errors of
+0.22--0.27~eV, three to four times the budget. The position of T$_2$ relative to S$_1$ (+0.42~eV for BDP
+and I-BDP) agrees with the TDDFT value (+0.48~eV), which suggests that the upper-triplet ordering is
+robust for compact dyes. Even with second-order dynamic correlation, a (12e,11o) active space therefore
+does not reach the accuracy the screening decision requires.
+\todo{Complete with I2-BDP, I3-BDP, aza-BDP-Ph$_4$ and the three distyryl dyes (running); check the
+T$_2$ position of I2-BDP-0.}
+
+\begin{table}
+  \caption{SA-CASSCF(12e,11o)/SC-NEVPT2 vertical energies (eV), def2-SVP, gas phase, for the dyes
+  finished so far, with experiment and the classical pipeline. Partial results.}
+  \label{tab:sanevpt2}
+  \begin{tabular}{lcccccc}
+    \toprule
+    Dye & S$_1$ & S$_1$ exp & S$_1-$T$_1$ & S$_1-$T$_1$ exp & T$_2-$S$_1$ & T$_2-$S$_1$ TDDFT \\
+    \midrule
+    BODIPY core & 3.12 & 2.46 & 1.16 & --   & $+0.91$ & $+0.44$ \\
+    BDP         & 3.05 & 2.46 & 0.99 & 0.77 & $+0.42$ & $+0.48$ \\
+    I-BDP       & 2.99 & 2.46 & 1.03 & 0.76 & $+0.42$ & $+0.48$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 \begin{table}
   \caption{S$_1$ excitation energies (eV) in the (12e,11o) active space, def2-SVP, compared with
