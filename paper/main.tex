@@ -431,14 +431,16 @@ the budget. Quantum phase estimation on the bare active-space Hamiltonian would 
 energies, so a dynamic-correlation step on top of the quantum calculation is required for the
 observables to be useful.
 
-State-averaged CASSCF orbitals do not close the gap (Table~\ref{tab:sanevpt2}). For the three dyes
+State-averaged CASSCF orbitals do not close the gap (Table~\ref{tab:sanevpt2}). For the four dyes
 finished so far, SA-CASSCF(12e,11o)/SC-NEVPT2 places S$_1$ 0.53--0.66~eV above experiment, and the
-S$_1$--T$_1$ gap at 0.99 and 1.03~eV for BDP and I-BDP against the measured 0.77 and 0.76~eV: errors of
-0.22--0.27~eV, three to four times the budget. The position of T$_2$ relative to S$_1$ (+0.42~eV for BDP
-and I-BDP) agrees with the TDDFT value (+0.48~eV), which suggests that the upper-triplet ordering is
+S$_1$--T$_1$ gap at 0.99, 1.03 and 0.80~eV for BDP, I-BDP and I3-BDP against the measured 0.77, 0.76 and
+0.58~eV: errors of 0.22--0.27~eV, three to four times the budget. The error in the gap is about half the
+error in S$_1$, so part of the S$_1$ error cancels in the gap, but not enough. T$_2$ lies 0.42--0.45~eV
+above S$_1$, close to the pipeline value for BDP and I-BDP (+0.48~eV) and 0.14~eV above it for I3-BDP
+(+0.31~eV); in all three the S$_1\to$T$_2$ channel stays closed, so the upper-triplet ordering appears
 robust for compact dyes. Even with second-order dynamic correlation, a (12e,11o) active space therefore
 does not reach the accuracy the screening decision requires.
-\todo{Complete with I2-BDP, I3-BDP, aza-BDP-Ph$_4$ and the three distyryl dyes (running); check the
+\todo{Complete with I2-BDP, aza-BDP-Ph$_4$ and the three distyryl dyes (running); check the
 T$_2$ position of I2-BDP-0.}
 
 \begin{table}
@@ -452,6 +454,7 @@ T$_2$ position of I2-BDP-0.}
     BODIPY core & 3.12 & 2.46 & 1.16 & --   & $+0.91$ & $+0.44$ \\
     BDP         & 3.05 & 2.46 & 0.99 & 0.77 & $+0.42$ & $+0.48$ \\
     I-BDP       & 2.99 & 2.46 & 1.03 & 0.76 & $+0.42$ & $+0.48$ \\
+    I3-BDP      & 2.83 & 2.30 & 0.80 & 0.58 & $+0.45$ & $+0.31$ \\
     \bottomrule
   \end{tabular}
 \end{table}
