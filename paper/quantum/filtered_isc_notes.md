@@ -33,4 +33,4 @@ exact spectrum, and "exact" is the golden rule with the exact MLJ line shape.
    budget), and the bare active-space Hamiltonian misses them by about 2 eV. The useful quantum target is
    therefore energies with dynamic correlation at the budget accuracy, not a larger bare active space or a
    better proxy. The filter is the right observable once the Hamiltonian is good enough. It has the same cost
-   structure as the threshold projection: d ≈ 4.76 λ'/Δ + 321 with Δ ≈ 0.07 eV, about 2.4×10⁴ for λ' ≈ 16 Ha.
+   structure as the threshold projection: d ≈ 4.76 λ'/Δ + 321 with Δ ≈ 0.07 eV, about 3×10⁴ for λ' ≈ 16 Ha.
