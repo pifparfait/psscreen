@@ -5,6 +5,7 @@ ref = json.load(open(os.path.join(here, "references.json")))
 EV = 1239.84198
 dirs = {"b3lyp": None}
 for d in sorted(glob.glob(os.path.join(here, "runs_xc", "*"))):
+    if not os.path.isdir(d): continue
     dirs[os.path.basename(d)] = d
 def load(xc, n):
     if xc == "b3lyp":
