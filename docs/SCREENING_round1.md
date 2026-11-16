@@ -39,6 +39,8 @@ For reference, the validated I2-BDP gave k_ISC = 6.9e9 s⁻¹ (experiment 3.5e9)
 
 ## Caveats (read before acting on the ranking)
 
+- **The azaBDP_Br2 top rank is fragile.** Its Φ_T = 0.97 comes from an S1→T2 channel (k = 1.2e10 s⁻¹, SOC 47 cm⁻¹) with T2 only 0.11 eV above S1. The T2 energy is uncorrected TDDFT, while S1 and T1 carry ΔSCF shifts; the same inconsistency is why I2-BDP-0 fails in validation (see VALIDATION.md). A change of ~0.1 eV in the S1–T2 gap changes k_ISC by orders of magnitude, so this channel is not predictive. Through the T1 channel alone (k = 4e7 s⁻¹) it would rank last of the three aza dyes.
+
 1. **These are predictions, not results.** Only four molecules were validated, and only one (I2-BDP) has
    a measured triplet yield. No candidate here has experimental data in this work.
 2. **λ error is systematic for compact dyes, not for extended ones.** For six compact validation dyes the
