@@ -160,7 +160,7 @@ def fig_fcwd(rows):
                         mfc="none" if r["name"].endswith("-0") else col)
                 ax.annotate(f"T{c['T']}", (c["dE_eV"], k_isc(1.0, c["dE_eV"])), fontsize=6,
                             textcoords="offset points",
-                            xytext=(-12, -9) if r["name"].endswith("-0") else (3, 3))
+                            xytext=(4, -9) if r["name"].endswith("-0") else (-10, 4))
     ax.set_ylim(1e-12, 1e10)
     ax.set_xlabel(r"$E(\mathrm{T}_n)-E(\mathrm{S}_1)$ (eV)")
     ax.set_ylabel(r"$k_\mathrm{ISC}$ for $V$ = 1 cm$^{-1}$ (s$^{-1}$)")

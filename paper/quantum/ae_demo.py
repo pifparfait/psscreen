@@ -272,7 +272,7 @@ def fig(out):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     p = out["p"]
-    fig_, ax = plt.subplots(figsize=(3.4, 3.0))
+    fig_, ax = plt.subplots(figsize=(3.4, 3.6))
     c = out["canonical_analytic"]
     m = out["mlae"]
     ax.loglog([r["calls"] for r in c], [max(r["q90_sampling"], 1e-4) for r in c], "s-", color="#c05621", ms=3,
@@ -286,11 +286,12 @@ def fig(out):
         ax.loglog([r["calls"] for r in q], [max(r["q90_abs_err_ae"] / p, 1e-4) for r in q], "x", color="#2b6cb0",
                   ms=4, label="canonical QAE, circuit (this $p$)")
     ax.axhline(0.2, color="0.6", ls=":", lw=0.8)
-    ax.set_ylim(1e-2, 3)
+    ys = [r["q90_sampling"] for r in c] + [r["q90_ensemble"] for r in c + m]
+    ax.set_ylim(1e-2, 2 * max(ys))
     ax.set_xlabel("calls to the filter circuit")
     ax.set_ylabel(r"95th-percentile relative error in $k_\mathrm{ISC}$")
     ax.set_title(f"{out['name'].replace('_', ' ')}, CAS({out['ncas']},{out['ncas']}), $p$ = {p:.1e}", fontsize=7)
-    ax.legend(frameon=False, fontsize=6)
+    ax.legend(frameon=False, fontsize=6, loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=2)
     fig_.tight_layout()
     fig_.savefig(os.path.join(ROOT, "paper", "figures", "ae_demo.pdf"))
 
