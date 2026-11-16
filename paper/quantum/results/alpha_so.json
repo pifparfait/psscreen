@@ -1,0 +1,137 @@
+{
+ "BODIPY_core": {
+  "alpha_so_cm": 199.18535962841773,
+  "max_abs_mu_cm": 82.84343966441804,
+  "trace_cm": 0.0,
+  "hermiticity_err": 3.090646686588126e-18,
+  "converged": true,
+  "natm": 21,
+  "seconds": 30.30268669128418
+ },
+ "BDP": {
+  "alpha_so_cm": 38.53812551764472,
+  "max_abs_mu_cm": 8.427711875693989,
+  "trace_cm": 0.0,
+  "hermiticity_err": 2.795208725939191e-19,
+  "converged": true,
+  "natm": 43,
+  "seconds": 232.51016116142273
+ },
+ "I-BDP": {
+  "alpha_so_cm": 6552.973602770397,
+  "max_abs_mu_cm": 3198.8573407008794,
+  "trace_cm": 0.0,
+  "hermiticity_err": 9.974659986866641e-17,
+  "converged": true,
+  "natm": 43,
+  "seconds": 270.9818663597107
+ },
+ "I2-BDP": {
+  "alpha_so_cm": 12006.362298109976,
+  "max_abs_mu_cm": 3050.8971128541466,
+  "trace_cm": 0.0,
+  "hermiticity_err": 1.7958171809864553e-16,
+  "converged": true,
+  "natm": 43,
+  "seconds": 257.6897988319397
+ },
+ "I3-BDP": {
+  "alpha_so_cm": 12371.953267623352,
+  "max_abs_mu_cm": 2951.708876380872,
+  "trace_cm": 0.0,
+  "hermiticity_err": 8.504126883137961e-17,
+  "converged": true,
+  "natm": 43,
+  "seconds": 373.16070199012756
+ },
+ "azaBDP_Ph4": {
+  "alpha_so_cm": 18.164879437125464,
+  "max_abs_mu_cm": 4.446316897361207,
+  "trace_cm": 0.0,
+  "hermiticity_err": 1.5415999640028266e-19,
+  "converged": true,
+  "natm": 60,
+  "seconds": 655.2325632572174
+ },
+ "BDP-0": {
+  "alpha_so_cm": 22.212869986687103,
+  "max_abs_mu_cm": 6.8047706685499385,
+  "trace_cm": 0.0,
+  "hermiticity_err": 1.9820570965750628e-19,
+  "converged": true,
+  "natm": 65,
+  "seconds": 717.7744822502136
+ },
+ "I-BDP-0": {
+  "alpha_so_cm": 2672.988888582946,
+  "max_abs_mu_cm": 1315.2608054732484,
+  "trace_cm": 0.0,
+  "hermiticity_err": 7.025630077706069e-17,
+  "converged": true,
+  "natm": 65,
+  "seconds": 835.4172468185425
+ },
+ "I2-BDP-0": {
+  "alpha_so_cm": 2656.23054665644,
+  "max_abs_mu_cm": 1010.6767038135335,
+  "trace_cm": 0.0,
+  "hermiticity_err": 9.373341637491331e-17,
+  "converged": true,
+  "natm": 65,
+  "seconds": 974.8561027050018
+ },
+ "Cl2-BDP": {
+  "alpha_so_cm": 39.48710871614841,
+  "max_abs_mu_cm": 8.442144161722915,
+  "trace_cm": 0.0,
+  "hermiticity_err": 3.2044752045711368e-19,
+  "converged": true,
+  "natm": 43,
+  "seconds": 216.82685375213623
+ },
+ "Br2-BDP": {
+  "alpha_so_cm": 1473.8967636222385,
+  "max_abs_mu_cm": 482.5764232359299,
+  "trace_cm": 0.0,
+  "hermiticity_err": 2.808821331508581e-17,
+  "converged": true,
+  "natm": 43,
+  "seconds": 277.95770049095154
+ },
+ "I1-BDP": {
+  "alpha_so_cm": 6225.680992039392,
+  "max_abs_mu_cm": 3059.409721664611,
+  "trace_cm": 0.0,
+  "hermiticity_err": 5.984795992119984e-17,
+  "converged": true,
+  "natm": 43,
+  "seconds": 219.65465116500854
+ },
+ "azaBDP_Br2": {
+  "alpha_so_cm": 854.5579886974011,
+  "max_abs_mu_cm": 224.81255366523638,
+  "trace_cm": 0.0,
+  "hermiticity_err": 1.9624790517746655e-17,
+  "converged": true,
+  "natm": 60,
+  "seconds": 932.4698107242584
+ },
+ "azaBDP_BrPh2": {
+  "alpha_so_cm": 108.76822536033076,
+  "max_abs_mu_cm": 34.25519165930285,
+  "trace_cm": 0.0,
+  "hermiticity_err": 2.3112346438394963e-18,
+  "converged": true,
+  "natm": 60,
+  "seconds": 911.9003255367279
+ },
+ "azaBDP_IPh2": {
+  "alpha_so_cm": 7172.532407782031,
+  "max_abs_mu_cm": 2798.8524054957634,
+  "trace_cm": 0.0,
+  "hermiticity_err": 8.776447491961461e-17,
+  "converged": true,
+  "natm": 60,
+  "seconds": 869.532363653183
+ }
+}
