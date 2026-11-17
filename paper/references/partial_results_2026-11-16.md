@@ -13,3 +13,7 @@ TDDFT/ΔSCF pipeline for comparison: S1 2.45/2.40/2.39 eV, S1 − T1 0.71/0.72/0
 
 Update 2026-11-16 23:38 UTC (tars log): I3-BDP S1 2.829, S2 3.856, T1 2.030, T2 3.280, T3 3.621 eV;
 S1 exp 2.30; S1 − T1 0.799 (exp 0.58); T2 − S1 +0.451 (pipeline +0.31).
+
+Update 2026-11-17 11:58 UTC (tars log): I2-BDP S1 2.819, S2 3.680, T1 1.965, T2 3.185, T3 4.684 eV
+(S1 exp 2.31, S1 − T1 0.854 vs exp 0.59, T2 − S1 +0.366); azaBDP_Ph4 S1 2.698, S2 3.218, T1 1.393, T2 2.871,
+T3 2.956 eV (S1 exp 1.91, S1 − T1 1.305, T2 − S1 +0.173 vs pipeline +0.29).
