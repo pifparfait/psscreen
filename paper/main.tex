@@ -441,8 +441,42 @@ channel stays closed in both methods. For aza-BDP-Ph$_4$, NEVPT2 places T$_2$ on
 (0.29~eV in the pipeline): the two methods differ there by more than the budget, in exactly the
 quantity that controls whether an upper channel opens. Even with second-order dynamic correlation, a
 (12e,11o) active space therefore does not reach the accuracy the screening decision requires.
-\todo{Complete with the three distyryl dyes (running); check the T$_2$ position of I2-BDP-0. Add the
-active-space sweep (8,8)--(16,16) for BDP and I2-BDP (running).}
+
+\paragraph{A larger active space does not converge the gap to experiment.} To test whether the remaining
+error is an active-space truncation, we grew the active space from (8,8) to (12,12) for BDP and I2-BDP,
+re-optimizing the orbitals at every size (Table~\ref{tab:sweep}). Bare CASSCF/CASCI behaves as expected
+for a missing-correlation problem: S$_1$ falls by 0.7~eV for BDP and 0.2~eV for I2-BDP, but remains
+0.6~eV above experiment at (12,12), and the S$_1$--T$_1$ gap stays 0.26--0.48~eV too large. The position
+of T$_2$ relative to S$_1$ jumps by up to 0.7~eV from one size to the next (from $+0.16$ to $+0.74$ to
+$+0.05$~eV for I2-BDP), so in a bare active space even the ordering that decides whether the
+S$_1\to$T$_2$ channel is open is not stable. With NEVPT2 the S$_1$--T$_1$ gap is flat: 1.00, 0.99 and
+0.96~eV for BDP (0.77 measured) and 0.82, 0.87 and 0.88~eV for I2-BDP (0.59 measured). The error, about
++0.2 and +0.3~eV, does not shrink as the active space grows, so it is not an active-space truncation
+error but a limitation of the second-order treatment (and of comparing vertical gaps with measured ones,
+which may account for part of it). T$_2$--S$_1$ still moves by 0.24~eV across sizes for I2-BDP, more than
+three times the budget. A larger active space alone does not bring the decisive gaps within the budget.
+\todo{Add (14,14) and (16,16) CASCI when the sweep finishes; complete the distyryl dyes in
+Table~\ref{tab:sanevpt2}; check the T$_2$ position of I2-BDP-0.}
+
+\begin{table}
+  \caption{Active-space convergence for BDP and I2-BDP: vertical energies and gaps (eV), SA-CASSCF($n$,$n$)
+  orbitals, def2-SVP. Experiment: S$_1$ 2.46 and 2.31~eV, S$_1-$T$_1$ 0.77 and 0.59~eV.}
+  \label{tab:sweep}
+  \footnotesize\setlength{\tabcolsep}{4pt}
+  \begin{tabular}{llrrrrrr}
+    \toprule
+    & & \multicolumn{3}{c}{CASCI} & \multicolumn{3}{c}{SC-NEVPT2} \\
+    Dye & ($n$,$n$) & S$_1$ & S$_1-$T$_1$ & T$_2-$S$_1$ & S$_1$ & S$_1-$T$_1$ & T$_2-$S$_1$ \\
+    \midrule
+    BDP    & (8,8)   & 3.80 & 1.74 & $-0.22$ & 3.08 & 1.00 & $+0.43$ \\
+    BDP    & (10,10) & 3.22 & 1.17 & $+0.19$ & 3.02 & 0.99 & $+0.45$ \\
+    BDP    & (12,12) & 3.06 & 1.03 & $+0.29$ & 2.97 & 0.96 & $+0.48$ \\
+    I2-BDP & (8,8)   & 3.16 & 1.08 & $+0.16$ & 2.84 & 0.82 & $+0.40$ \\
+    I2-BDP & (10,10) & 2.94 & 0.94 & $+0.74$ & 2.86 & 0.87 & $+0.64$ \\
+    I2-BDP & (12,12) & 2.94 & 1.07 & $+0.05$ & 2.84 & 0.88 & $+0.52$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 \begin{table}
   \caption{SA-CASSCF(12e,11o)/SC-NEVPT2 vertical energies (eV), def2-SVP, gas phase, for the six
