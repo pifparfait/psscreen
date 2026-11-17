@@ -1,0 +1,38 @@
+{
+ "name": "BDP-0",
+ "geometry": "validation/runs/set3/BDP-0_c0.xyz",
+ "cas": [
+  12,
+  11
+ ],
+ "basis": "def2-svp",
+ "orbitals": "SA-CASSCF(12,11) over 3 singlets, density-fitted",
+ "timings_s": {
+  "rhf": 540.9147868156433,
+  "sa_casscf": 107873.76222133636,
+  "casci": 213.65686511993408,
+  "nevpt2": 8695.177945375443,
+  "total": 117323.51292276382
+ },
+ "sa_casscf_converged": true,
+ "E_CASCI_singlets_eV": [
+  0.0,
+  2.9459524132798367,
+  3.4992024997290434
+ ],
+ "E_CASCI_triplets_eV": [
+  1.4542906041197772,
+  3.1995998769995726,
+  4.141731431445668
+ ],
+ "E_NEVPT2_singlets_eV": [
+  0.0,
+  2.4850252183186767,
+  3.3223357986955233
+ ],
+ "E_NEVPT2_triplets_eV": [
+  1.4823530601983952,
+  2.981415745220899,
+  3.9775901643692055
+ ]
+}

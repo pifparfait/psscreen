@@ -1,0 +1,38 @@
+{
+ "name": "BODIPY_core",
+ "geometry": "validation/runs/BODIPY_core.xyz",
+ "cas": [
+  12,
+  11
+ ],
+ "basis": "def2-svp",
+ "orbitals": "SA-CASSCF(12,11) over 3 singlets, density-fitted",
+ "timings_s": {
+  "rhf": 17.50216841697693,
+  "sa_casscf": 3113.5899403095245,
+  "casci": 101.07168936729431,
+  "nevpt2": 4225.3230991363525,
+  "total": 7457.49338555336
+ },
+ "sa_casscf_converged": true,
+ "E_CASCI_singlets_eV": [
+  0.0,
+  3.4290178493453705,
+  4.807373970382309
+ ],
+ "E_CASCI_triplets_eV": [
+  1.8846913612713465,
+  4.166050970438804,
+  5.29790402183979
+ ],
+ "E_NEVPT2_singlets_eV": [
+  0.0,
+  3.1169000388245096,
+  4.587341773812864
+ ],
+ "E_NEVPT2_triplets_eV": [
+  1.9580527534191698,
+  4.031412558053982,
+  4.632613949322788
+ ]
+}
