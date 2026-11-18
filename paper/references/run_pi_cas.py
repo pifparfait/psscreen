@@ -17,9 +17,9 @@ Mulliken weight on iodine/bromine, on the core atoms and on the rest) and the na
 state-averaged and of each root's density.
 
 Usage (repository root): python paper/references/run_pi_cas.py NAME [--nsing 3] [--ntrip 3] [--no-nevpt2]
-                         [--select-only]
+                         [--basis def2-tzvp] [--sa-mix] [--skip-avas-block] [--select-only]
 Environment: OMP_NUM_THREADS, PSS_MAX_MEMORY_MB (default 40000).
-Writes paper/references/results/NAME.pi_cas_12_11.json, updated after every step.
+Writes paper/references/results/NAME.pi_cas_12_11[_<basis>][_samix].json, updated after every step.
 """
 import argparse
 import json
@@ -44,6 +44,10 @@ ap.add_argument("--nsing", type=int, default=3)
 ap.add_argument("--ntrip", type=int, default=3)
 ap.add_argument("--max-macro", type=int, default=100)
 ap.add_argument("--no-nevpt2", action="store_true")
+ap.add_argument("--basis", default="def2-svp")
+ap.add_argument("--sa-mix", action="store_true",
+                help="state-average over the singlets and the two lowest triplets (equal weights) instead of singlets only")
+ap.add_argument("--skip-avas-block", action="store_true", help="skip CASCI/NEVPT2 on the unoptimized AVAS orbitals")
 ap.add_argument("--select-only", action="store_true", help="stop after the orbital selection (quick check)")
 a = ap.parse_args()
 
@@ -106,13 +110,15 @@ R = vt                                            # rows: in-plane x, in-plane y
 xyz_r = (xyz - c0) @ R.T
 planarity = float(np.abs(xyz_r[core, 2]).max())
 atom = to_pyscf_atom(sym, xyz_r)
-mol = gto.M(atom=atom, basis="def2-svp", ecp=_ecp(atom, "def2-svp"), verbose=4, unit="Angstrom",
+mol = gto.M(atom=atom, basis=a.basis, ecp=_ecp(atom, a.basis), verbose=4, unit="Angstrom",
             max_memory=float(os.environ.get("PSS_MAX_MEMORY_MB", 40000)))
 
 outdir = os.path.join(ROOT, "paper", "references", "results")
 os.makedirs(outdir, exist_ok=True)
-fout = os.path.join(outdir, f"{a.name}.pi_cas_12_11.json")
-out = {"name": a.name, "geometry": os.path.relpath(geo, ROOT), "basis": "def2-svp", "cas": [12, 11],
+tag = ("" if a.basis == "def2-svp" else "_" + a.basis.replace("-", "")) + ("_samix" if a.sa_mix else "")
+fout = os.path.join(outdir, f"{a.name}.pi_cas_12_11{tag}.json")
+out = {"name": a.name, "geometry": os.path.relpath(geo, ROOT), "basis": a.basis, "cas": [12, 11],
+       "sa_weights": "singlets + 2 triplets, equal" if a.sa_mix else "singlets only, equal",
        "selection": "AVAS-type projection onto MINAO 2p_z of the 11 dipyrrin atoms, 6 occupied + 5 virtual",
        "core_atoms": [f"{sym[i]}{i}" for i in core], "core_max_out_of_plane_A": planarity,
        "nsing": a.nsing, "ntrip": a.ntrip, "timings_s": {}}
@@ -127,7 +133,8 @@ mf = scf.RHF(mol).density_fit().run()
 out["timings_s"]["rhf"] = time.time() - t0
 
 # ---------------------------------------------------------------- 3) AVAS-type selection
-pmol = gto.M(atom=to_pyscf_atom([sym[i] for i in core], xyz_r[core]), basis="minao", unit="Angstrom", verbose=0)
+pmol = gto.M(atom=to_pyscf_atom([sym[i] for i in core], xyz_r[core]), basis="minao", unit="Angstrom", verbose=0,
+             spin=None)  # odd electron count for aza cores (meso N); only the basis is used
 pz = [k for k, lab in enumerate(pmol.ao_labels()) if lab.split()[2] == "2pz"]
 assert len(pz) == 11
 S = mf.get_ovlp()
@@ -190,7 +197,7 @@ def alpha_so_cm(mo, first):
     from psscreen.soc import soc_mo_integrals
     sys.path.insert(0, os.path.join(ROOT, "paper", "quantum"))
     from alpha_so import HA_CM, spin_orbital_matrix
-    h, _ = soc_mo_integrals(mol, mo, "def2-svp")
+    h, _ = soc_mo_integrals(mol, mo, a.basis)
     idx = list(range(first, first + 11))
     M = spin_orbital_matrix(h[:, idx][:, :, idx])
     return 0.5 * float(np.abs(np.linalg.eigvalsh(0.5 * (M + M.conj().T))).sum()) * HA_CM
@@ -222,13 +229,15 @@ def casci(mo, spin, nroots):
 
 
 def natocc(c, nroots, spin):
-    occ = []
+    """Natural occupations of each root, and of the equal-weight state-averaged density."""
+    occ, dms = [], []
     for i in range(nroots):
         ci = c.ci[i] if nroots > 1 else c.ci
-        nel = c.nelecas
-        dm = c.fcisolver.make_rdm1(ci, 11, nel)
+        dm = c.fcisolver.make_rdm1(ci, 11, c.nelecas)
+        dms.append(dm)
         occ.append([float(x) for x in np.sort(np.linalg.eigvalsh(dm))[::-1]])
-    return occ
+    sa = [float(x) for x in np.sort(np.linalg.eigvalsh(np.mean(dms, axis=0)))[::-1]]
+    return occ, sa
 
 
 def block(tag, mo):
@@ -238,8 +247,9 @@ def block(tag, mo):
     E0 = cs.e_tot[0]
     r = {"E_CASCI_singlets_eV": [(e - E0) * EV for e in cs.e_tot],
          "E_CASCI_triplets_eV": [(e - E0) * EV for e in ct.e_tot],
-         "natocc_singlets": natocc(cs, a.nsing, 0), "natocc_triplets": natocc(ct, a.ntrip, 2)}
-    r["natocc_sa_singlets"] = list(np.mean(r["natocc_singlets"], axis=0))
+         }
+    r["natocc_singlets"], r["natocc_sa_singlets"] = natocc(cs, a.nsing, 0)   # SA: occupations of the averaged density
+    r["natocc_triplets"], r["natocc_sa_triplets"] = natocc(ct, a.ntrip, 2)
     out[tag] = r
     out["timings_s"][tag + "_casci"] = time.time() - t
     print(a.name, tag, "CASCI S:", np.round(r["E_CASCI_singlets_eV"], 3), "T:", np.round(r["E_CASCI_triplets_eV"], 3),
@@ -265,14 +275,25 @@ def block(tag, mo):
 
 
 # ---------------------------------------------------------------- 4) on the AVAS orbitals
-block("avas_orbitals", mo_avas)
+if not a.skip_avas_block:
+    block("avas_orbitals", mo_avas)
 
 # ---------------------------------------------------------------- 5) SA-CASSCF from the AVAS orbitals
 t = time.time()
 mc = mcscf.CASSCF(mf, 11, 12).density_fit()
-mc.fcisolver = fci.direct_spin0.FCI(mol)
-mc.fcisolver.nroots = a.nsing
-mc = mcscf.state_average_(mc, [1.0 / a.nsing] * a.nsing)
+if a.sa_mix:
+    fs = fci.direct_spin1.FCI(mol)
+    fs.spin, fs.nroots = 0, a.nsing
+    fs = fci.addons.fix_spin_(fs, ss=0)
+    ft = fci.direct_spin1.FCI(mol)
+    ft.spin, ft.nroots = 2, 2
+    ft = fci.addons.fix_spin_(ft, ss=2)
+    nst = a.nsing + 2
+    mc = mcscf.addons.state_average_mix_(mc, [fs, ft], [1.0 / nst] * nst)
+else:
+    mc.fcisolver = fci.direct_spin0.FCI(mol)
+    mc.fcisolver.nroots = a.nsing
+    mc = mcscf.state_average_(mc, [1.0 / a.nsing] * a.nsing)
 mc.max_cycle_macro = a.max_macro
 mc.kernel(mo_avas)
 out["sa_casscf_converged"] = bool(mc.converged)
