@@ -50,7 +50,8 @@ triplet-yield class tolerates about 0.4~eV unless an upper triplet is near reson
 the tolerance falls to 0.016~eV, as for the top candidate of a screening round. A validated classical
 pipeline (TDDFT with $\Delta$SCF, calibrated one-electron spin--orbit coupling) meets this budget for
 compact dyes, reproducing absorption to $-0.055\pm0.02$~eV and ISC rates within a factor of two, but
-fails for $\pi$-extended dyes by closing a near-resonant S$_1\to$T$_2$ channel. The bare (12e,11o)
+fails for $\pi$-extended dyes, whose ISC rate it underestimates 26-fold; the position of an upper
+triplet that decides this rate differs by 0.4~eV between methods. The bare (12e,11o)
 active-space Hamiltonian misses S$_1$ by 1.4--2.0~eV, 20--25 times the budget. Second, we implement
 in PennyLane a gap-resolved ISC observable, the golden-rule rate written as a QSVT spectral filter,
 verify it against exact results to 0.03\%, and show that on bare active-space energies it ranks the
@@ -356,7 +357,7 @@ above $10^{11}$.
   \end{tabular}
 \end{table}
 
-\paragraph{The distyryl failure is a gap failure.} For I2-BDP-0 the pipeline gives
+\paragraph{The distyryl failure.} For I2-BDP-0 the pipeline gives
 $\kisc=1.7\times10^{7}$~s$^{-1}$, 26 times below experiment, and $\Phi_T=0.04$ instead of 0.76. In the
 uncorrected TDDFT spectrum T$_2$ lies 0.08~eV above S$_1$ with 8~cm$^{-1}$ of SOC, which gives
 $\kisc=1.1\times10^{9}$~s$^{-1}$ and $\Phi_T=0.67$, close to experiment. The $\Delta$SCF step lowers
@@ -364,7 +365,11 @@ S$_1$ and T$_1$ but not T$_2$, moves T$_2$ 0.51~eV above S$_1$ and closes that c
 explain the discrepancy ($\kisc$ varies by less than a factor of 1.5), and a different hybrid
 functional does not fix it: with PBE0 the compact dyes are within 0.00 to $+0.05$~eV and $\kisc$ of
 I2-BDP and I3-BDP is $1.6\times10^{9}$~s$^{-1}$, but I2-BDP-0 stays at $7.6\times10^{6}$~s$^{-1}$
-because T$_2$ remains 0.44~eV above S$_1$. A consistent treatment of all excited states, not a
+because T$_2$ remains 0.44~eV above S$_1$. SA-CASSCF/SC-NEVPT2 does not support a near-resonant T$_2$
+either: it places T$_2$ 0.54~eV above S$_1$ (Section~\ref{sec:cas}). Our calculations therefore do not
+settle why ISC is fast in this dye. What the case does show is that $\Phi_T$ moves between 0.04 and 0.67
+depending on where T$_2$ lies within half an eV of S$_1$, and that the methods we used disagree on that
+position by about 0.4~eV, far outside the budget of Section~\ref{sec:budget}. A consistent treatment of all excited states, not a
 correction of S$_1$ and T$_1$ alone, is needed for $\pi$-extended dyes. We also note that unlabeled
 styryl double bonds were embedded as cis isomers in a first calculation and gave spuriously good
 absorption; automated screening of $\pi$-extended dyes must fix and verify the stereochemistry.
@@ -383,8 +388,8 @@ states, 0.08~eV corresponds to about 2~mHa per state: chemical accuracy per stat
 
 \paragraph{The triplet-yield class is more forgiving, unless an upper triplet is near resonance.} The
 class ($\Phi_T$ above or below 0.5) does not flip for any gap error up to 0.5~eV in seven of the nine
-dyes and needs about 0.4~eV in the other two. The exception is a near-resonant upper triplet, the
-situation of I2-BDP-0 above.
+dyes and needs about 0.4~eV in the other two. The exception is a near-resonant upper triplet, as in the
+uncorrected TDDFT spectrum of I2-BDP-0 above.
 
 \paragraph{Window membership is the tightest requirement for red-absorbing dyes.} The dyes that absorb
 near the therapeutic window lie 0.00--0.07~eV from its 650~nm edge in experiment; aza-BDP-Ph$_4$ sits on
@@ -441,6 +446,8 @@ channel stays closed in both methods. For aza-BDP-Ph$_4$, NEVPT2 places T$_2$ on
 (0.29~eV in the pipeline): the two methods differ there by more than the budget, in exactly the
 quantity that controls whether an upper channel opens. Even with second-order dynamic correlation, a
 (12e,11o) active space therefore does not reach the accuracy the screening decision requires.
+For the three distyryl dyes S$_1$ is 0.38--0.52~eV too high, and T$_2$ lies 0.50--0.73~eV above S$_1$; in
+I2-BDP-0 the S$_1\to$T$_2$ channel is closed in NEVPT2, as in the $\Delta$SCF-corrected pipeline.
 
 \paragraph{A larger active space does not converge the gap to experiment.} To test whether the remaining
 error is an active-space truncation, we grew the active space from (8,8) to (12,12) for BDP and I2-BDP,
@@ -455,8 +462,7 @@ S$_1\to$T$_2$ channel is open is not stable. With NEVPT2 the S$_1$--T$_1$ gap is
 error but a limitation of the second-order treatment (and of comparing vertical gaps with measured ones,
 which may account for part of it). T$_2$--S$_1$ still moves by 0.24~eV across sizes for I2-BDP, more than
 three times the budget. A larger active space alone does not bring the decisive gaps within the budget.
-\todo{Add (14,14) and (16,16) CASCI when the sweep finishes; complete the distyryl dyes in
-Table~\ref{tab:sanevpt2}; check the T$_2$ position of I2-BDP-0.}
+\todo{Add (14,14) and (16,16) when the sweep finishes.}
 
 \begin{table}
   \caption{Active-space convergence for BDP and I2-BDP: vertical energies and gaps (eV), SA-CASSCF($n$,$n$)
@@ -479,8 +485,8 @@ Table~\ref{tab:sanevpt2}; check the T$_2$ position of I2-BDP-0.}
 \end{table}
 
 \begin{table}
-  \caption{SA-CASSCF(12e,11o)/SC-NEVPT2 vertical energies (eV), def2-SVP, gas phase, for the six
-  compact dyes, with experiment and the classical pipeline. The distyryl dyes are still running.}
+  \caption{SA-CASSCF(12e,11o)/SC-NEVPT2 vertical energies (eV), def2-SVP, gas phase, with experiment and the classical pipeline
+  (T$_2-$S$_1$ from TDDFT T$_2$ and $\Delta$SCF S$_1$).}
   \label{tab:sanevpt2}
   \begin{tabular}{lcccccc}
     \toprule
@@ -492,6 +498,10 @@ Table~\ref{tab:sanevpt2}; check the T$_2$ position of I2-BDP-0.}
     I2-BDP      & 2.82 & 2.31 & 0.85 & 0.59 & $+0.37$ & $+0.32$ \\
     I3-BDP      & 2.83 & 2.30 & 0.80 & 0.58 & $+0.45$ & $+0.31$ \\
     aza-BDP-Ph$_4$ & 2.70 & 1.91 & 1.31 & --  & $+0.17$ & $+0.29$ \\
+    \midrule
+    BDP-0       & 2.49 & 1.97 & 1.00 & -- & $+0.50$ & $+0.53$ \\
+    I-BDP-0     & 2.34 & 1.96 & 0.88 & -- & $+0.73$ & $+0.53$ \\
+    I2-BDP-0    & 2.39 & 1.93 & 0.91 & -- & $+0.54$ & $+0.51$ \\
     \bottomrule
   \end{tabular}
 \end{table}
