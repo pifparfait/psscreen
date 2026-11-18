@@ -38,58 +38,39 @@ amplitude estimation, resource estimation}
 
 % ---------------------------------------------------------------------------------------------
 \begin{abstract}
-Triplet photosensitizers are screened by asking whether a molecule absorbs in a target window and
-crosses efficiently to its triplet manifold. Quantum algorithms have been proposed for both
-questions, but it has not been asked how accurate the underlying excited-state energies must be for
-the screening decision to be right, nor what that decision costs on a fault-tolerant quantum
-computer. We address both questions for boron-dipyrromethene (BODIPY) dyes with measured
-photophysics. First, an accuracy budget: with a Marcus--Levich--Jortner rate model, keeping the
+Quantum algorithms have been proposed for screening triplet photosensitizers, but it has not been
+asked how accurate the excited-state energies must be for the screening decision to be right, nor what
+that decision costs on a fault-tolerant computer. We address both for boron-dipyrromethene (BODIPY)
+dyes with measured photophysics. With a Marcus--Levich--Jortner rate model, keeping the
 intersystem-crossing (ISC) rate within a factor of two requires singlet--triplet gaps accurate to
-0.06--0.08~eV (0.03--0.13~eV over plausible reorganization energies), about 2~mHa per state. The
-triplet-yield class tolerates about 0.4~eV for dyes far from $\Phi_T=0.5$ but only 0.01--0.02~eV for
-dyes near it; when the rate runs through a near-resonant upper triplet, as for the top candidate of a
-screening round, the rate tolerance falls to 0.016~eV and the class margin to 0.08~eV. In a comparison
-of vertical energies with measured ones, a classical pipeline (TDDFT with $\Delta$SCF, calibrated
-one-electron spin--orbit coupling) meets this budget for compact dyes, reproducing absorption to
-$-0.055\pm0.02$~eV and the ISC rates of the two iodinated compact dyes with measured rates within a
-factor of two. It fails for the one $\pi$-extended dye with a measured rate, which it underestimates
-26-fold; only uncorrected TDDFT places an upper triplet close enough to S$_1$ to explain that rate, three
-higher-level treatments do not, and the mechanism remains open. Multireference references depend on the
-active space: the common (12e,11o) window of canonical orbitals around the Fermi level holds only 2.5--6.7
-of the 11 dipyrrin $\pi$ orbitals, and mostly iodine lone pairs in the iodinated dyes. In a controlled
-$\pi$ space selected by AVAS, SA-CASSCF/SC-NEVPT2 still overestimates the measured S$_1$--T$_1$ gaps by
-0.33--0.37~eV, about five times the budget. Second, we implement in PennyLane a gap-resolved ISC
-observable, the golden-rule rate written as a QSVT spectral filter, verify it against exact results to
-0.03\% (2\% for the smallest rate), and show that on bare active-space energies it ranks the dyes in the
-wrong order, whereas a gap-free proxy ranks them correctly for the wrong reason. Third, taking the
-pipeline rates as targets, we estimate the cost of the screening decision itself. With
-tensor-hypercontraction qubitization the filter needs 131--374 logical qubits depending on how the
-rotation angles are batched (158 in our cost model) and about $2\times10^{8}$ Toffoli gates per call.
-Because the rate is a small fraction ($6\times10^{-9}$--$4\times10^{-5}$) of the spin--orbit
-block-encoding norm, a decision takes $10^{3}$--$10^{6}$ calls: about $10^{11}$ Toffolis for light-atom
-negatives, $10^{12}$--$10^{13}$ for heavy-atom dyes far from the triplet-yield threshold and $10^{14}$
-near it, with amplitude estimation required in every case. These totals reach $10^{4}$ times the cost of
-a gap-free proxy at fixed precision, which does not take the decision. We argue that the useful quantum
-target for photosensitizer screening is excited-state energies with dynamic correlation at the budget
-accuracy, combined with a gap-resolved observable and amplitude estimation.
+0.06--0.08~eV, about 2~mHa per state; through a near-resonant upper triplet, as for the top candidate
+of a screening round, the tolerance falls to 0.016~eV. A TDDFT/$\Delta$SCF pipeline meets this budget
+for compact dyes but fails for the one $\pi$-extended dye with a measured rate. The (12e,11o) window of
+canonical orbitals used in earlier resource estimates holds only 2.5--6.7 of the 11 dipyrrin $\pi$
+orbitals; in a controlled $\pi$ space, SA-CASSCF/SC-NEVPT2 still overestimates the measured
+S$_1$--T$_1$ gaps by 0.33--0.37~eV, five times the budget. We implement a gap-resolved ISC observable,
+the golden-rule rate as a QSVT spectral filter, verify it against exact results, and show that on bare
+active-space energies it ranks the dyes in the wrong order. Taking the pipeline rates as targets, a
+screening decision with tensor-hypercontraction qubitization needs about $2\times10^{8}$ Toffolis per
+call but $10^{3}$--$10^{6}$ calls, because the rate is a small fraction of the spin--orbit
+block-encoding norm: about $10^{11}$ Toffolis for light-atom negatives and up to $10^{14}$ near the
+triplet-yield threshold, with amplitude estimation required in every case. We argue that the useful
+quantum target is dynamically correlated excited-state energies at the budget accuracy, combined with a
+gap-resolved observable and amplitude estimation.
 \end{abstract}
 
 % ---------------------------------------------------------------------------------------------
 \section{Introduction}
 
-Molecules that absorb light and cross efficiently from their singlet to their triplet manifold are
-the working component of several technologies. In photodynamic therapy (PDT) a photosensitizer
-absorbs in the tissue-transparent window, undergoes intersystem crossing (ISC) and transfers energy
-to molecular oxygen to form cytotoxic singlet oxygen~\cite{Agostinis2011}; the same mechanism kills
-bacteria in antimicrobial PDT~\cite{Hamblin2004,Wainwright2017,Cieplik2018}. Triplet sensitizers
-drive energy-transfer photocatalysis~\cite{StriethKalthoff2018,Grosskopf2022} and triplet--triplet
-annihilation upconversion~\cite{SinghRachford2010,Bharmoria2020}, and heavy-atom BODIPY dyes are used
-as theranostic agents that combine imaging and therapy~\cite{Awuah2012,Kowada2015,Wang2024BODIPY}.
-The inverse problem, a small singlet--triplet gap that enables reverse ISC, underlies
-thermally activated delayed fluorescence in organic light-emitting diodes~\cite{Uoyama2012,Wong2017,Yang2017TADF}.
-In all of these, design decisions hinge on two quantities: the energy of the absorbing singlet and the
-rate of crossing between the singlet and triplet manifolds, which depends on singlet--triplet gaps
-and spin--orbit couplings (SOC)~\cite{Marian2012,Marian2021,Penfold2018,Zhao2013}.
+Triplet photosensitizers absorb light and cross efficiently from their singlet to their triplet
+manifold. They are the working component of photodynamic therapy (PDT), where the triplet forms
+cytotoxic singlet oxygen~\cite{Agostinis2011,Hamblin2004,Wainwright2017,Cieplik2018}, of energy-transfer
+photocatalysis~\cite{StriethKalthoff2018,Grosskopf2022}, triplet--triplet annihilation
+upconversion~\cite{SinghRachford2010,Bharmoria2020} and theranostics~\cite{Awuah2012,Kowada2015,Wang2024BODIPY};
+the inverse process underlies thermally activated delayed fluorescence~\cite{Uoyama2012,Wong2017,Yang2017TADF}.
+Design decisions hinge on the energy of the absorbing singlet and on the intersystem-crossing (ISC)
+rate, which depends on singlet--triplet gaps and spin--orbit couplings
+(SOC)~\cite{Marian2012,Marian2021,Penfold2018,Zhao2013}.
 Boron-dipyrromethene (BODIPY) dyes are a common scaffold for these applications, because their
 absorption can be shifted to the red by aza substitution or $\pi$-extension and their ISC switched on
 by heavy atoms~\cite{Loudet2007,Kamkaew2013,Zhao2015BODIPY}.
@@ -103,7 +84,21 @@ e^{-i\Hso t}\lvert\mathrm{S}_1\rangle\rvert^2$ that contains the SOC but no ener
 177--353 logical qubits and $10^{7}$--$10^{9}$ Toffoli gates per shot for active spaces of 11--45
 orbitals. Related proposals outline a golden-rule ISC rate within a relativistic Hamiltonian
 workflow~\cite{Zak2026}, and variational calculations have benchmarked BODIPY excitation energies
-against experiment~\cite{Nykanen2024}.
+against experiment~\cite{Nykanen2024}. The underlying primitives are known: smooth functions of the
+Hamiltonian estimated through spectral filters and block encodings~\cite{Roggero2019,Roggero2020,Rall2020,Lu2021}
+with QSVT~\cite{Gilyen2019,Martyn2021,Low2019}, Hamiltonian factorizations that reduce the cost of
+qubitization~\cite{Babbush2018,Berry2019,vonBurg2021,Lee2021,Loaiza2023BLISS,Rocca2024,Caesura2025}, and
+amplitude estimation with and without phase
+estimation~\cite{Brassard2002,Suzuki2020,Grinko2021,AaronsonRall2020,GiurgicaTiron2022,RallFuller2023,KnillOrtizSomma2007,Montanaro2015}.
+End-to-end estimates that include the measurement stage have been made for observables beyond the
+energy~\cite{Steudtner2023,Apel2025} and for photochemical yields and rates~\cite{Eklund2026}. On the
+classical side, bare active spaces miss the excitation energies of BODIPY and cyanine dyes without
+dynamic correlation~\cite{Momeni2015,Chibani2013,BerraudPache2020}, TDDFT overestimates
+them~\cite{Jacquemin2012,LeGuennic2015}, and $\Delta$SCF corrects the lowest
+states~\cite{Kowalczyk2011,Hait2021}; ISC rates are routinely computed with golden-rule
+approaches~\cite{Etinski2011,Baryshnikov2017,deSouza2019,Shi2022}. Perspectives on quantum advantage in
+chemistry stress that the target accuracy and the classical baseline must be
+stated~\cite{Babbush2021,LeeS2023,Chan2024,Liu2022}.
 
 These proposals leave three questions open, and they are the subject of this work.
 \begin{enumerate}
@@ -128,41 +123,10 @@ and triplet yields of BODIPY dyes~\cite{Ly2021}, and on six screening candidates
 data. We do not propose a new quantum algorithm: the spectral-filter primitive and amplitude estimation
 are known. Our contributions are (C1) the accuracy budget and the general recipe to derive it, (C2) an
 implemented, verified and costed gap-resolved ISC observable, (C3) decision-level resource estimates,
-and (C4) an experimental benchmark of ISC rates and triplet yields, which previous BODIPY benchmarks of
-quantum methods did not include~\cite{Nykanen2024,Genin2025}, together with a check of what the
-(12e,11o) active space used in these resource estimates contains.
-
-% ---------------------------------------------------------------------------------------------
-\section{Related work}
-
-Quantum algorithms for excited states range from near-term variational
-methods~\cite{McClean2017,Higgott2019,Nakanishi2019,Parrish2019,Ollitrault2020qEOM} to fault-tolerant
-spectroscopy based on phase estimation and spectral filters~\cite{Fomichev2024XAS,Loaiza2025,Kosugi2020}.
-Estimating a smooth function of the Hamiltonian in a given state, the primitive behind spectral
-densities and linear response, has been formulated with integral transforms and block
-encodings~\cite{Roggero2019,Roggero2020,Rall2020,Lu2021}, and the polynomial machinery is that of
-QSVT~\cite{Gilyen2019,Martyn2021,Low2019}. Vibronic effects have been addressed with dedicated quantum
-algorithms~\cite{Huh2015,Sawaya2019,Motlagh2024}. Resource estimates for chemistry have been reduced
-by successive factorizations of the Hamiltonian~\cite{Babbush2018,Berry2019,vonBurg2021,Lee2021,Loaiza2023BLISS,Rocca2024,Caesura2025},
-and fault-tolerant estimation of observables beyond the energy has been
-costed~\cite{Steudtner2023,Apel2025}, including end-to-end estimates for photochemical yields and rates
-with amplitude estimation~\cite{Eklund2026}. Amplitude estimation and its variants without phase
-estimation~\cite{Brassard2002,Suzuki2020,Grinko2021,AaronsonRall2020,GiurgicaTiron2022,RallFuller2023}
-give Heisenberg scaling for expectation values~\cite{KnillOrtizSomma2007,Montanaro2015}.
-
-On the classical side, it is well established that bare active spaces miss the excitation energies of
-BODIPY and cyanine dyes without dynamic correlation~\cite{Momeni2015,Chibani2013,BerraudPache2020}, and
-that TDDFT overestimates them~\cite{Jacquemin2012,LeGuennic2015}; $\Delta$SCF and orbital-optimized
-approaches correct the lowest states~\cite{Kowalczyk2011,Hait2021}. Several schemes add dynamic
-correlation to quantum active-space solvers, through perturbation theory on reduced density
-matrices~\cite{Krompiec2022,Takeshita2020}, downfolding~\cite{Huang2023DSRG} or transcorrelated
-Hamiltonians~\cite{Motta2020TC,Kumar2022TC}. ISC rates are routinely computed with golden-rule and
-time-dependent approaches~\cite{Etinski2011,Baryshnikov2017,deSouza2019,Shi2022}. Perspectives on
-quantum advantage in chemistry~\cite{Babbush2021,LeeS2023,Chan2024,Liu2022} stress that the target
-accuracy and the classical baseline must be stated. What has not been done for photosensitizers is to
-derive the accuracy the screening decision requires, to evaluate a mechanism-resolved ISC observable at
-the cost of the proposed proxy, to cost the decision rather than the shot, as Eklund \emph{et
-al.}~\cite{Eklund2026} did for photochemical yields, and to test these against measured ISC rates.
+as Eklund \emph{et al.}~\cite{Eklund2026} made for photochemical yields, and (C4) an experimental
+benchmark of ISC rates and triplet yields, which previous BODIPY benchmarks of quantum methods did not
+include~\cite{Nykanen2024,Genin2025}, with a check of what the (12e,11o) active space of these resource
+estimates contains.
 
 % ---------------------------------------------------------------------------------------------
 \section{Methods}
@@ -214,12 +178,9 @@ for which $\kisc$ stays within a factor $F$ of its unperturbed value for every s
 sign. The class margin is the smallest $\lvert\delta\rvert$ that moves $\Phi_T$ across 0.5. The
 absorption margin is the distance of S$_1$ from the nearest edge of the 650--850~nm window.
 
-\textbf{Choice of $F$.} We use $F=2$ as the reference because a validated classical method already
-reaches it: our pipeline reproduces the measured $\kisc$ of I2-BDP and I3-BDP within a factor of 2
-(Table~\ref{tab:isc}). A method that is to replace or complement it must do at least as well. Since
-this choice is a convention, we report the tolerance as a function of $F$ and of $\lambda_s$
-(Figure~\ref{fig:tolcurve}). The recipe is general: given a rate model and a decision, the budget is the
-largest input error that leaves the decision unchanged.
+We use $F=2$ as the reference because the pipeline reproduces the measured $\kisc$ of I2-BDP and
+I3-BDP within that factor (Table~\ref{tab:isc}), and report the tolerance as a function of $F$ and of
+$\lambda_s$ (Figure~\ref{fig:tolcurve}).
 
 \subsection{Gap-resolved ISC observable}
 \label{sec:filter-method}
@@ -283,13 +244,12 @@ the overlap: an error of a factor 10 in $\kisc$ changes the D1 cost by a factor 
 
 \subsection{Active-space references and resources}
 
-To bound what an exact solver of the active-space problem would deliver, we computed CASCI(12e,11o) and
-strongly contracted NEVPT2~\cite{Angeli2001} S$_1$ energies with PySCF on RHF orbitals for four dyes,
-and state-averaged CASSCF(12e,11o)/SC-NEVPT2 singlet and triplet energies (S$_1$, T$_1$, T$_2$) for the
-nine validation dyes. In these runs, as in the active-space sweep, the active orbitals are the canonical
-orbitals around the Fermi level (6 occupied, 5 virtual). SA-CASSCF averages the three lowest singlets
-with equal weights, and the triplets are CASCI roots on these singlet-optimized orbitals. To control the
-character of the active space we also select it by a fixed rule (\texttt{paper/references/run\_pi\_cas.py}):
+To bound what an exact solver of the active-space problem would deliver, we computed CASCI and
+strongly contracted NEVPT2~\cite{Angeli2001} singlet and triplet energies (S$_1$, T$_1$, T$_2$) in
+(12e,11o) active spaces with PySCF. SA-CASSCF averages the three lowest singlets with equal weights, and
+the triplets are CASCI roots on these singlet-optimized orbitals. Two active spaces are compared: the
+canonical window of 6 occupied and 5 virtual orbitals around the Fermi level, the usual choice, and a
+space selected by a fixed rule (script \texttt{run\_pi\_cas.py}):
 the molecule is rotated so that the 11 dipyrrin atoms (two pyrrole rings and the meso atom) lie in the
 $xy$ plane, the occupied and virtual RHF orbitals are projected separately on the MINAO 2p$_z$ functions
 of these atoms, as in AVAS~\cite{Sayfutyarova2017}, and the 6 occupied and 5 virtual orbitals with the
@@ -318,7 +278,7 @@ three halogenated aza-BODIPYs) have no experimental data and are used only in th
 
 \paragraph{Absorption.} After the $\Delta$SCF correction the six compact dyes lie slightly to the red of
 experiment, with a mean error of $-0.055$~eV and a standard deviation of 0.02~eV (Table~\ref{tab:abs},
-Figure~\ref{fig:abs}); uncorrected TDDFT places them 0.35--0.76~eV too high. Vertical energies are
+Figure~S1); uncorrected TDDFT places them 0.35--0.76~eV too high. Vertical energies are
 compared with band maxima and solvent is neglected, so we claim that the protocol works for compact
 BODIPYs, not that it is general. The same vertical-to-measured comparison is used for every method in this
 paper. For BODIPYs the vertical energy and the band maximum, and the vertical and adiabatic gaps, typically
@@ -350,14 +310,6 @@ methods.} It does not transfer to the $\pi$-extended distyryl dyes, whose S$_1$ 
     \bottomrule
   \end{tabular}
 \end{table}
-
-\begin{figure}
-  \centering
-  \includegraphics[width=0.48\textwidth]{figures/absorption_parity.pdf}
-  \caption{Calculated S$_1$ (TDDFT+$\Delta$SCF) versus experimental absorption energy for the six
-  compact dyes (circles) and the three distyryl dyes (squares).}
-  \label{fig:abs}
-\end{figure}
 
 \paragraph{ISC.} The computed S$_1$--T$_1$ gaps of BDP (0.72~eV) and I2-BDP (0.61~eV) agree with the
 measured 0.77 and 0.59~eV (Table~\ref{tab:isc}). Without heavy atoms $\kisc$ is negligible, as observed.
@@ -530,119 +482,21 @@ dyes are still running.}
   \end{tabular}
 \end{table}
 
-\paragraph{Results on the canonical window.} On RHF orbitals, CASCI overestimates S$_1$ by
-1.4--2.0~eV, 20--30 times the budget (Table~\ref{tab:cas}, Figure~\ref{fig:cas}). SC-NEVPT2 on the same
-active space reduces the error to 0.06--0.27~eV, with a sign that changes across dyes; it is larger than
-the TDDFT+$\Delta$SCF error for two dyes and comparable for the other two, and up to about three times
-the budget. Quantum phase estimation on the bare active-space Hamiltonian would reproduce the CASCI
-energies, so a dynamic-correlation step on top of the quantum calculation is required for the
-observables to be useful.
-
-On SA-CASSCF orbitals the same nominal active space gives NEVPT2 S$_1$ energies 0.51--0.79~eV above
-experiment for the same dyes, against 0.06--0.27~eV on RHF orbitals. The AVAS results resolve this: on a
-$\pi$ space, NEVPT2 on unoptimized orbitals is 0.5--0.9~eV too high and on SA-CASSCF orbitals 0.54--0.59~eV,
-so the close agreement on canonical RHF orbitals comes from the mixed character of that window, not from
-a better reference.
-
-State-averaged CASSCF orbitals do not close the gap (Table~\ref{tab:sanevpt2}). For the six compact dyes,
-SA-CASSCF(12e,11o)/SC-NEVPT2 places S$_1$ 0.51--0.79~eV above experiment. For the four dyes with a
-measured singlet--triplet gap (BDP, I-BDP, I2-BDP, I3-BDP), the S$_1$--T$_1$ gap is 0.80--1.03~eV against
-0.58--0.77~eV measured: errors of 0.22--0.27~eV, three to four times the budget, with the same sign for
-every dye. That sign is the one a vertical-to-measured comparison produces, since T$_1$ relaxes more than
-S$_1$, so part of these errors may come from the comparison. About half of the S$_1$ error cancels in the gap, but not enough. T$_2$ lies 0.37--0.45~eV
-above S$_1$ in the iodinated and phenyl dyes, within 0.05--0.14~eV of the pipeline, so the S$_1\to$T$_2$
-channel stays closed in both methods. For aza-BDP-Ph$_4$, NEVPT2 places T$_2$ only 0.17~eV above S$_1$
-(0.29~eV in the pipeline): the two methods differ there by more than the budget, in exactly the
-quantity that controls whether an upper channel opens. Even with second-order dynamic correlation, the
-canonical (12e,11o) window therefore does not reach the accuracy the screening decision requires.
-For the three distyryl dyes S$_1$ is 0.38--0.52~eV too high, and T$_2$ lies 0.50--0.73~eV above S$_1$; in
-I2-BDP-0 the S$_1\to$T$_2$ channel is closed in NEVPT2, as in the $\Delta$SCF-corrected pipeline.
-
-\paragraph{Enlarging the canonical window does not bring the gap to experiment.} To test whether the
-remaining error is an active-space truncation, we grew the window from (8,8) to (14,14) for BDP and
-I2-BDP, adding the next occupied and virtual orbital at each step and re-optimizing the orbitals
-(Table~\ref{tab:sweep}). Bare CASSCF/CASCI behaves as expected
-for a missing-correlation problem: S$_1$ falls by 0.7~eV for BDP and 0.2~eV for I2-BDP, but remains
-0.6~eV above experiment at (12,12), and the S$_1$--T$_1$ gap stays 0.26--0.48~eV too large. Going to
-(14,14) changes the CASSCF energies by less than 0.003~eV for both dyes. This is the signature of two
-added orbitals that stay doubly occupied and empty, not evidence of convergence. The position
-of T$_2$ relative to S$_1$ jumps by up to 0.7~eV from one size to the next (from $+0.16$ to $+0.74$ to
-$+0.05$~eV for I2-BDP), so in a bare active space even the ordering that decides whether the
-S$_1\to$T$_2$ channel is open is not stable. With NEVPT2 the S$_1$--T$_1$ gap is flat: 1.00, 0.99 and
-0.96~eV for BDP (0.77 measured) and 0.82, 0.87 and 0.88~eV for I2-BDP (0.59 measured). The error, about
-+0.2 and +0.3~eV, is not reduced by enlarging the active space along this orbital sequence. Whether it
-comes from the second-order treatment, from the character of the window or from the vertical-to-measured
-comparison cannot be decided from these data. T$_2$--S$_1$ still moves by 0.24~eV across sizes for I2-BDP, more than
-three times the budget. A larger active space alone does not bring the decisive gaps within the budget.
-\todo{Add (16,16) CASCI when it finishes, with the natural occupations at every size.}
-
-\begin{table}
-  \caption{Enlarging the canonical window for BDP and I2-BDP: vertical energies and gaps (eV),
-  SA-CASSCF($n$,$n$) orbitals, def2-SVP. Experiment: S$_1$ 2.46 and 2.31~eV, S$_1-$T$_1$ 0.77 and 0.59~eV.}
-  \label{tab:sweep}
-  \footnotesize\setlength{\tabcolsep}{4pt}
-  \begin{tabular}{llrrrrrr}
-    \toprule
-    & & \multicolumn{3}{c}{CASCI} & \multicolumn{3}{c}{SC-NEVPT2} \\
-    Dye & ($n$,$n$) & S$_1$ & S$_1-$T$_1$ & T$_2-$S$_1$ & S$_1$ & S$_1-$T$_1$ & T$_2-$S$_1$ \\
-    \midrule
-    BDP    & (8,8)   & 3.80 & 1.74 & $-0.22$ & 3.08 & 1.00 & $+0.43$ \\
-    BDP    & (10,10) & 3.22 & 1.17 & $+0.19$ & 3.02 & 0.99 & $+0.45$ \\
-    BDP    & (12,12) & 3.06 & 1.03 & $+0.29$ & 2.97 & 0.96 & $+0.48$ \\
-    BDP    & (14,14) & 3.06 & 1.03 & $+0.29$ & -- & -- & -- \\
-    I2-BDP & (8,8)   & 3.16 & 1.08 & $+0.16$ & 2.84 & 0.82 & $+0.40$ \\
-    I2-BDP & (10,10) & 2.94 & 0.94 & $+0.74$ & 2.86 & 0.87 & $+0.64$ \\
-    I2-BDP & (12,12) & 2.94 & 1.07 & $+0.05$ & 2.84 & 0.88 & $+0.52$ \\
-    I2-BDP & (14,14) & 2.94 & 1.07 & $+0.05$ & -- & -- & -- \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\begin{table}
-  \caption{SA-CASSCF(12e,11o)/SC-NEVPT2 vertical energies (eV) on the canonical window, def2-SVP, gas
-  phase, with experiment and the classical pipeline (T$_2-$S$_1$ from TDDFT T$_2$ and $\Delta$SCF S$_1$).}
-  \label{tab:sanevpt2}
-  \begin{tabular}{lcccccc}
-    \toprule
-    Dye & S$_1$ & S$_1$ exp & S$_1-$T$_1$ & S$_1-$T$_1$ exp & T$_2-$S$_1$ & T$_2-$S$_1$ TDDFT \\
-    \midrule
-    BODIPY core & 3.12 & 2.46 & 1.16 & --   & $+0.91$ & $+0.44$ \\
-    BDP         & 3.05 & 2.46 & 0.99 & 0.77 & $+0.42$ & $+0.48$ \\
-    I-BDP       & 2.99 & 2.46 & 1.03 & 0.76 & $+0.42$ & $+0.48$ \\
-    I2-BDP      & 2.82 & 2.31 & 0.85 & 0.59 & $+0.37$ & $+0.32$ \\
-    I3-BDP      & 2.83 & 2.30 & 0.80 & 0.58 & $+0.45$ & $+0.31$ \\
-    aza-BDP-Ph$_4$ & 2.70 & 1.91 & 1.31 & --  & $+0.17$ & $+0.29$ \\
-    \midrule
-    BDP-0       & 2.49 & 1.97 & 1.00 & -- & $+0.50$ & $+0.53$ \\
-    I-BDP-0     & 2.34 & 1.96 & 0.88 & -- & $+0.73$ & $+0.53$ \\
-    I2-BDP-0    & 2.39 & 1.93 & 0.91 & -- & $+0.54$ & $+0.51$ \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\begin{table}
-  \caption{S$_1$ excitation energies (eV) in the canonical (12e,11o) window on RHF orbitals, def2-SVP,
-  compared with experiment and with the classical pipeline.}
-  \label{tab:cas}
-  \begin{tabular}{lcccc}
-    \toprule
-    Dye & exp & CASCI & SC-NEVPT2 & TDDFT+$\Delta$SCF \\
-    \midrule
-    BODIPY core    & 2.46 & 3.97 & 2.71 & 2.45 \\
-    BDP            & 2.46 & 4.14 & 2.52 & 2.40 \\
-    I2-BDP         & 2.31 & 4.32 & 2.04 & 2.26 \\
-    aza-BDP-Ph$_4$ & 1.91 & 3.35 & 1.99 & 1.83 \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\begin{figure}
-  \centering
-  \includegraphics[width=0.48\textwidth]{figures/active_space_error.pdf}
-  \caption{Error in the S$_1$ energy for CASCI(12e,11o), SC-NEVPT2 on the same active space, and the
-  classical TDDFT+$\Delta$SCF pipeline.}
-  \label{fig:cas}
-\end{figure}
+\paragraph{Results on the canonical window.} The canonical window gives the same conclusion with
+smaller, less systematic errors (Tables~S1--S3, Figure~S2). On RHF orbitals CASCI overestimates S$_1$ by
+1.4--2.0~eV, 20--30 times the budget, and NEVPT2 reduces the error to 0.06--0.27~eV. On SA-CASSCF
+orbitals NEVPT2 places S$_1$ 0.51--0.79~eV above experiment for the compact dyes, and the S$_1$--T$_1$
+gaps of BDP, I-BDP, I2-BDP and I3-BDP are 0.22--0.27~eV too large. A shift of half an eV on an orbital
+change is a sign that the character of the window changes; the AVAS results show that the close
+agreement on RHF orbitals comes from that mixed character, not from a better reference. For
+aza-BDP-Ph$_4$, NEVPT2 places T$_2$ only 0.17~eV above S$_1$ (0.29~eV in the pipeline), a difference larger
+than the budget in the quantity that decides whether an upper channel opens. Growing the window from
+(8,8) to (14,14) for BDP and I2-BDP lowers the CASSCF S$_1$ by 0.2--0.7~eV but leaves the NEVPT2
+S$_1$--T$_1$ gap flat (0.96--1.00 and 0.82--0.88~eV against 0.77 and 0.59~eV measured), while T$_2$--S$_1$
+moves by 0.24~eV for I2-BDP; the (14,14) step changes nothing, the signature of two inert orbitals
+(Table~S3). \todo{(16,16) when it finishes.} Quantum phase estimation on any of these bare Hamiltonians
+would reproduce the CASCI energies, so a dynamic-correlation step on top of the quantum calculation is
+required, and even second-order dynamic correlation in a (12e,11o) space does not reach the budget.
 
 \subsection{Gap-resolved ISC observable in simulation}
 \label{sec:filter}
@@ -653,7 +507,7 @@ digits and the exact golden-rule rate to within 0.03\% (2\% for the smallest rat
 filter maximum, near the dynamic-range floor set by the polynomial error) (Table~\ref{tab:filter}). The
 circuit computes the observable it is designed for.
 
-What it computes on active-space energies is another matter. In these active spaces S$_1$ lies
+On active-space energies, however, S$_1$ lies
 2.3--2.8~eV above T$_1$ instead of about 0.6~eV, so the S$_1\to$T$_1$ channel is closed by the
 Franck--Condon factor, and the rate comes from upper triplets that happen to lie within 0.06--0.25~eV
 of the misplaced S$_1$. At CAS(6,6) this puts the iodine-free BODIPY core ($2.5\times10^{8}$~s$^{-1}$)
@@ -710,8 +564,7 @@ iodine lone pairs (Table~\ref{tab:window}), $\aso$ also depends on the active-sp
 Hartree--Fock orbitals, $\aso$ of I2-BDP is 8300~cm$^{-1}$ in the canonical window and 300~cm$^{-1}$ in the
 AVAS $\pi$ space. The $\pi$ space cannot carry the rate, however, because the SOC between $\pi\pi^*$ states
 of a planar dye is small (El-Sayed's rule); an active space for the ISC observable has to include the
-orbitals that carry the SOC, and the cost then depends on how many of them are included. Most of the norm of $\Hso$ couples S$_1$ to states far from resonance, or acts on
-states S$_1$ does not touch. The success probability of eq~\ref{eq:p} is therefore $6\times10^{-9}$ to
+orbitals that carry the SOC, and the cost then depends on how many of them are included. The success probability of eq~\ref{eq:p} is therefore $6\times10^{-9}$ to
 $4\times10^{-5}$ for the ISC-active dyes, and the number of calls, not the cost per call, dominates.
 
 \paragraph{Amplitude estimation is required.} On the actual filter circuit
@@ -721,7 +574,7 @@ therefore computed from this law, with an ensemble over nearby amplitudes; the c
 check the law and a few canonical estimates. At the 95th percentile, MLAE reaches
 18\% relative error with $1.0\times10^{5}$ calls and 9\% with $2.1\times10^{5}$; canonical amplitude
 estimation, averaged over nearby amplitudes to remove grid coincidences, needs $2.6\times10^{5}$ calls for
-18\%; direct sampling is still at 250\% and 160\% (Figure~\ref{fig:ae}). Neither amplitude estimator
+18\%; direct sampling is still at 250\% and 160\% (Figure~S3). Neither amplitude estimator
 resolves $p$ below about $\pi/\sqrt p\approx1.3\times10^{3}$ Grover iterations. The empirical constants,
 $\varepsilon_\mathrm{rel}\sqrt p\,N_\mathrm{calls}=45$ for MLAE and 109 for canonical estimation, are used
 in the cost model. With 100 shots per Grover depth, MLAE stops improving at 3\% relative error
@@ -781,23 +634,14 @@ by Eklund \emph{et al.}~\cite{Eklund2026}.
   \label{fig:decision}
 \end{figure}
 
-\begin{figure}
-  \centering
-  \includegraphics[width=0.48\textwidth]{figures/ae_demo.pdf}
-  \caption{95th-percentile relative error of $\kisc$ against the number of calls to the filter circuit
-  (BODIPY core, CAS(4,4), $p=5.6\times10^{-6}$): direct sampling, canonical amplitude estimation (median of
-  16, ensemble over nearby amplitudes; crosses: circuit-level simulation at this $p$) and MLAE.}
-  \label{fig:ae}
-\end{figure}
-
 % ---------------------------------------------------------------------------------------------
 \section{Discussion}
 
-\paragraph{What the useful quantum target is.} The three analyses point the same way. The screening
-decision needs singlet--triplet gaps to about 0.07~eV, chemical accuracy per state; a validated classical
-pipeline meets this for compact dyes but not for the $\pi$-extended dye tested; and the bare
-active-space Hamiltonian of the canonical window misses S$_1$ by about 2~eV, so that a mechanism-correct
-observable evaluated on it ranks dyes wrongly. We argue that the useful quantum target is therefore
+\paragraph{What the useful quantum target is.} The screening decision needs singlet--triplet gaps to
+about 0.07~eV; a classical pipeline meets this for compact dyes but not for the $\pi$-extended dye
+tested; bare active-space Hamiltonians miss S$_1$ by 1--2~eV, so that a mechanism-correct observable
+evaluated on them ranks dyes wrongly; and NEVPT2 in a controlled $\pi$ space still misses the gaps by
+five times the budget. We argue that the useful quantum target is therefore
 excited-state energies with dynamic correlation at the budget accuracy, evaluated with a gap-resolved
 observable, not a larger bare active space or a better gap-free proxy. Two qualifications apply. The
 active space must be chosen by a controlled rule, since the canonical window mixes $\pi$, $\sigma$ and
@@ -815,14 +659,12 @@ For the ISC-active heavy-atom dyes this ratio is 5--160. An encoding of $\Hso$ t
 to near-resonant triplets, for example the heavy-atom one-centre terms, or a resonance-weighted
 preparation of $\chi$, would reduce the cost by the same factor. Quantifying this is left to future work.
 
-\paragraph{A general recipe.} The accuracy budget is not specific to PDT or to BODIPYs. Any screening
-decision based on a rate model can be treated the same way: perturb the inputs, find the largest error
-that leaves the decision unchanged, and compare it with what the candidate methods deliver. For TADF
-emitters the decision concerns a small S$_1$--T$_1$ gap and reverse ISC~\cite{Uoyama2012,Wong2017}; for
-triplet photocatalysts and upconversion sensitizers, the triplet energy relative to a substrate or
-annihilator~\cite{StriethKalthoff2018,SinghRachford2010}. In each case the budget sets the target
-accuracy for classical and quantum methods alike, and the margin to the decision boundary sets the
-measurement cost on a quantum computer.
+\paragraph{A general recipe.} Any screening decision based on a rate model can be treated the same
+way: perturb the inputs, find the largest error that leaves the decision unchanged, and compare it with
+what the candidate methods deliver, for example the S$_1$--T$_1$ gap of TADF
+emitters~\cite{Uoyama2012,Wong2017} or the triplet energy of photocatalysts relative to a
+substrate~\cite{StriethKalthoff2018}. The budget sets the target accuracy, and the margin to the decision
+boundary sets the measurement cost on a quantum computer.
 
 \paragraph{Limitations.} The benchmark is small: nine dyes from essentially one family and three
 measured ISC rates, two of them for nearly identical dyes. One functional family, one basis set
@@ -838,9 +680,7 @@ simulated in small active spaces.
 % ---------------------------------------------------------------------------------------------
 \section{Conclusions}
 
-Triplet photosensitizers for photodynamic and antimicrobial therapy, photocatalysis, upconversion and
-theranostics, and their inverse counterparts in TADF emitters, are designed around singlet--triplet gaps
-and spin--orbit couplings. For BODIPY dyes we have shown that the screening decision needs these gaps to
+For BODIPY photosensitizers we have shown that the screening decision needs these gaps to
 about 0.07~eV (0.03--0.13~eV depending on the reorganization energy), that a near-resonant upper triplet
 tightens this to 0.016~eV and makes the top screening candidate the most fragile prediction, and that a
 classical TDDFT/$\Delta$SCF pipeline meets the budget for compact dyes but not for the $\pi$-extended dye
@@ -864,8 +704,9 @@ quantum algorithms for photosensitizer design, which motivated this study.
 \end{acknowledgement}
 
 \begin{suppinfo}
-\todo{Geometries, per-dye outputs, MLJ sensitivity, accuracy-budget tables for all dyes and functionals,
-CAS(4,4)/(6,6) quantum results, double-factorization resource breakdown, decision-cost tables for all dyes.}
+Absorption parity plot (Figure~S1); canonical-window CASCI, SA-CASSCF/SC-NEVPT2 and active-space sweep
+(Tables~S1--S3, Figure~S2); amplitude-estimation simulation (Figure~S3). \todo{Geometries, per-dye
+outputs, accuracy-budget tables for all dyes, decision-cost tables for all dyes.}
 \end{suppinfo}
 
 \section*{Data Availability}
@@ -873,10 +714,10 @@ CAS(4,4)/(6,6) quantum results, double-factorization resource breakdown, decisio
 Code, geometries and all results: \url{https://github.com/pifparfait/psscreen}. Tables~\ref{tab:abs}
 and~\ref{tab:isc} come from the validation runs of \texttt{psscreen}; the budget and
 Figure~\ref{fig:tolcurve} from \texttt{paper/analysis/accuracy\_budget.py} and \texttt{tolerance\_curve.py};
-Tables~\ref{tab:sanevpt2}, \ref{tab:sweep}, \ref{tab:window} and~\ref{tab:pi} from
+Tables~\ref{tab:window}, \ref{tab:pi} and S1--S3 from
 \texttt{paper/references/run\_sa\_nevpt2.py NAME}, \texttt{run\_cas\_sweep.py NAME} and
 \texttt{run\_pi\_cas.py NAME}; Table~\ref{tab:filter} from \texttt{psscreen/isc\_filtered.py};
-Table~\ref{tab:decision} and Figures~\ref{fig:decision} and~\ref{fig:ae} from
+Table~\ref{tab:decision} and Figures~\ref{fig:decision} and S3 from
 \texttt{paper/quantum/decision\_cost.py}, \texttt{alpha\_so.py} and \texttt{ae\_demo.py}. \todo{Archive a tagged
 release on Zenodo and cite the DOI.}
 
