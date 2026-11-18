@@ -133,7 +133,8 @@ mf = scf.RHF(mol).density_fit().run()
 out["timings_s"]["rhf"] = time.time() - t0
 
 # ---------------------------------------------------------------- 3) AVAS-type selection
-pmol = gto.M(atom=to_pyscf_atom([sym[i] for i in core], xyz_r[core]), basis="minao", unit="Angstrom", verbose=0)
+pmol = gto.M(atom=to_pyscf_atom([sym[i] for i in core], xyz_r[core]), basis="minao", unit="Angstrom", verbose=0,
+             spin=None)  # odd electron count for aza cores (meso N); only the basis is used
 pz = [k for k, lab in enumerate(pmol.ao_labels()) if lab.split()[2] == "2pz"]
 assert len(pz) == 11
 S = mf.get_ovlp()

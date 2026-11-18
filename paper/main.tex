@@ -372,8 +372,8 @@ describes different model chemistries across dyes in the canonical window, but o
 
 \paragraph{A controlled $\pi$ space does not reach the budget either.} In the AVAS $\pi$ space with
 SA-CASSCF orbitals and def2-SVP, SC-NEVPT2 places S$_1$ 0.54--0.59~eV above experiment and overestimates the
-measured S$_1$--T$_1$ gaps by 0.33--0.37~eV for BDP, I-BDP and I2-BDP (Table~\ref{tab:pi}). BDP and I-BDP share
-the same $\pi$ space and agree to 0.02~eV, so these are effectively two independent results. The lowest upper
+measured S$_1$--T$_1$ gaps by 0.33--0.39~eV for BDP, I-BDP, I2-BDP and I3-BDP (Table~\ref{tab:pi}). BDP and I-BDP share
+the same $\pi$ space and agree to 0.02~eV, as do I2-BDP and I3-BDP, so these are effectively two independent results. The lowest upper
 triplet lies 0.36--0.44~eV above S$_1$, as in the pipeline, so the S$_1\to$T$_2$ channel stays closed. No
 orbital is inert: every root has occupations that deviate from 0 or 2 by at least 0.02. Without orbital
 optimization, CASCI on the AVAS orbitals misses S$_1$ by 1.2--2.3~eV and NEVPT2 by 0.5--0.9~eV.
@@ -381,8 +381,8 @@ optimization, CASCI on the AVAS orbitals misses S$_1$ by 1.2--2.3~eV and NEVPT2 
 These errors are larger than those of CASPT2 in a (12e,11o) $\pi$ space with larger basis
 sets~\cite{Momeni2015}, quoted in ref~\citenum{Zhou2026PRA}. The def2-SVP basis, the missing $\sigma$--$\pi$
 polarization of a $\pi$-only reference, and the singlet-only state averaging can each contribute; we cannot yet
-separate them. \todo{def2-TZVP and SA(3S+2T) runs for BDP and I2-BDP on tars; I3-BDP NEVPT2, aza-BDP-Ph$_4$ and
-the distyryl dyes still running.} A controlled (12e,11o) $\pi$ space with second-order dynamic correlation in
+separate them. \todo{def2-TZVP and SA(3S+2T) runs for BDP and I2-BDP on tars; aza-BDP-Ph$_4$ and the distyryl dyes still
+running.} A controlled (12e,11o) $\pi$ space with second-order dynamic correlation in
 a double-$\zeta$ basis misses the gaps by several times the budget.
 
 \begin{table}
@@ -399,7 +399,7 @@ a double-$\zeta$ basis misses the gaps by several times the budget.
     BDP         & 2.91 & 1.09 & $+0.24$ & 3.01 & 1.10 & $+0.36$ & 2.46 / 0.77 \\
     I-BDP       & 2.90 & 1.10 & $+0.23$ & 3.00 & 1.11 & $+0.36$ & 2.46 / 0.76 \\
     I2-BDP      & 2.87 & 1.00 & $+0.24$ & 2.90 & 0.96 & $+0.44$ & 2.31 / 0.59 \\
-    I3-BDP      & 2.86 & 1.01 & $+0.23$ & --   & --   & --      & 2.30 / 0.58 \\
+    I3-BDP      & 2.86 & 1.01 & $+0.23$ & 2.89 & 0.97 & $+0.44$ & 2.30 / 0.58 \\
     \bottomrule
   \end{tabular}
 \end{table}
