@@ -55,9 +55,10 @@ $-0.055\pm0.02$~eV and the ISC rates of the two iodinated compact dyes with meas
 factor of two. It fails for the one $\pi$-extended dye with a measured rate, which it underestimates
 26-fold; only uncorrected TDDFT places an upper triplet close enough to S$_1$ to explain that rate, three
 higher-level treatments do not, and the mechanism remains open. Multireference references depend on the
-active space: the common (12e,11o) window of canonical orbitals around the Fermi level holds only 2.6--6.7
-of the 11 dipyrrin $\pi$ orbitals, and mostly iodine lone pairs in the diiodo dye. On that window CASCI
-misses S$_1$ by 1.4--2.0~eV (RHF orbitals). Second, we implement in PennyLane a gap-resolved ISC
+active space: the common (12e,11o) window of canonical orbitals around the Fermi level holds only 2.5--6.7
+of the 11 dipyrrin $\pi$ orbitals, and mostly iodine lone pairs in the iodinated dyes. In a controlled
+$\pi$ space selected by AVAS, SA-CASSCF/SC-NEVPT2 still overestimates the measured S$_1$--T$_1$ gaps by
+0.33--0.37~eV, about five times the budget. Second, we implement in PennyLane a gap-resolved ISC
 observable, the golden-rule rate written as a QSVT spectral filter, verify it against exact results to
 0.03\% (2\% for the smallest rate), and show that on bare active-space energies it ranks the dyes in the
 wrong order, whereas a gap-free proxy ranks them correctly for the wrong reason. Third, taking the
@@ -467,28 +468,64 @@ would rank azaBDP\_Br2 ($V_1^2=1.8$~cm$^{-2}$) below azaBDP\_IPh2 (26~cm$^{-2}$)
 \paragraph{What the (12e,11o) window contains.} The dipyrrin $\pi$ system has 11 atoms and 12
 $\pi$ electrons, so a (12e,11o) space can be the $\pi$ space of the chromophore. The canonical window of 6
 occupied and 5 virtual orbitals is not (Table~\ref{tab:window}). Summed over its 11 orbitals, the weight on
-the dipyrrin 2p$_z$ space is 6.7 for the BODIPY core, 5.2 for BDP and 2.6 for I2-BDP. In I2-BDP only HOMO
-and LUMO are $\pi$ orbitals of the chromophore; four of the eleven orbitals sit mainly on iodine (lone pairs
-and C--I $\sigma^*$), and the rest are $\sigma$ orbitals or $\pi$ orbitals of the substituents. The AVAS
-selection gives 11 orbitals with dipyrrin $\pi$ weights of 0.91--1.00 and a clear gap in the projection
-eigenvalues (at least 0.90 for the orbitals kept, below 0.1 for the first one rejected). The same label
-``(12e,11o)'' therefore describes different model chemistries across dyes in all the canonical-window
-results below, which should be read with this in mind. \todo{Replace or complement with the
-$\pi$-controlled SA-CASSCF/NEVPT2 results (run\_pi\_cas.py) for BDP and I2-BDP, then all nine dyes.}
+the dipyrrin 2p$_z$ space is 6.7 for the BODIPY core, 5.2 for BDP, 3.6 for I-BDP, 2.5 for I2-BDP and I3-BDP
+and 3.0 for BDP-0. In I2-BDP only HOMO and LUMO are $\pi$ orbitals of the chromophore; four of the eleven
+orbitals sit mainly on iodine (lone pairs and C--I $\sigma^*$), and the rest are $\sigma$ orbitals or $\pi$
+orbitals of the substituents. The AVAS selection gives 11 orbitals with dipyrrin $\pi$ weights of at least
+0.87 and a clear gap in the projection eigenvalues (at least 0.90 for the orbitals kept, below 0.1 for the
+first one rejected), and SA-CASSCF keeps them $\pi$ orbitals (minimum weight 0.89). The same label
+``(12e,11o)'' therefore describes different model chemistries across dyes in the canonical window, but
+one model chemistry in the AVAS space.
 
 \begin{table}
   \caption{Character of the (12e,11o) active orbitals: canonical RHF window (HOMO$-5$ to LUMO$+4$) versus
   the AVAS $\pi$ selection. $\sum w_\pi$: weight on the 2p$_z$ space of the 11 dipyrrin atoms, summed over
-  the 11 orbitals (11 for a pure $\pi$ space).}
+  the 11 orbitals (11 for a pure $\pi$ space); $n_\mathrm{I}$: orbitals with more than half their weight on
+  iodine; $\aso$ in cm$^{-1}$ with Hartree--Fock orbitals.}
   \label{tab:window}
-  \begin{tabular}{lcccc}
+  \footnotesize\setlength{\tabcolsep}{4pt}
+  \begin{tabular}{lcccccc}
     \toprule
-    & \multicolumn{3}{c}{canonical window} & AVAS \\
-    Dye & $\sum w_\pi$ & orbitals with $w_\pi<0.5$ & orbitals mainly on I & min $w_\pi$ \\
+    & \multicolumn{3}{c}{canonical window} & \multicolumn{3}{c}{AVAS $\pi$ space} \\
+    Dye & $\sum w_\pi$ & $n_\mathrm{I}$ & $\aso$ & $\sum w_\pi$ & min $w_\pi$ (SA-CASSCF) & $\aso$ \\
     \midrule
-    BODIPY core & 6.7 & 4 & -- & 0.99 \\
-    BDP         & 5.2 & 5 & -- & 0.92 \\
-    I2-BDP      & 2.6 & 9 & 4  & 0.91 \\
+    BODIPY core & 6.7 & 0 & 133   & 10.9 & 0.98 & 8 \\
+    BDP         & 5.2 & 0 & 27    & 10.7 & 0.90 & 7 \\
+    I-BDP       & 3.6 & 2 & 5579  & 10.7 & 0.90 & 80 \\
+    I2-BDP      & 2.5 & 4 & 8315  & 10.6 & 0.89 & 299 \\
+    I3-BDP      & 2.5 & 5 & 11421 & 10.6 & 0.89 & 304 \\
+    BDP-0       & 3.0 & 0 & 11    & 10.6 & --   & 7 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{A controlled $\pi$ space does not reach the budget either.} In the AVAS $\pi$ space with
+SA-CASSCF orbitals, SC-NEVPT2 places S$_1$ 0.54--0.59~eV above experiment and overestimates the measured
+S$_1$--T$_1$ gaps by 0.33--0.37~eV for BDP, I-BDP and I2-BDP, about five times the budget
+(Table~\ref{tab:pi}). The errors are almost the same for the three dyes, as expected now that the active
+space is the same chromophore space in each. T$_2$ lies 0.39--0.44~eV above S$_1$, as in the pipeline and in
+the canonical window, so the S$_1\to$T$_2$ channel stays closed. The natural occupations show no inert
+orbitals: apart from the HOMO/LUMO pair (1.41 and 0.62 in the state average), every orbital deviates from
+0 or 2 by 0.02--0.09. Without orbital optimization, CASCI on the AVAS orbitals misses S$_1$ by 1.2--2.3~eV and
+NEVPT2 by 0.5--0.9~eV. The controlled active space thus confirms the conclusion of the canonical-window
+results below with larger gap errors: a (12e,11o) reference with second-order dynamic correlation does not
+reach the accuracy the screening decision needs. \todo{I3-BDP NEVPT2, aza-BDP-Ph$_4$ and the distyryl
+dyes are still running.}
+
+\begin{table}
+  \caption{AVAS $\pi$-space (12e,11o) vertical energies (eV), SA-CASSCF orbitals over three singlets,
+  def2-SVP, with experiment.}
+  \label{tab:pi}
+  \begin{tabular}{lccccccc}
+    \toprule
+    & \multicolumn{3}{c}{CASCI} & \multicolumn{3}{c}{SC-NEVPT2} & exp \\
+    Dye & S$_1$ & S$_1-$T$_1$ & T$_2-$S$_1$ & S$_1$ & S$_1-$T$_1$ & T$_2-$S$_1$ & S$_1$ / S$_1-$T$_1$ \\
+    \midrule
+    BODIPY core & 2.88 & 1.02 & $+0.23$ & 3.00 & 1.05 & $+0.39$ & 2.46 / -- \\
+    BDP         & 2.91 & 1.09 & $+0.24$ & 3.01 & 1.10 & $+0.41$ & 2.46 / 0.77 \\
+    I-BDP       & 2.90 & 1.10 & $+0.23$ & 3.00 & 1.11 & $+0.40$ & 2.46 / 0.76 \\
+    I2-BDP      & 2.87 & 1.00 & $+0.24$ & 2.90 & 0.96 & $+0.44$ & 2.31 / 0.59 \\
+    I3-BDP      & 2.86 & 1.01 & $+0.23$ & --   & --   & --      & 2.30 / 0.58 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -502,10 +539,10 @@ energies, so a dynamic-correlation step on top of the quantum calculation is req
 observables to be useful.
 
 On SA-CASSCF orbitals the same nominal active space gives NEVPT2 S$_1$ energies 0.51--0.79~eV above
-experiment for the same dyes, against 0.06--0.27~eV on RHF orbitals. SC-NEVPT2 should not move by half an
-eV on an orbital change unless the character of the active space changes, and the composition of
-Table~\ref{tab:window} shows that the canonical window leaves room for that. Which of the two sets of
-numbers is closer to a controlled (12e,11o) $\pi$ result is open until the AVAS runs are in.
+experiment for the same dyes, against 0.06--0.27~eV on RHF orbitals. The AVAS results resolve this: on a
+$\pi$ space, NEVPT2 on unoptimized orbitals is 0.5--0.9~eV too high and on SA-CASSCF orbitals 0.54--0.59~eV,
+so the close agreement on canonical RHF orbitals comes from the mixed character of that window, not from
+a better reference.
 
 State-averaged CASSCF orbitals do not close the gap (Table~\ref{tab:sanevpt2}). For the six compact dyes,
 SA-CASSCF(12e,11o)/SC-NEVPT2 places S$_1$ 0.51--0.79~eV above experiment. For the four dyes with a
@@ -792,8 +829,8 @@ measured ISC rates, two of them for nearly identical dyes. One functional family
 (def2-SVP, also for NEVPT2), GFN2-xTB geometries and the gas phase were used, with one conformer, and all
 energies are vertical. The SOC operator is an effective one-electron model not yet benchmarked against a
 standard SOC treatment. The budget rests on one effective MLJ mode, rigid energy shifts and fixed SOC;
-$k_\mathrm{ic}$ is fixed from one dye. The multireference results use a canonical active-space window
-whose character changes across dyes. The cost model takes its rates from the pipeline and $\aso$ from that
+$k_\mathrm{ic}$ is fixed from one dye. Most multireference results use a canonical active-space window
+whose character changes across dyes; the controlled $\pi$-space results cover five dyes so far. The cost model takes its rates from the pipeline and $\aso$ from that
 window, assumes an S$_1$ overlap of 0.5 for the state preparation, omits the THC factorization error, and
 uses an empirical MLAE constant valid for relative errors of 5\% or more. The quantum algorithms were
 simulated in small active spaces.
@@ -807,8 +844,9 @@ and spin--orbit couplings. For BODIPY dyes we have shown that the screening deci
 about 0.07~eV (0.03--0.13~eV depending on the reorganization energy), that a near-resonant upper triplet
 tightens this to 0.016~eV and makes the top screening candidate the most fragile prediction, and that a
 classical TDDFT/$\Delta$SCF pipeline meets the budget for compact dyes but not for the $\pi$-extended dye
-tested. The usual (12e,11o) window of canonical orbitals is not the $\pi$ space of the chromophore, and its
-results must be read with that in mind. A gap-resolved ISC observable, implemented with QSVT and verified
+tested. The usual (12e,11o) window of canonical orbitals is not the $\pi$ space of the chromophore; in a
+controlled $\pi$ space, SA-CASSCF/SC-NEVPT2 still misses the S$_1$--T$_1$ gaps by about five times the
+budget. A gap-resolved ISC observable, implemented with QSVT and verified
 to 0.03\%, ranks dyes wrongly on bare active-space energies, which miss S$_1$ by 20--30 times the budget.
 On a fault-tolerant computer the observable needs 131--374 logical qubits, depending on how rotation
 angles are batched, and about $2\times10^{8}$ Toffolis per call. Taking the pipeline rates as targets, a
@@ -834,7 +872,7 @@ CAS(4,4)/(6,6) quantum results, double-factorization resource breakdown, decisio
 Code, geometries and all results: \url{https://github.com/pifparfait/psscreen}. Tables~\ref{tab:abs}
 and~\ref{tab:isc} come from the validation runs of \texttt{psscreen}; the budget and
 Figure~\ref{fig:tolcurve} from \texttt{paper/analysis/accuracy\_budget.py} and \texttt{tolerance\_curve.py};
-Tables~\ref{tab:sanevpt2}, \ref{tab:sweep} and~\ref{tab:window} from
+Tables~\ref{tab:sanevpt2}, \ref{tab:sweep}, \ref{tab:window} and~\ref{tab:pi} from
 \texttt{paper/references/run\_sa\_nevpt2.py NAME}, \texttt{run\_cas\_sweep.py NAME} and
 \texttt{run\_pi\_cas.py NAME}; Table~\ref{tab:filter} from \texttt{psscreen/isc\_filtered.py};
 Table~\ref{tab:decision} and Figures~\ref{fig:decision} and~\ref{fig:ae} from
