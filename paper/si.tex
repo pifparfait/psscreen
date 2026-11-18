@@ -170,4 +170,64 @@ canonical totals next to the MLAE ones. For a campaign of $N$ dyes with a family
 estimation needs 2.5 times more runs for $N=100$; for MLAE the tail of the error distribution has not been
 characterized.
 
+\section{QSVT filter implementation and additional data}
+\label{sec:si-filter}
+
+The even Chebyshev polynomial $P(x)\approx\sqrt{\rho(\alpha\lvert x\rvert + E_c - E_{\mathrm{S}_1})/\rho_\mathrm{max}}$
+is applied to the block-encoded $(\hat H-E_c)/\alpha$, with $E_c$ below the spectrum so that $x\ge0$ and an even
+polynomial suffices. The real part is obtained from a linear combination of two QSVT sequences with phases
+$\pm\phi$ (\texttt{qml.QSVT} with \texttt{PCPhase} projectors). Each $M_S$ sector of the active-space Hamiltonian
+is block-encoded in a randomly rotated basis, and phases are computed by fixed-point iteration. The simulations
+use 6--11 wires per $M_S$ sector and polynomial degrees 3324--8000 (Table~\ref{tab:filter}).
+
+\begin{table}
+  \caption{Lowest singlet excitation: TDDFT+$\Delta$SCF (B3LYP/def2-SVP, gas phase) versus
+  experimental absorption maxima. Distyryl dyes: (E,E) isomers.}
+  \label{tab:abs}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    Dye & $\lambda_\mathrm{calc}$ (nm) & $\lambda_\mathrm{exp}$ (nm) & $E_\mathrm{calc}$ (eV) &
+    $E_\mathrm{exp}$ (eV) & error (eV) \\
+    \midrule
+    BODIPY core     & 507 & 503 & 2.45 & 2.46 & $-0.02$ \\
+    BDP             & 517 & 503 & 2.40 & 2.46 & $-0.07$ \\
+    I-BDP           & 519 & 505 & 2.39 & 2.46 & $-0.06$ \\
+    I2-BDP          & 548 & 537 & 2.26 & 2.31 & $-0.05$ \\
+    I3-BDP          & 551 & 539 & 2.25 & 2.30 & $-0.05$ \\
+    aza-BDP-Ph$_4$  & 678 & 650 & 1.83 & 1.91 & $-0.08$ \\
+    \midrule
+    BDP-0           & 705 & 628 & 1.76 & 1.97 & $-0.22$ \\
+    I-BDP-0         & 708 & 631 & 1.75 & 1.96 & $-0.21$ \\
+    I2-BDP-0        & 730 & 644 & 1.70 & 1.93 & $-0.23$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.48\textwidth]{figures/mlj_gap_sensitivity.pdf}
+  \caption{ISC rate of eq~1 of the main text for a coupling of 1~cm$^{-1}$ as a function of the
+  S$_1$--T$_n$ gap, for three values of $\lambda_s$. Points: the computed T$_1$--T$_3$ channels of I2-BDP
+  (filled) and I2-BDP-0 (open), from the TDDFT/$\Delta$SCF pipeline.}
+  \label{fig:mlj}
+\end{figure}
+
+\begin{table}
+  \caption{Gap-resolved ISC rate (s$^{-1}$) from the QSVT filter circuit and from the exact golden rule,
+  with CASCI energies (the circuit agrees with the same polynomial evaluated on the exact spectrum to all
+  printed digits); and the gap-free S$_1$--T$_1$ coupling. $\Delta E$ is the CASCI S$_1$--T$_1$ gap.}
+  \label{tab:filter}
+  \begin{tabular}{llrrrrr}
+    \toprule
+    Dye & CAS & degree & $\kisc$ QSVT & $\kisc$ exact & $V_1$ (cm$^{-1}$) & $\Delta E$ (eV) \\
+    \midrule
+    BODIPY core & (4,4) & 3324 & $1.972\times10^{4}$ & $1.972\times10^{4}$ & $<10^{-3}$ & 2.70 \\
+    BODIPY core & (6,6) & 5720 & $2.479\times10^{8}$ & $2.479\times10^{8}$ & $1\times10^{-3}$ & 2.34 \\
+    BDP         & (4,4) & 4106 & $3.519\times10^{2}$ & $3.519\times10^{2}$ & $<10^{-3}$ & 2.79 \\
+    I2-BDP      & (4,4) & 4492 & $4.568\times10^{-1}$ & $4.680\times10^{-1}$ & 11.49 & 2.36 \\
+    I2-BDP      & (6,6) & 8000 & $4.229\times10^{6}$ & $4.230\times10^{6}$ & 24.84 & 2.49 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
 \end{document}
