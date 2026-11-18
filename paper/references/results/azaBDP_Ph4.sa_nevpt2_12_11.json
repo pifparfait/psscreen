@@ -1,0 +1,38 @@
+{
+ "name": "azaBDP_Ph4",
+ "geometry": "validation/runs/azaBDP_Ph4.xyz",
+ "cas": [
+  12,
+  11
+ ],
+ "basis": "def2-svp",
+ "orbitals": "SA-CASSCF(12,11) over 3 singlets, density-fitted",
+ "timings_s": {
+  "rhf": 525.7751185894012,
+  "sa_casscf": 57248.43431019783,
+  "casci": 456.7406129837036,
+  "nevpt2": 13004.630201339722,
+  "total": 71235.58245444298
+ },
+ "sa_casscf_converged": true,
+ "E_CASCI_singlets_eV": [
+  0.0,
+  2.5892154006226287,
+  3.1911681517278123
+ ],
+ "E_CASCI_triplets_eV": [
+  1.2137226601804845,
+  2.703094493956332,
+  3.1280423619183617
+ ],
+ "E_NEVPT2_singlets_eV": [
+  0.0,
+  2.6979762448914126,
+  3.2181713074426948
+ ],
+ "E_NEVPT2_triplets_eV": [
+  1.3929310096203926,
+  2.871319080038319,
+  2.9558605053211098
+ ]
+}
