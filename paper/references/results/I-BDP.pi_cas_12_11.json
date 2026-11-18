@@ -25,7 +25,9 @@
  "ntrip": 3,
  "timings_s": {
   "rhf": 88.34898161888123,
-  "avas_orbitals_casci": 144.2897322177887
+  "avas_orbitals_casci": 144.2897322177887,
+  "avas_orbitals_nevpt2": 2024.7970905303955,
+  "sa_casscf": 4670.207100868225
  },
  "avas_occ_eigs": [
   0.995296612443267,
@@ -304,6 +306,80 @@
    0.0,
    3.115026404096133,
    4.133128281395041
+  ],
+  "E_NEVPT2_triplets_eV": [
+   1.9809748468492394,
+   3.472698143891555,
+   3.7789755252038755
   ]
- }
+ },
+ "sa_casscf_converged": true,
+ "composition_sa_casscf": [
+  {
+   "pz_core": 0.9686638573680544,
+   "mulliken_core_atoms": 0.9987262899047753,
+   "mulliken_I_Br": -7.574962102699482e-08,
+   "mulliken_rest": 0.0012737858448457274
+  },
+  {
+   "pz_core": 0.9770478932253117,
+   "mulliken_core_atoms": 0.9990129519286094,
+   "mulliken_I_Br": 8.658453601106195e-08,
+   "mulliken_rest": 0.000986961486854595
+  },
+  {
+   "pz_core": 0.9517099255068905,
+   "mulliken_core_atoms": 0.9890459884748601,
+   "mulliken_I_Br": 7.823073845366379e-06,
+   "mulliken_rest": 0.010946188451294496
+  },
+  {
+   "pz_core": 0.9559657109290502,
+   "mulliken_core_atoms": 0.9753536405614502,
+   "mulliken_I_Br": 2.3843967958299643e-07,
+   "mulliken_rest": 0.024646120998870175
+  },
+  {
+   "pz_core": 0.959681104869057,
+   "mulliken_core_atoms": 0.9876734340793119,
+   "mulliken_I_Br": 4.918877927219869e-08,
+   "mulliken_rest": 0.012326516731908876
+  },
+  {
+   "pz_core": 0.9532033650044759,
+   "mulliken_core_atoms": 0.9840256510047052,
+   "mulliken_I_Br": 1.7785560930197192e-07,
+   "mulliken_rest": 0.015974171139685515
+  },
+  {
+   "pz_core": 0.9010890279521848,
+   "mulliken_core_atoms": 0.9585123163171748,
+   "mulliken_I_Br": 1.7540535087423028e-05,
+   "mulliken_rest": 0.04147014314773776
+  },
+  {
+   "pz_core": 0.9454081148075928,
+   "mulliken_core_atoms": 0.98689059904756,
+   "mulliken_I_Br": 1.3288439308653816e-07,
+   "mulliken_rest": 0.013109268068046867
+  },
+  {
+   "pz_core": 0.9423553706205267,
+   "mulliken_core_atoms": 0.9801470418261874,
+   "mulliken_I_Br": 2.1415505626089514e-07,
+   "mulliken_rest": 0.019852744018756346
+  },
+  {
+   "pz_core": 0.9441946226361253,
+   "mulliken_core_atoms": 0.9876551668136919,
+   "mulliken_I_Br": 4.320954644224044e-08,
+   "mulliken_rest": 0.012344789976761637
+  },
+  {
+   "pz_core": 0.9549672008006183,
+   "mulliken_core_atoms": 0.997056220041316,
+   "mulliken_I_Br": 5.706983681880942e-06,
+   "mulliken_rest": 0.0029380729750021197
+  }
+ ]
 }
