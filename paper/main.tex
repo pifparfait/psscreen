@@ -46,7 +46,7 @@ dyes with measured photophysics. With a Marcus--Levich--Jortner model, a factor-
 near-resonant upper triplet, as for the top candidate of a screening round. A B3LYP/$\Delta$SCF pipeline
 meets this budget for the iodinated compact dyes but not for the one $\pi$-extended dye with a measured
 rate. A (12e,11o) window of canonical orbitals has a summed dipyrrin $\pi$ weight of only 2.5--6.7 out of
-11; in an AVAS-selected $\pi$ space, SA-CASSCF/SC-NEVPT2/def2-SVP still overestimates the measured
+11; in an AVAS-selected $\pi$ space, SA-CASSCF/SC-NEVPT2 still overestimates the measured
 S$_1$--T$_1$ gaps by about 0.35~eV. We implement the golden-rule rate as a QSVT spectral filter, verify it,
 and show that on bare active-space energies it ranks the dyes wrongly. Taking the pipeline rates as
 targets, a decision with tensor-hypercontraction qubitization needs $10^{3}$--$10^{6}$ calls of about
@@ -379,11 +379,12 @@ orbital is inert: every root has occupations that deviate from 0 or 2 by at leas
 optimization, CASCI on the AVAS orbitals misses S$_1$ by 1.2--2.3~eV and NEVPT2 by 0.5--0.9~eV.
 
 These errors are larger than those of CASPT2 in a (12e,11o) $\pi$ space with larger basis
-sets~\cite{Momeni2015}, quoted in ref~\citenum{Zhou2026PRA}. The def2-SVP basis, the missing $\sigma$--$\pi$
-polarization of a $\pi$-only reference, and the singlet-only state averaging can each contribute; we cannot yet
-separate them. \todo{def2-TZVP and SA(3S+2T) runs for BDP and I2-BDP on tars; aza-BDP-Ph$_4$ and the distyryl dyes still
-running.} A controlled (12e,11o) $\pi$ space with second-order dynamic correlation in
-a double-$\zeta$ basis misses the gaps by several times the budget.
+sets~\cite{Momeni2015}, quoted in ref~\citenum{Zhou2026PRA}. The basis is not the cause: with def2-TZVP the
+SC-NEVPT2 S$_1$ of BDP moves by $-0.02$~eV and its S$_1$--T$_1$ gap by less than 0.01~eV (1.10~eV). The missing
+$\sigma$--$\pi$ polarization of a $\pi$-only reference and the singlet-only state averaging remain as
+explanations. \todo{SA(3S+2T) runs for BDP and I2-BDP and I2-BDP/def2-TZVP on tars; aza-BDP-Ph$_4$ and the
+distyryl dyes still running.} A controlled (12e,11o) $\pi$ space with second-order dynamic correlation misses
+the gaps by several times the budget, in double- and triple-$\zeta$ bases alike.
 
 \begin{table}
   \caption{AVAS $\pi$-space (12e,11o) vertical energies (eV), SA-CASSCF orbitals over three singlets,
@@ -525,8 +526,8 @@ Eklund \emph{et al.}~\cite{Eklund2026}, who simulate the dynamics, whereas our l
 \section{Discussion}
 
 \paragraph{What the useful quantum target is.} Bare active-space Hamiltonians misplace S$_1$ so badly that a
-mechanism-correct observable ranks dyes wrongly on them, and NEVPT2 in a controlled $\pi$ space and a
-double-$\zeta$ basis still misses the gaps by several times the budget. The useful quantum target is therefore
+mechanism-correct observable ranks dyes wrongly on them, and NEVPT2 in a controlled $\pi$ space, in a
+double- or triple-$\zeta$ basis, still misses the gaps by several times the budget. The useful quantum target is therefore
 excited-state energies with dynamic correlation at the budget accuracy, evaluated with a gap-resolved
 observable, not a larger bare active space or a better gap-free proxy; where one channel dominates, the
 cheapest such observable is channel-resolved. The active space must be chosen by a controlled rule and must
@@ -542,7 +543,7 @@ matter, for example the heavy-atom one-centre terms; the part $\lVert\chi\rVert/
 I2-BDP) is the off-resonant weight that the filter removes, and only a channel-resolved route avoids it.
 
 \paragraph{Limitations.} The benchmark has nine dyes from one family and three measured ISC rates, two
-for nearly identical dyes, and the factor-2 agreement holds for B3LYP only. We used def2-SVP, GFN2-xTB
+for nearly identical dyes, and the factor-2 agreement holds for B3LYP only. We used def2-SVP (def2-TZVP for one NEVPT2 check), GFN2-xTB
 geometries, one conformer, the gas phase and vertical energies; the SOC model is not yet benchmarked; and the
 cost model takes pipeline rates, an assumed trial-state overlap, THC rank and one-norm, and an oracle margin
 for D2.
