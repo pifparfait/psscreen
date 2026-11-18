@@ -450,10 +450,13 @@ For the three distyryl dyes S$_1$ is 0.38--0.52~eV too high, and T$_2$ lies 0.50
 I2-BDP-0 the S$_1\to$T$_2$ channel is closed in NEVPT2, as in the $\Delta$SCF-corrected pipeline.
 
 \paragraph{A larger active space does not converge the gap to experiment.} To test whether the remaining
-error is an active-space truncation, we grew the active space from (8,8) to (12,12) for BDP and I2-BDP,
+error is an active-space truncation, we grew the active space from (8,8) to (14,14) for BDP and I2-BDP,
 re-optimizing the orbitals at every size (Table~\ref{tab:sweep}). Bare CASSCF/CASCI behaves as expected
 for a missing-correlation problem: S$_1$ falls by 0.7~eV for BDP and 0.2~eV for I2-BDP, but remains
-0.6~eV above experiment at (12,12), and the S$_1$--T$_1$ gap stays 0.26--0.48~eV too large. The position
+0.6~eV above experiment at (12,12), and the S$_1$--T$_1$ gap stays 0.26--0.48~eV too large. Going to
+(14,14) changes the CASSCF energies by less than 0.003~eV for both dyes, so the bare active-space result
+has converged with respect to this sequence of orbitals, at a gap 0.26~eV (BDP) and 0.48~eV (I2-BDP)
+above experiment. The position
 of T$_2$ relative to S$_1$ jumps by up to 0.7~eV from one size to the next (from $+0.16$ to $+0.74$ to
 $+0.05$~eV for I2-BDP), so in a bare active space even the ordering that decides whether the
 S$_1\to$T$_2$ channel is open is not stable. With NEVPT2 the S$_1$--T$_1$ gap is flat: 1.00, 0.99 and
@@ -462,7 +465,8 @@ S$_1\to$T$_2$ channel is open is not stable. With NEVPT2 the S$_1$--T$_1$ gap is
 error but a limitation of the second-order treatment (and of comparing vertical gaps with measured ones,
 which may account for part of it). T$_2$--S$_1$ still moves by 0.24~eV across sizes for I2-BDP, more than
 three times the budget. A larger active space alone does not bring the decisive gaps within the budget.
-\todo{Add (14,14) and (16,16) when the sweep finishes.}
+\todo{Add (16,16) CASCI when it finishes; check the natural occupations of the two orbitals added at
+(14,14) to rule out inert orbitals.}
 
 \begin{table}
   \caption{Active-space convergence for BDP and I2-BDP: vertical energies and gaps (eV), SA-CASSCF($n$,$n$)
@@ -477,9 +481,11 @@ three times the budget. A larger active space alone does not bring the decisive 
     BDP    & (8,8)   & 3.80 & 1.74 & $-0.22$ & 3.08 & 1.00 & $+0.43$ \\
     BDP    & (10,10) & 3.22 & 1.17 & $+0.19$ & 3.02 & 0.99 & $+0.45$ \\
     BDP    & (12,12) & 3.06 & 1.03 & $+0.29$ & 2.97 & 0.96 & $+0.48$ \\
+    BDP    & (14,14) & 3.06 & 1.03 & $+0.29$ & -- & -- & -- \\
     I2-BDP & (8,8)   & 3.16 & 1.08 & $+0.16$ & 2.84 & 0.82 & $+0.40$ \\
     I2-BDP & (10,10) & 2.94 & 0.94 & $+0.74$ & 2.86 & 0.87 & $+0.64$ \\
     I2-BDP & (12,12) & 2.94 & 1.07 & $+0.05$ & 2.84 & 0.88 & $+0.52$ \\
+    I2-BDP & (14,14) & 2.94 & 1.07 & $+0.05$ & -- & -- & -- \\
     \bottomrule
   \end{tabular}
 \end{table}
