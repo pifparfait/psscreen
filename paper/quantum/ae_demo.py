@@ -208,33 +208,33 @@ def main():
         calls = N_REP * (2 * M + 1)
         e_true = canonical_qae_err(theta, t, rng)
         e_ens = np.concatenate([canonical_qae_err(th, t, rng, 200) for th in ens])
-        canon.append({"t": t, "calls": calls, "q90_true": float(np.quantile(e_true, CONF)),
-                      "q90_ensemble": float(np.quantile(e_ens, CONF)),
+        canon.append({"t": t, "calls": calls, "q95_true": float(np.quantile(e_true, CONF)),
+                      "q95_ensemble": float(np.quantile(e_ens, CONF)),
                       "median_ensemble": float(np.median(e_ens)),
-                      "q90_sampling": sampling_err_quantile(p, calls, CONF)})
-        print(f"canonical t={t:2d} calls={calls:8d} q95 rel err: true-theta {canon[-1]['q90_true']:.3f}, "
-              f"ensemble {canon[-1]['q90_ensemble']:.3f}; sampling {canon[-1]['q90_sampling']:.3f}", flush=True)
+                      "q95_sampling": sampling_err_quantile(p, calls, CONF)})
+        print(f"canonical t={t:2d} calls={calls:8d} q95 rel err: true-theta {canon[-1]['q95_true']:.3f}, "
+              f"ensemble {canon[-1]['q95_ensemble']:.3f}; sampling {canon[-1]['q95_sampling']:.3f}", flush=True)
 
     mlae = []
     for K in range(4, 14):
         e_true, calls = mlae_err(theta, K, rng, 400)
         e_ens = np.concatenate([mlae_err(th, K, rng, 25)[0] for th in ens[:16]])
-        rec = {"K": K, "calls": calls, "q90_true": float(np.quantile(e_true, CONF)),
-               "q90_ensemble": float(np.quantile(e_ens, CONF)), "median_ensemble": float(np.median(e_ens)),
-               "q90_sampling": sampling_err_quantile(p, calls, CONF)}
-        rec["c_eff"] = rec["q90_ensemble"] * math.sqrt(p) * calls       # eps_rel ~ c / (sqrt(p) N_calls)
+        rec = {"K": K, "calls": calls, "q95_true": float(np.quantile(e_true, CONF)),
+               "q95_ensemble": float(np.quantile(e_ens, CONF)), "median_ensemble": float(np.median(e_ens)),
+               "q95_sampling": sampling_err_quantile(p, calls, CONF)}
+        rec["c_eff"] = rec["q95_ensemble"] * math.sqrt(p) * calls       # eps_rel ~ c / (sqrt(p) N_calls)
         mlae.append(rec)
-        print(f"MLAE K={K:2d} calls={calls:8d} q95 rel err: true {rec['q90_true']:.3f}, ensemble "
-              f"{rec['q90_ensemble']:.3f} (c = {rec['c_eff']:.1f}); sampling {rec['q90_sampling']:.3f}", flush=True)
+        print(f"MLAE K={K:2d} calls={calls:8d} q95 rel err: true {rec['q95_true']:.3f}, ensemble "
+              f"{rec['q95_ensemble']:.3f} (c = {rec['c_eff']:.1f}); sampling {rec['q95_sampling']:.3f}", flush=True)
 
     # empirical constants in the Heisenberg regime (95th-percentile relative error below 0.5)
-    c_mlae = float(np.median([r["c_eff"] for r in mlae if r["q90_ensemble"] < 0.5]))
-    c_canon = float(np.median([r["q90_ensemble"] * math.sqrt(p) * r["calls"] for r in canon
-                               if r["q90_ensemble"] < 0.5]))
+    c_mlae = float(np.median([r["c_eff"] for r in mlae if r["q95_ensemble"] < 0.5]))
+    c_canon = float(np.median([r["q95_ensemble"] * math.sqrt(p) * r["calls"] for r in canon
+                               if r["q95_ensemble"] < 0.5]))
     out = {"name": name, "ncas": ncas, "sz2": sz2, "degree": pr["degree"], "p": p, "confidence": CONF,
            "grover_law_check": law, "grover_law_max_dev": dev_max, "circuit_qpe": circuit_qpe,
            "canonical_analytic": canon, "mlae": mlae, "mlae_shots_per_depth": N_SHOTS,
-           "c_mlae_q90": c_mlae, "c_canonical_q90": c_canon,
+           "c_mlae_q95": c_mlae, "c_canonical_q95": c_canon,
            "heisenberg_threshold_iterations": math.pi / math.sqrt(p)}
     print(f"empirical constants (eps_rel * sqrt(p) * calls at the 95th percentile): MLAE {c_mlae:.1f}, "
           f"canonical median-of-16 {c_canon:.1f}", flush=True)
@@ -275,18 +275,18 @@ def fig(out):
     fig_, ax = plt.subplots(figsize=(3.4, 3.6))
     c = out["canonical_analytic"]
     m = out["mlae"]
-    ax.loglog([r["calls"] for r in c], [max(r["q90_sampling"], 1e-4) for r in c], "s-", color="#c05621", ms=3,
+    ax.loglog([r["calls"] for r in c], [max(r["q95_sampling"], 1e-4) for r in c], "s-", color="#c05621", ms=3,
               label="direct sampling")
-    ax.loglog([r["calls"] for r in c], [max(r["q90_ensemble"], 1e-4) for r in c], "o-", color="#2b6cb0", ms=3,
+    ax.loglog([r["calls"] for r in c], [max(r["q95_ensemble"], 1e-4) for r in c], "o-", color="#2b6cb0", ms=3,
               label="canonical QAE (median of 16)")
-    ax.loglog([r["calls"] for r in m], [max(r["q90_ensemble"], 1e-4) for r in m], "^-", color="#2f855a", ms=3,
+    ax.loglog([r["calls"] for r in m], [max(r["q95_ensemble"], 1e-4) for r in m], "^-", color="#2f855a", ms=3,
               label="MLAE")
     if out.get("circuit_qpe"):
         q = out["circuit_qpe"]
         ax.loglog([r["calls"] for r in q], [max(r["q90_abs_err_ae"] / p, 1e-4) for r in q], "x", color="#2b6cb0",
                   ms=4, label="canonical QAE, circuit (this $p$)")
     ax.axhline(0.2, color="0.6", ls=":", lw=0.8)
-    ys = [r["q90_sampling"] for r in c] + [r["q90_ensemble"] for r in c + m]
+    ys = [r["q95_sampling"] for r in c] + [r["q95_ensemble"] for r in c + m]
     ax.set_ylim(1e-2, 2 * max(ys))
     ax.set_xlabel("calls to the filter circuit")
     ax.set_ylabel(r"95th-percentile relative error in $k_\mathrm{ISC}$")

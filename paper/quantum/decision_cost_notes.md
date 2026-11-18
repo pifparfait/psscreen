@@ -79,5 +79,5 @@ Our totals fall in the range Eklund et al. report for photochemical yields (10¹
 - S1 overlap γ² = 0.5 and a 0.5 eV S1–S2 gap for the eigenstate filter are assumptions.
 - r = 0.2 uses about a quarter of the factor-2 budget in ln k, leaving the rest to the systematic gap error;
   r = 0.4 halves the D1 costs.
-- δ = 0.05 per decision; for a family-wise error over N dyes use δ/N (×1.6 for N = 100).
+- δ = 0.05 per decision; for a family-wise error over N dyes use δ/N (×2.2 for N = 100).
 - Canonical QAE omits the cost of controlling the walk operator; MLAE needs no control.

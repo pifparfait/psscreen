@@ -58,4 +58,4 @@ Reference, arXiv:2512.15889 (Orig-BDP, N = 11): ISC proxy 7.96e+07 Toffolis × 4
 | azaBDP_BrPh2 | 4.2e-02 | 3.2e-06 | 7.7e-05 | 4.6e+04 | 3.2e+03 | 5.5e+12 | 3.8e+11 | 3.8e+11 | 3.2e+03 |
 | azaBDP_IPh2 | 1.2e+00 | 2.1e-08 | 1.8e-08 | 9.1e+09 | 1.8e+06 | 1.9e+18 | 3.7e+14 | 3.7e+14 | 1.8e+06 |
 
-δ = 0.05 per decision. For a campaign of N dyes with a family-wise error δ, replace δ by δ/N: the cost grows by ln(2N/δ)/ln(2/δ), e.g. ×1.6 for N = 100. With r = 0.4 instead of 0.2 the D1 MLAE costs halve.
+δ = 0.05 per decision. For a campaign of N dyes with a family-wise error δ, replace δ by δ/N: the cost grows by ln(2N/δ)/ln(2/δ), e.g. ×2.2 for N = 100. With r = 0.4 instead of 0.2 the D1 MLAE costs halve.

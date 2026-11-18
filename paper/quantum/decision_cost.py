@@ -83,7 +83,7 @@ _le = np.array([math.log(1 / float(k)) for k in _dc["fits"]])
 _sl = np.array([v["slope"] for v in _dc["fits"].values()])
 DEG_A, DEG_B = np.polyfit(_le, _sl, 1)
 _ae = json.loads((RES / "ae_demo.json").read_text())
-C_MLAE = _ae["c_mlae_q90"]      # eps_rel ~ C_MLAE / (sqrt(p) N_calls) at the confidence level of ae_demo
+C_MLAE = _ae["c_mlae_q95"]      # eps_rel ~ C_MLAE / (sqrt(p) N_calls) at the confidence level of ae_demo
 
 
 def c_prep(D=D_SOS):
@@ -276,7 +276,7 @@ def main():
                  f"{e['calls_sampling']:.1e} | {e['calls_mlae']:.1e} | {fmt(e['toffoli_sampling'])} | "
                  f"{fmt(e['toffoli_mlae'])} | {fmt(e['toffoli_best'])} | {e['ratio_to_per_call']:.1e} |")
     L += ["", f"δ = {DELTA_CONF} per decision. For a campaign of N dyes with a family-wise error δ, replace δ by δ/N: "
-          "the cost grows by ln(2N/δ)/ln(2/δ), e.g. ×1.6 for N = 100. With r = 0.4 instead of 0.2 the D1 MLAE "
+          "the cost grows by ln(2N/δ)/ln(2/δ), e.g. ×2.2 for N = 100. With r = 0.4 instead of 0.2 the D1 MLAE "
           "costs halve."]
     (RES / "decision_cost.md").write_text("\n".join(L) + "\n")
     print("\n".join(L))
