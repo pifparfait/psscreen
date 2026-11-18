@@ -29,12 +29,17 @@ Cost of one call (Toffolis), CAS(12,11) with THC qubitization (paper/quantum/thc
       d = s(eps) lambda'/Delta, s(eps) linear in ln(1/eps), lambda' = lambda + |E0 - c0| (shift of the
       block-encoded operator relative to its identity coefficient, 3.46 Ha for the BODIPY core), Delta the MLJ width;
       polynomial precision eps = r sqrt(p)/4 so that the induced error in p stays below r p / 2;
-  C_S1 = coherent S1 preparation: sum-of-Slaters (D = 1e4 determinants) followed by an eigenstate filter of degree
-      (lambda'/Delta_21) ln(1/eps_S) (Delta_21 = 0.5 eV, eps_S = 1e-3), boosted by one round of amplitude
-      amplification (3 applications) for an assumed initial overlap gamma^2 = 0.5;
+  C_S1 = coherent S1 preparation: a spin-adapted sum of D = 1e4 configuration state functions (so that triplet
+      components, which a spin-free eigenstate filter cannot reject, are absent by construction) followed by an
+      eigenstate filter of degree (lambda'/Delta_21) ln(1/eps_S) (Delta_21 = 0.5 eV, eps_S = 1e-3). The filter flag
+      succeeds with probability gamma^2 (assumed 0.5); it is folded into the amplitude-estimation good state, so the
+      success probability seen by the estimators is gamma^2 p and the call count scales as 1/gamma;
   C_SO = one-body H_SO by a single basis rotation (3 x N(N-1)/2 Givens rotations x rotation bits, conservative).
-One QPE for E(S1) at the per-state precision of the accuracy budget (2 mHa) is added once per dye; its error enters
-as a systematic gap error, not as statistics.
+One QPE for E(S1) at 0.5 mHa (0.014 eV, about a fifth of the factor-2 gap budget) is added once per dye; its error
+enters as a systematic gap error, not as statistics.
+A channel-resolved baseline is also costed: QPE for each triplet channel that carries >= 1% of k_ISC, plus amplitude
+estimation of V_n^2 through a T_n eigenstate filter (width = distance to the nearest other triplet), with the
+golden rule evaluated classically.
 
 Electronic inputs per dye (k_ISC, k_r, k_ic) come from the TDDFT/DeltaSCF pipeline; alpha_SO from the CAS(12,11)
 SOC integrals.
@@ -70,10 +75,11 @@ QUBITS = 158                    # logical qubits of that encoding
 BETH = 27                       # rotation bits (preprint rule)
 D_SOS = 1e4                     # determinants in the S1 sum-of-Slaters preparation
 GAMMA2 = 0.5                    # assumed overlap of the sum-of-Slaters state with S1
-DELTA21_HA = 0.5 / HA_EV        # S1-S2 gap used for the S1 eigenstate filter
+DELTA21_HA = 0.5 / HA_EV        # S1-S2 gap used for the S1 eigenstate filter (spin-adapted trial state)
 EPS_S = 1e-3
 DELTA_HA = math.sqrt(2 * P.lambda_s * KB_EV * P.T) / HA_EV
-EPS_E_HA = 2.0e-3               # per-state QPE precision from the accuracy budget
+EPS_E_HA = 0.5e-3               # QPE precision for the filter centre: ~1/5 of the factor-2 gap budget
+TOFFOLI_RATE = 1e6              # Toffolis per second, for wall-clock estimates
 DELTA_CONF = 0.05               # failure probability per decision
 R_D1 = 0.2
 XANADU = {"isc_toffoli_per_shot": 7.96e7, "isc_shots": 483, "tp_toffoli_per_shot": 2.72e7, "tp_shots": 133}
@@ -91,13 +97,9 @@ def c_prep(D=D_SOS):
     return (2 * L - 2) * D + 2 ** (L + 1) + D
 
 
-def amp_rounds(g2=GAMMA2):
-    return max(0, math.ceil(math.pi / (4 * math.asin(math.sqrt(g2))) - 0.5))
-
-
-def c_s1():
-    d_s1 = LAMBDA_P / DELTA21_HA * math.log(1 / EPS_S)
-    return (2 * amp_rounds() + 1) * (c_prep() + d_s1 * C_WALK)
+def c_s1(gap_ha=DELTA21_HA):
+    d_s1 = LAMBDA_P / gap_ha * math.log(1 / EPS_S)
+    return c_prep() + d_s1 * C_WALK
 
 
 def c_so(n=N_ORB):
@@ -113,9 +115,9 @@ def c_call(eps_poly):
     return c_s1() + c_so() + degree(eps_poly) * C_WALK
 
 
-def c_qpe_s1():
-    steps = math.pi * LAMBDA_P / (2 * EPS_E_HA)
-    return steps * C_WALK + c_s1()
+def c_qpe_s1(eps_ha=EPS_E_HA):
+    steps = math.pi * LAMBDA_P / (2 * eps_ha)
+    return (steps * C_WALK + c_s1()) / GAMMA2      # repeated until the S1 flag succeeds
 
 
 # --------------------------------------------------------------------------- estimators
@@ -166,15 +168,46 @@ def dye_inputs(name, d):
     a = _alpha[name]["alpha_so_cm"]
     Kp = 2 * math.pi / HBAR_EVS * (a * CM1_TO_EV) ** 2 * RHO_MAX
     k, k_th = ph["k_isc"], ph["k_r"] + ph["k_ic"]
-    return dict(alpha_so_cm=a, chi_tddft_cm=math.sqrt(chi2_cm2), K=Kp, k=k, p=k / Kp, k_th=k_th, p_th=k_th / Kp)
+    return dict(alpha_so_cm=a, chi_tddft_cm=math.sqrt(chi2_cm2), K=Kp, k=k, p=k / Kp, k_th=k_th, p_th=k_th / Kp,
+                v_eff_cm=a * math.sqrt(k / Kp))
+
+
+def canonical_depth(p, eps):
+    """Largest Grover power of one canonical-QAE run (M - 1)."""
+    a = 2 * math.pi * math.sqrt(p * (1 - p))
+    M = (a + math.sqrt(a * a + 4 * eps * math.pi ** 2)) / (2 * eps)
+    return 2 ** math.ceil(math.log2(max(M, 1))) - 1
+
+
+def channel_route(d, alpha_cm, r=R_D1):
+    """QPE per dominant channel + AE of V_n^2 through a T_n eigenstate filter; golden rule classical."""
+    ch = d["photophysics"]["channels"]
+    k = d["photophysics"]["k_isc"]
+    dom = [c for c in ch if c["k"] >= 0.01 * k]
+    tot, parts = 0.0, []
+    for c in dom:
+        others = [abs(c["dE_eV"] - o["dE_eV"]) for o in ch if o is not c]
+        gap = max(min(others) if others else 0.5, 0.05) / HA_EV
+        pn = GAMMA2 * (c["V_cm"] / alpha_cm) ** 2
+        rn = r * k / c["k"] if len(dom) > 1 else r      # share of the relative error
+        rn = min(rn, 0.5)
+        eps = rn * math.sqrt(pn) / 4
+        d_tn = LAMBDA_P / gap * math.log(1 / eps)
+        cc = c_s1() + c_so() + d_tn * C_WALK
+        calls = mlae_calls(pn, r=rn)
+        cost = calls * cc + c_qpe_s1()
+        parts.append({"T": c["T"], "p_n": pn, "gap_eV": gap * HA_EV, "calls": calls, "C_call": cc, "toffoli": cost})
+        tot += cost
+    return {"toffoli": tot + c_qpe_s1(), "channels": parts}
 
 
 def analyse_one(name, d, r=R_D1):
     x = dye_inputs(name, d)
-    p, p_th = x["p"], x["p_th"]
+    p_raw = x["p"]
+    p, p_th = GAMMA2 * x["p"], GAMMA2 * x["p_th"]       # S1 filter flag folded into the good state
     out = {"name": name, "k_isc": x["k"], "k_threshold": x["k_th"], "alpha_so_cm": x["alpha_so_cm"],
-           "chi_tddft_cm": x["chi_tddft_cm"], "K": x["K"], "p": p, "p_th": p_th,
-           "consistent": bool(p < 1)}
+           "chi_tddft_cm": x["chi_tddft_cm"], "v_eff_cm": x["v_eff_cm"], "K": x["K"], "p_raw": p_raw,
+           "p": p, "p_th": p_th, "consistent": bool(p_raw < 1)}
     q = qpe = c_qpe_s1()
     # D1
     if p < 1:
@@ -185,9 +218,14 @@ def analyse_one(name, d, r=R_D1):
         for k_ in ("sampling", "mlae", "canonical"):
             e["toffoli_" + k_] = e["calls_" + k_] * cc + qpe
         e["ratio_to_per_call"] = e["toffoli_mlae"] / cc
+        e["max_depth_toffoli"] = (2 * canonical_depth(p, r * p) + 1) * cc
+        e["days_mlae"] = e["toffoli_mlae"] / TOFFOLI_RATE / 86400
+        e["days_canonical"] = e["toffoli_canonical"] / TOFFOLI_RATE / 86400
+        if x["k"] >= 1e6:
+            e["channel_route"] = channel_route(d, x["alpha_so_cm"], r)
         out["D1"] = e
     # D2
-    if p_th >= 1:
+    if x["p_th"] >= 1:
         out["D2"] = {"free": True, "toffoli_best": 0.0}
     elif p < 1:
         marg = abs(p - p_th) / p
@@ -199,6 +237,7 @@ def analyse_one(name, d, r=R_D1):
         for k_ in ("sampling", "mlae", "canonical"):
             e["toffoli_" + k_] = e["calls_" + k_] * cc + qpe
         e["toffoli_best"] = min(e["toffoli_sampling"], e["toffoli_mlae"])
+        e["days_best"] = e["toffoli_best"] / TOFFOLI_RATE / 86400
         e["ratio_to_per_call"] = e["toffoli_best"] / cc
         out["D2"] = e
     return out
@@ -234,33 +273,38 @@ def main():
          f"CAS(12,11), THC qubitization: {QUBITS} logical qubits, {C_WALK:.2e} Toffolis per walk step, "
          f"λ' = λ + |E0 − c0| = {LAMBDA} + {SHIFT:.2f} = {LAMBDA_P:.1f} Ha, filter width Δ = {DELTA_HA*HA_EV:.3f} eV, "
          f"filter degree d = ({DEG_A:.3f} ln(1/ε) + {DEG_B:.3f}) λ'/Δ (fitted to our filters). "
-         f"Coherent S1 preparation (sum of Slaters + eigenstate filter, γ² = {GAMMA2}, {2*amp_rounds()+1} "
-         f"applications) {c_s1():.1e}, H_SO basis rotation {c_so():.1e}, one QPE for E(S1) at 2 mHa "
-         f"{c_qpe_s1():.1e} Toffolis. Success probability p = k_ISC/K′, K′ = (2π/ħ) α_SO² ρ_max. "
+         f"Coherent S1 preparation (spin-adapted sum of CSFs + eigenstate filter, flag success γ² = {GAMMA2} folded into "
+         f"the good state) {c_s1():.1e}, H_SO basis rotation {c_so():.1e}, one QPE for E(S1) at "
+         f"{EPS_E_HA*1e3:.1f} mHa {c_qpe_s1():.1e} Toffolis. Success probability γ² k_ISC/K′, "
+         f"K′ = (2π/ħ) α_SO² ρ_max. "
          f"Confidence 0.95 per decision. MLAE constant c = {C_MLAE:.1f} (95th percentile, from ae_demo.py).", "",
          f"Reference, arXiv:2512.15889 (Orig-BDP, N = 11): ISC proxy {XANADU['isc_toffoli_per_shot']:.2e} Toffolis "
          f"× {XANADU['isc_shots']} shots = {XANADU['isc_toffoli_per_shot']*XANADU['isc_shots']:.1e} at fixed additive "
          "precision (not a decision; the proxy gives no absolute rate).", "",
          "## Spin-orbit normalization", "",
-         "| Dye | α_SO, CAS(12,11) (cm⁻¹) | ‖H_SO S1‖, TDDFT (cm⁻¹) | k_ISC (s⁻¹) | K′ (s⁻¹) | p = k_ISC/K′ |",
-         "|---|---|---|---|---|---|"]
+         "| Dye | α_SO, CAS(12,11) (cm⁻¹) | ‖H_SO S1‖, TDDFT (cm⁻¹) | V_eff = α_SO √(k/K′) (cm⁻¹) | k_ISC (s⁻¹) | "
+         "K′ (s⁻¹) | k_ISC/K′ | p = γ² k_ISC/K′ |",
+         "|---|---|---|---|---|---|---|---|"]
     for r in rows:
         flag = "" if r["consistent"] else " (> 1: rate not reachable in this active space)"
-        L.append(f"| {r['name']} | {r['alpha_so_cm']:.0f} | {r['chi_tddft_cm']:.0f} | {r['k_isc']:.1e} | "
-                 f"{r['K']:.1e} | {r['p']:.1e}{flag} |")
+        L.append(f"| {r['name']} | {r['alpha_so_cm']:.0f} | {r['chi_tddft_cm']:.0f} | {r['v_eff_cm']:.2g} | "
+                 f"{r['k_isc']:.1e} | {r['K']:.1e} | {r['p_raw']:.1e}{flag} | {r['p']:.1e} |")
     L += ["", f"## D1: k_ISC to {int(R_D1*100)}% statistical error (dyes with k_ISC ≥ 1e6 s⁻¹; slower dyes have "
           "Φ_T far below 0.5, so only D2 matters)", "",
           "| Dye | p | degree | Toffolis per call | calls, sampling (DKLR) | calls, MLAE | calls, canonical QAE | "
-          "Toffolis, sampling | Toffolis, MLAE | sampling/MLAE | total/per call |",
-          "|---|---|---|---|---|---|---|---|---|---|---|"]
+          "Toffolis, sampling | Toffolis, MLAE | Toffolis, canonical | sampling/MLAE | total/per call | "
+          "deepest circuit | days at 1e6 Toffoli/s (MLAE / canonical) | channel-resolved route |",
+          "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in rows:
         if r["k_isc"] < 1e6 or "D1" not in r:
             continue
         e = r["D1"]
         L.append(f"| {r['name']} | {r['p']:.1e} | {e['degree']:.0f} | {fmt(e['C_call'])} | "
                  f"{e['calls_sampling']:.1e} | {e['calls_mlae']:.1e} | {e['calls_canonical']:.1e} | "
-                 f"{fmt(e['toffoli_sampling'])} | {fmt(e['toffoli_mlae'])} | "
-                 f"{e['toffoli_sampling']/e['toffoli_mlae']:.0f} | {e['ratio_to_per_call']:.1e} |")
+                 f"{fmt(e['toffoli_sampling'])} | {fmt(e['toffoli_mlae'])} | {fmt(e['toffoli_canonical'])} | "
+                 f"{e['toffoli_sampling']/e['toffoli_mlae']:.0f} | {e['ratio_to_per_call']:.1e} | "
+                 f"{fmt(e['max_depth_toffoli'])} | {e['days_mlae']:.0f} / {e['days_canonical']:.0f} | "
+                 f"{fmt(e['channel_route']['toffoli'])} ({len(e['channel_route']['channels'])} ch.) |")
     L += ["", "## D2: is Φ_T above 0.5 (k_ISC > k_r + k_ic)?", "",
           "| Dye | k_ISC / threshold | p | p_th | calls, sampling (SPRT) | calls, MLAE | Toffolis, sampling | "
           "Toffolis, MLAE | best | total/per call |", "|---|---|---|---|---|---|---|---|---|---|"]
@@ -275,9 +319,14 @@ def main():
         L.append(f"| {r['name']} | {r['k_isc']/r['k_threshold']:.1e} | {r['p']:.1e} | {r['p_th']:.1e} | "
                  f"{e['calls_sampling']:.1e} | {e['calls_mlae']:.1e} | {fmt(e['toffoli_sampling'])} | "
                  f"{fmt(e['toffoli_mlae'])} | {fmt(e['toffoli_best'])} | {e['ratio_to_per_call']:.1e} |")
-    L += ["", f"δ = {DELTA_CONF} per decision. For a campaign of N dyes with a family-wise error δ, replace δ by δ/N: "
-          "the cost grows by ln(2N/δ)/ln(2/δ), e.g. ×2.2 for N = 100. With r = 0.4 instead of 0.2 the D1 MLAE "
-          "costs halve."]
+    nrep100 = math.ceil(math.log(100 / DELTA_CONF) / (2 * (8 / math.pi ** 2 - 0.5) ** 2))
+    L += ["", f"δ = {DELTA_CONF} per decision. For a campaign of N dyes with a family-wise error δ, replace δ by δ/N. "
+          f"For canonical QAE (median of runs) this raises the number of runs from {N_REP} to {nrep100} for N = 100 "
+          f"(×{nrep100/N_REP:.1f}); for MLAE the tail has not been characterized. The D2 call counts assume that the "
+          "margin to the threshold is known (an oracle margin); an adaptive test adds a logarithmic overhead. "
+          "With r = 0.4 instead of 0.2 the D1 MLAE costs halve. Sensitivity: γ² = 0.1 / 0.9 multiplies the calls by "
+          f"{math.sqrt(0.5/0.1):.2f} / {math.sqrt(0.5/0.9):.2f}; an S1 filter gap of 0.1 eV instead of 0.5 eV "
+          f"(no spin-adapted trial state) raises C_S1 from {c_s1():.1e} to {c_s1(0.1/HA_EV):.1e}."]
     (RES / "decision_cost.md").write_text("\n".join(L) + "\n")
     print("\n".join(L))
     fig(rows)
