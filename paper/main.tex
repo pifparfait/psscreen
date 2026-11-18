@@ -280,7 +280,8 @@ uncorrected TDDFT spectrum T$_2$ lies 0.08~eV above S$_1$ with 8~cm$^{-1}$ of SO
 $\kisc=1.1\times10^{9}$~s$^{-1}$ and $\Phi_T=0.67$, close to experiment; the $\Delta$SCF step lowers S$_1$
 and T$_1$ but not T$_2$ and closes that channel. Conformers change $\kisc$ by less than a factor of 1.5. Across
 our treatments T$_2$ lies 0.08 (uncorrected B3LYP), 0.12 (BHandHLYP/$\Delta$SCF), 0.44 (PBE0/$\Delta$SCF),
-0.51 (B3LYP/$\Delta$SCF) and 0.54~eV (canonical-window SA-CASSCF/SC-NEVPT2) above S$_1$, and within
+0.51 (B3LYP/$\Delta$SCF), 0.54 (canonical-window SA-CASSCF/SC-NEVPT2) and 0.72~eV (AVAS $\pi$-space SC-NEVPT2)
+above S$_1$, and within
 0.1--0.2~eV if S$_1$ is anchored to experiment. Its position is therefore uncertain by about 0.4~eV, 25 times
 the near-resonance tolerance of Section~\ref{sec:budget}, and none of our methods explains the fast ISC of
 this dye. Relaxation along the distyryl torsions, spin--vibronic coupling and solvent effects are untested
@@ -341,11 +342,12 @@ would rank azaBDP\_Br2 ($V_1^2=1.8$~cm$^{-2}$) below azaBDP\_IPh2 (26~cm$^{-2}$)
 $\pi$ electrons, so a (12e,11o) space can be the $\pi$ space of the chromophore. The canonical window of 6
 occupied and 5 virtual orbitals, the simplest way to build an active space of this size, is not
 (Table~\ref{tab:window}). Summed over its 11 orbitals, the weight on the dipyrrin 2p$_z$ space is 6.7 for the BODIPY core, 5.2 for BDP, 3.6 for I-BDP, 2.5 for I2-BDP and I3-BDP
-and 3.0 for BDP-0. In I2-BDP only HOMO and LUMO are $\pi$ orbitals of the chromophore; four of the eleven
+2.2--3.0 for aza-BDP-Ph$_4$ and the distyryl dyes. In I2-BDP only HOMO and LUMO are $\pi$ orbitals of the chromophore; four of the eleven
 orbitals sit mainly on iodine (lone pairs and C--I $\sigma^*$), and the rest are $\sigma$ orbitals or $\pi$
 orbitals of the substituents. The AVAS selection gives orbitals with dipyrrin $\pi$ weights of at least 0.90
 for the compact dyes, with a clear gap in the projection eigenvalues, and SA-CASSCF keeps them $\pi$ orbitals;
-for BDP-0, whose $\pi$ system extends over 27 centres, the gap is less clear. The label ``(12e,11o)'' thus
+for aza-BDP-Ph$_4$ and the distyryl dyes, whose $\pi$ systems extend beyond the dipyrrin, the gap is less clear
+(0.84--0.86 kept, 0.15 rejected). The label ``(12e,11o)'' thus
 describes different model chemistries across dyes in the canonical window, but one in the AVAS space.
 
 \begin{table}
@@ -365,7 +367,10 @@ describes different model chemistries across dyes in the canonical window, but o
     I-BDP       & 3.6 & 2 & 5579  & 10.7 & 0.90 & 80 \\
     I2-BDP      & 2.5 & 4 & 8315  & 10.6 & 0.89 & 299 \\
     I3-BDP      & 2.5 & 5 & 11421 & 10.6 & 0.89 & 304 \\
-    BDP-0       & 3.0 & 0 & 11    & 10.6 & --   & 7 \\
+    aza-BDP-Ph$_4$ & 2.9 & 0 & 13  & 10.6 & 0.86 & 12 \\
+    BDP-0       & 3.0 & 0 & 11    & 10.6 & 0.85 & 7 \\
+    I-BDP-0     & 2.2 & 1 & 2138  & 10.6 & 0.85 & 76 \\
+    I2-BDP-0    & 3.0 & 1 & 418   & 10.5 & 0.84 & 285 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -374,16 +379,19 @@ describes different model chemistries across dyes in the canonical window, but o
 SA-CASSCF orbitals and def2-SVP, SC-NEVPT2 places S$_1$ 0.54--0.59~eV above experiment and overestimates the
 measured S$_1$--T$_1$ gaps by 0.33--0.39~eV for BDP, I-BDP, I2-BDP and I3-BDP (Table~\ref{tab:pi}). BDP and I-BDP share
 the same $\pi$ space and agree to 0.02~eV, as do I2-BDP and I3-BDP, so these are effectively two independent results. The lowest upper
-triplet lies 0.36--0.44~eV above S$_1$, as in the pipeline, so the S$_1\to$T$_2$ channel stays closed. No
+triplet lies 0.36--0.44~eV above S$_1$, as in the pipeline, so the S$_1\to$T$_2$ channel stays closed. For
+aza-BDP-Ph$_4$ and the distyryl dyes S$_1$ is 0.66--0.79~eV too high, and in the distyryl dyes T$_2$ lies
+0.72--0.73~eV above S$_1$, further than in any other treatment; the dipyrrin $\pi$ space truncates their
+$\pi$ systems and cannot test the near-resonant T$_2$ of I2-BDP-0. No
 orbital is inert: every root has occupations that deviate from 0 or 2 by at least 0.02. Without orbital
 optimization, CASCI on the AVAS orbitals misses S$_1$ by 1.2--2.3~eV and NEVPT2 by 0.5--0.9~eV.
 
 These errors are larger than those of CASPT2 in a (12e,11o) $\pi$ space with larger basis
 sets~\cite{Momeni2015}, quoted in ref~\citenum{Zhou2026PRA}. The basis is not the cause: with def2-TZVP the
-SC-NEVPT2 S$_1$ of BDP moves by $-0.02$~eV and its S$_1$--T$_1$ gap by less than 0.01~eV (1.10~eV). The missing
+SC-NEVPT2 S$_1$ of BDP and I2-BDP moves by $-0.02$ to $-0.03$~eV and their S$_1$--T$_1$ gaps by less than
+0.01~eV. The missing
 $\sigma$--$\pi$ polarization of a $\pi$-only reference and the singlet-only state averaging remain as
-explanations. \todo{SA(3S+2T) runs for BDP and I2-BDP and I2-BDP/def2-TZVP on tars; aza-BDP-Ph$_4$ and the
-distyryl dyes still running.} A controlled (12e,11o) $\pi$ space with second-order dynamic correlation misses
+explanations. \todo{SA(3S+2T) runs for BDP and I2-BDP on tars.} A controlled (12e,11o) $\pi$ space with second-order dynamic correlation misses
 the gaps by several times the budget, in double- and triple-$\zeta$ bases alike.
 
 \begin{table}
@@ -401,6 +409,10 @@ the gaps by several times the budget, in double- and triple-$\zeta$ bases alike.
     I-BDP       & 2.90 & 1.10 & $+0.23$ & 3.00 & 1.11 & $+0.36$ & 2.46 / 0.76 \\
     I2-BDP      & 2.87 & 1.00 & $+0.24$ & 2.90 & 0.96 & $+0.44$ & 2.31 / 0.59 \\
     I3-BDP      & 2.86 & 1.01 & $+0.23$ & 2.89 & 0.97 & $+0.44$ & 2.30 / 0.58 \\
+    aza-BDP-Ph$_4$ & 2.58 & 1.37 & $+0.15$ & 2.70 & 1.30 & $+0.20$ & 1.91 / -- \\
+    BDP-0       & 2.70 & 1.13 & $+0.54$ & 2.65 & 0.99 & $+0.73$ & 1.97 / -- \\
+    I-BDP-0     & 2.70 & 1.14 & $+0.53$ & 2.65 & 1.00 & $+0.73$ & 1.96 / -- \\
+    I2-BDP-0    & 2.70 & 1.09 & $+0.43$ & 2.59 & 0.90 & $+0.72$ & 1.93 / -- \\
     \bottomrule
   \end{tabular}
 \end{table}
