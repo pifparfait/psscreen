@@ -24,7 +24,7 @@ Estimators (all with confidence 1 - delta = 0.95 per decision):
 
 Cost of one call (Toffolis), CAS(12,11) with THC qubitization (paper/quantum/thc_pennylane_resources.py):
   C_A = C_S1 + C_SO + d * C_walk
-  C_walk = 2.97e3 (158 logical qubits, angles in 5 batches);
+  C_walk = 3.25e3 (THC rank 33, 193 logical qubits, angles in 5 batches);
   d = filter degree, fitted to our own Chebyshev filters (paper/quantum/degree_check.py):
       d = s(eps) lambda'/Delta, s(eps) linear in ln(1/eps), lambda' = lambda + |E0 - c0| (shift of the
       block-encoded operator relative to its identity coefficient, 3.46 Ha for the BODIPY core), Delta the MLJ width;
@@ -70,8 +70,8 @@ LAMBDA = 15.9                   # Ha, one-norm (BODIPY core CAS(12,11))
 _dc = json.loads((RES / "degree_check.json").read_text())
 SHIFT = _dc["bodipy_core_cas12_11"]["abs_E0_minus_c0_Ha"]
 LAMBDA_P = LAMBDA + SHIFT       # normalization of (H - E_c)
-C_WALK = 2.97e3                 # Toffolis per qubitized walk step (THC, 5 angle batches)
-QUBITS = 158                    # logical qubits of that encoding
+C_WALK = 3.25e3                 # Toffolis per qubitized walk step (THC rank 3N = 33, 5 angle batches; rank 2N fails the gap budget, paper/quantum/thc_error.py)
+QUBITS = 193                    # logical qubits of that encoding
 BETH = 27                       # rotation bits (preprint rule)
 D_SOS = 1e4                     # determinants in the S1 sum-of-Slaters preparation
 GAMMA2 = 0.5                    # assumed overlap of the sum-of-Slaters state with S1

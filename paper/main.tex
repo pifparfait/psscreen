@@ -50,7 +50,7 @@ rate. A (12e,11o) window of canonical orbitals has a summed dipyrrin $\pi$ weigh
 S$_1$--T$_1$ gaps by about 0.35~eV. We implement the golden-rule rate as a QSVT spectral filter, verify it,
 and show that on bare active-space energies it ranks the dyes wrongly. Taking the pipeline rates as
 targets, a decision with tensor-hypercontraction qubitization needs $10^{3}$--$10^{6}$ calls of about
-$1.5\times10^{8}$ Toffolis, because the rate is a small fraction of the spin--orbit block-encoding norm:
+$1.6\times10^{8}$ Toffolis, because the rate is a small fraction of the spin--orbit block-encoding norm:
 $10^{11}$ Toffolis for light-atom negatives and up to $10^{15}$ near the triplet-yield threshold, with
 amplitude estimation cheaper than sampling in every case. When one channel dominates, phase estimation
 of its energy with amplitude estimation of its coupling is about ten times cheaper than the filter.
@@ -190,10 +190,10 @@ statistical error $r=0.2$, which uses about a quarter of the factor-2 budget in 
 rest to systematic gap errors; and (D2) whether $\Phi_T>0.5$, that is whether $\kisc>k_r+k_\mathrm{ic}$.
 
 One call costs $C = C_{\mathrm{S}_1} + C_\mathrm{SO} + d\,C_\mathrm{walk}$ for the (12e,11o) active space
-with tensor-hypercontraction (THC) qubitization, with $C_\mathrm{walk}=2.97\times10^{3}$ Toffolis per walk
+with tensor-hypercontraction (THC) qubitization, with $C_\mathrm{walk}=3.25\times10^{3}$ Toffolis per walk
 step (Section~\ref{sec:resources}) and a filter degree $d\propto\lambda'/\Delta$ fitted to our Chebyshev
 filters, where $\Delta=\sqrt{2\lambda_sk_BT}$ is the MLJ width. S$_1$ is prepared as a spin-adapted trial state
-followed by an eigenstate filter ($C_{\mathrm{S}_1}=2.2\times10^{7}$ Toffolis) that succeeds with probability
+followed by an eigenstate filter ($C_{\mathrm{S}_1}=2.4\times10^{7}$ Toffolis) that succeeds with probability
 $\gamma^2$ (assumed 0.5), so the estimators see $\gamma^2p$; one phase estimation of $E(\mathrm{S}_1)$ to
 0.5~mHa fixes the filter centre. Calls are counted for direct sampling (Dagum--Karp--Luby--Ross rule for
 D1~\cite{Dagum2000}, Wald's sequential test for D2~\cite{Wald1945}), for maximum-likelihood amplitude
@@ -214,7 +214,8 @@ an AVAS-type selection~\cite{Sayfutyarova2017}: occupied and virtual RHF orbital
 MINAO 2p$_z$ functions of the 11 dipyrrin atoms, and the 6 and 5 with the largest projection are kept
 (\texttt{run\_pi\_cas.py}). Fault-tolerant resources come from PennyLane's~\cite{Bergholm2018} THC
 qubitization estimator for the (12e,11o) BODIPY-core Hamiltonian, with an assumed one-norm
-($\lambda=15.9$~Ha, from double factorization) and THC rank 22, and the precision rules of
+($\lambda=15.9$~Ha, from double factorization) and the THC rank that meets the gap budget (below), and the
+precision rules of
 ref~\citenum{Zhou2026PRA}. All quantum algorithms were simulated on a state-vector simulator.
 
 \subsection{Experimental data}
@@ -443,14 +444,17 @@ as for azaBDP\_Br2. The filter is the right observable once the Hamiltonian meet
 \subsection{Fault-tolerant resources, like for like}
 \label{sec:resources}
 
-One THC walk step for the (12e,11o) BODIPY-core Hamiltonian costs $2.8$--$3.5\times10^{3}$ Toffolis. The
-qubit count depends on how the Givens-rotation angles are loaded: 374 wires when loaded at once, 158 with five
-batches and 131 with ten, for 10--30\% more Toffolis. The 177 qubits of ref~\citenum{Zhou2026PRA} lie in this
-range, so qubit counts should be compared together with the loading choice. The filter needs about
-$3\times10^{4}$ walk steps at the MLJ width, about $10^{8}$ Toffolis, the same order as the gap-free proxy per
-shot~\cite{Zhou2026PRA}; with S$_1$ preparation one call costs $1.4$--$2.1\times10^{8}$ Toffolis on 158
-logical qubits. The THC factorization error is not yet included. \todo{THC rank 22 and 44 gaps of the BODIPY
-core against exact CASCI.}
+The THC rank is not free: fitting the two-electron integrals of the (12e,11o) BODIPY-core Hamiltonian to THC
+form (least squares, best of several starts) and repeating CASCI with the fitted integrals shifts the S$_1$--T$_1$
+gap by $-0.12$~eV and T$_2-$S$_1$ by $+0.12$~eV at rank 22 ($2N$), beyond the budget, but by less than 0.01~eV at
+rank 33 ($3N$) (script \texttt{thc\_error.py}). We therefore cost rank 33. One walk step then costs
+$3.25\times10^{3}$ Toffolis on 193 logical qubits with the Givens-rotation angles loaded in five batches (rank 22:
+$2.97\times10^{3}$ on 158). The qubit count depends on this loading choice (374 wires at rank 22 when all angles are
+loaded at once, 131 with ten batches), and the 177 qubits of ref~\citenum{Zhou2026PRA} lie in this range, so qubit
+counts should be compared together with the loading choice and the rank. The filter needs about $3\times10^{4}$
+walk steps at the MLJ width, about $10^{8}$ Toffolis, the same order as the gap-free proxy per
+shot~\cite{Zhou2026PRA}; with S$_1$ preparation one call costs $1.3$--$1.9\times10^{8}$ Toffolis. Our fits are not
+regularized for the THC one-norm, so we keep the double-factorization value of $\lambda$.
 
 \subsection{Cost of a screening decision}
 \label{sec:decision}
@@ -474,22 +478,22 @@ MLAE reaches 18\% relative error at the 95th percentile with $1.0\times10^{5}$ c
 $2.6\times10^{5}$, while direct sampling is still at 250\% (SI Section~S4, Figure~S3). Because the MLAE constant
 holds only above about 5\% error, we give the rigorous canonical totals next to the MLAE ones.
 
-\paragraph{Decision costs.} Estimating $\kisc$ to 20\% (D1) costs $6\times10^{12}$--$7\times10^{14}$ Toffolis
-with MLAE and $3\times10^{13}$--$6\times10^{15}$ with canonical estimation, that is $5\times10^{4}$--$4\times10^{6}$
-calls of $1.2$--$1.7\times10^{8}$ Toffolis; direct sampling costs $3\times10^{2}$--$3\times10^{4}$ times more
+\paragraph{Decision costs.} Estimating $\kisc$ to 20\% (D1) costs $6\times10^{12}$--$8\times10^{14}$ Toffolis
+with MLAE and $4\times10^{13}$--$6\times10^{15}$ with canonical estimation, that is $5\times10^{4}$--$4\times10^{6}$
+calls of $1.3$--$1.9\times10^{8}$ Toffolis; direct sampling costs $3\times10^{2}$--$3\times10^{4}$ times more
 (Table~\ref{tab:decision}, Figure~\ref{fig:decision}). For the class decision (D2), amplitude estimation wins for
 every dye, by 3--7 times for light-atom negatives and by $10^{2}$--$10^{4}$ for heavy-atom dyes, because
 certifying $p<p_\mathrm{th}$ takes about $1/p_\mathrm{th}$ samples but $1/\sqrt{p_\mathrm{th}}$ calls. D2 costs
 $5\times10^{10}$--$5\times10^{11}$ Toffolis for light-atom negatives, $4\times10^{11}$--$2\times10^{13}$ for
 heavy-atom dyes far from $\Phi_T=0.5$, and $3\times10^{14}$--$3\times10^{15}$ for Br2-BDP and azaBDP\_IPh2, at 0.94
-and 1.2 times the threshold rate. At $10^{6}$ Toffolis per second a D1 estimate for I2-BDP takes about 4.5 years
-with MLAE, and the deepest canonical circuit ($8\times10^{13}$ Toffolis) needs logical error rates below about
+and 1.2 times the threshold rate. At $10^{6}$ Toffolis per second a D1 estimate for I2-BDP takes about 5 years
+with MLAE, and the deepest canonical circuit ($9\times10^{13}$ Toffolis) needs logical error rates below about
 $10^{-14}$.
 
 \paragraph{A channel-resolved route is cheaper here.} In every ISC-active dye one channel carries more than
 99\% of the rate. Phase estimation of that triplet and amplitude estimation of its coupling through a T$_n$
 eigenstate filter, with the golden rule evaluated classically, costs 9--21 times less than the filter for
-D1 ($5\times10^{11}$--$8\times10^{13}$ Toffolis), because the success probability is $\gamma^2V_n^2/\aso^2$
+D1 ($6\times10^{11}$--$9\times10^{13}$ Toffolis), because the success probability is $\gamma^2V_n^2/\aso^2$
 rather than $\gamma^2V_\mathrm{eff}^2/\aso^2$ and the eigenstate filter is wider than the MLJ width. It also
 keeps the line-shape parameters outside the circuit. The filter is preferable when many triplets contribute
 comparably or the channels are not known in advance.
@@ -503,10 +507,10 @@ Eklund \emph{et al.}~\cite{Eklund2026}, who simulate the dynamics, whereas our l
 
 \begin{table}
   \caption{Decision-level cost (Toffolis), (12e,11o) canonical window with B3LYP orbitals, THC
-  qubitization (158 logical qubits for the walk), confidence 0.95, pipeline rates as targets, $\gamma^2=0.5$.
+  qubitization, rank 33 (193 logical qubits for the walk), confidence 0.95, pipeline rates as targets, $\gamma^2=0.5$.
   $V_\mathrm{eff}$: Franck--Condon-weighted coupling; $p=\gamma^2\kisc/K'$. D1: $\kisc$ to 20\% with MLAE and
   canonical estimation, and with the channel-resolved route (MLAE), listed for $\kisc\ge10^{6}$~s$^{-1}$; D2:
-  is $\Phi_T>0.5$, best estimator. One call costs $1.2$--$1.7\times10^{8}$ Toffolis.}
+  is $\Phi_T>0.5$, best estimator. One call costs $1.3$--$1.9\times10^{8}$ Toffolis.}
   \label{tab:decision}
   \scriptsize\setlength{\tabcolsep}{2pt}
   \begin{tabular}{lrrrrrrrr}
@@ -514,14 +518,14 @@ Eklund \emph{et al.}~\cite{Eklund2026}, who simulate the dynamics, whereas our l
     Dye & $\aso$ (cm$^{-1}$) & $V_\mathrm{eff}$ (cm$^{-1}$) & $\kisc/k_\mathrm{th}$ & $p$ &
     D1, MLAE & D1, canonical & D1, channel & D2 \\
     \midrule
-    BDP          &    39 & $5\times10^{-6}$ & $3\times10^{-11}$ & $1\times10^{-14}$ & -- & -- & -- & $8.8\times10^{10}$ \\
-    I-BDP        &  6553 & $9\times10^{-5}$ & $7\times10^{-9}$  & $9\times10^{-17}$ & -- & -- & -- & $1.5\times10^{13}$ \\
-    I2-BDP       & 12006 & 4.2  & 20   & $6.1\times10^{-8}$ & $1.4\times10^{14}$ & $1.3\times10^{15}$ & $1.1\times10^{13}$ & $1.6\times10^{13}$ \\
-    I3-BDP       & 12372 & 4.3  & 20   & $6.0\times10^{-8}$ & $1.4\times10^{14}$ & $1.3\times10^{15}$ & $1.1\times10^{13}$ & $1.6\times10^{13}$ \\
-    I2-BDP-0     &  2656 & 0.21 & 0.04 & $3.1\times10^{-9}$ & $7.0\times10^{14}$ & $5.8\times10^{15}$ & $7.9\times10^{13}$ & $1.3\times10^{13}$ \\
-    Br2-BDP      &  1474 & 0.92 & 0.94 & $1.9\times10^{-7}$ & $7.6\times10^{13}$ & $6.3\times10^{14}$ & $6.0\times10^{12}$ & $2.6\times10^{14}$ \\
-    azaBDP\_Br2  &   855 & 5.7  & 35   & $2.2\times10^{-5}$ & $5.8\times10^{12}$ & $3.2\times10^{13}$ & $5.4\times10^{11}$ & $5.9\times10^{11}$ \\
-    azaBDP\_IPh2 &  7173 & 1.0  & 1.2  & $1.1\times10^{-8}$ & $3.6\times10^{14}$ & $2.8\times10^{15}$ & $1.7\times10^{13}$ & $4.3\times10^{14}$ \\
+    BDP          &    39 & $5\times10^{-6}$ & $3\times10^{-11}$ & $1\times10^{-14}$ & -- & -- & -- & $9.6\times10^{10}$ \\
+    I-BDP        &  6553 & $9\times10^{-5}$ & $7\times10^{-9}$  & $9\times10^{-17}$ & -- & -- & -- & $1.6\times10^{13}$ \\
+    I2-BDP       & 12006 & 4.2  & 20   & $6.1\times10^{-8}$ & $1.6\times10^{14}$ & $1.4\times10^{15}$ & $1.2\times10^{13}$ & $1.8\times10^{13}$ \\
+    I3-BDP       & 12372 & 4.3  & 20   & $6.0\times10^{-8}$ & $1.6\times10^{14}$ & $1.4\times10^{15}$ & $1.2\times10^{13}$ & $1.8\times10^{13}$ \\
+    I2-BDP-0     &  2656 & 0.21 & 0.04 & $3.1\times10^{-9}$ & $7.7\times10^{14}$ & $6.4\times10^{15}$ & $8.7\times10^{13}$ & $1.4\times10^{13}$ \\
+    Br2-BDP      &  1474 & 0.92 & 0.94 & $1.9\times10^{-7}$ & $8.3\times10^{13}$ & $6.8\times10^{14}$ & $6.6\times10^{12}$ & $2.8\times10^{14}$ \\
+    azaBDP\_Br2  &   855 & 5.7  & 35   & $2.2\times10^{-5}$ & $6.3\times10^{12}$ & $3.5\times10^{13}$ & $5.9\times10^{11}$ & $6.4\times10^{11}$ \\
+    azaBDP\_IPh2 &  7173 & 1.0  & 1.2  & $1.1\times10^{-8}$ & $4.0\times10^{14}$ & $3.1\times10^{15}$ & $1.9\times10^{13}$ & $4.7\times10^{14}$ \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -559,7 +563,7 @@ I2-BDP) is the off-resonant weight that the filter removes, and only a channel-r
 \paragraph{Limitations.} The benchmark has nine dyes from one family and three measured ISC rates, two
 for nearly identical dyes, and the factor-2 agreement holds for B3LYP only. We used def2-SVP (def2-TZVP for two NEVPT2 checks), GFN2-xTB
 geometries, one conformer, the gas phase and vertical energies; the SOC model is not yet benchmarked; and the
-cost model takes pipeline rates, an assumed trial-state overlap, THC rank and one-norm, and an oracle margin
+cost model takes pipeline rates, an assumed trial-state overlap and one-norm, and an oracle margin
 for D2.
 
 % ---------------------------------------------------------------------------------------------

@@ -2,16 +2,16 @@
  "model": {
   "lambda_Ha": 15.9,
   "lambda_prime_Ha": 19.360714000517667,
-  "C_walk": 2970.0,
-  "qubits": 158,
+  "C_walk": 3250.0,
+  "qubits": 193,
   "Delta_eV": 0.07168344177095991,
   "degree_slope": [
    0.5535681210287714,
    -0.10552784523198878
   ],
-  "C_S1": 21919768.112110514,
+  "C_S1": 23957734.452646185,
   "C_SO": 4455.0,
-  "C_QPE_S1": 405130988.84556043,
+  "C_QPE_S1": 443268068.57510823,
   "n_rep_canonical": 16,
   "c_mlae": 45.04407481677883,
   "delta": 0.05,
@@ -39,32 +39,32 @@
    "consistent": true,
    "D1": {
     "degree": 82182.56783845113,
-    "C_call": 266006449.59231037,
+    "C_call": 291055534.92761236,
     "calls_sampling": 4.101258032587414e+17,
     "calls_mlae": 8076051092.262798,
     "calls_canonical": 68719476720,
-    "toffoli_sampling": 1.090961088110522e+26,
-    "toffoli_mlae": 2.148281678184058e+18,
-    "toffoli_canonical": 1.8279824020533758e+19,
-    "ratio_to_per_call": 8076051093.78581,
-    "max_depth_toffoli": 1.1424890012580392e+18,
-    "days_mlae": 24864371.27527845,
-    "days_canonical": 211572037.27469626
+    "toffoli_sampling": 1.1936938505508968e+26,
+    "toffoli_mlae": 2.350579371204545e+18,
+    "toffoli_canonical": 2.0001184057128473e+19,
+    "ratio_to_per_call": 8076051093.785766,
+    "max_depth_toffoli": 1.2500740035428252e+18,
+    "days_mlae": 27205779.759311862,
+    "days_canonical": 231495185.84639436
    },
    "D2": {
     "free": false,
     "margin_rel": 15622114014.290138,
     "degree": 17960.132183315276,
-    "C_call": 75265815.69655688,
+    "C_call": 82332619.04842083,
     "calls_sampling": 242349.92092083118,
     "calls_mlae": 6461.476237496097,
     "calls_canonical": 32752,
-    "toffoli_sampling": 18241069613091.258,
-    "toffoli_mlae": 486733410607.9086,
-    "toffoli_canonical": 2465511126682.4766,
-    "toffoli_best": 486733410607.9086,
-    "days_best": 5.633488548702646,
-    "ratio_to_per_call": 6466.858906707827
+    "toffoli_sampling": 19953746983658.28,
+    "toffoli_mlae": 532433529620.7649,
+    "toffoli_canonical": 2697001207142.454,
+    "toffoli_best": 532433529620.7649,
+    "days_best": 6.162425111351445,
+    "ratio_to_per_call": 6466.860106899237
    }
   },
   {
@@ -81,32 +81,32 @@
    "consistent": true,
    "D1": {
     "degree": 77077.08807053816,
-    "C_call": 250843174.68160886,
+    "C_call": 274462725.6818952,
     "calls_sampling": 3.333625577660302e+16,
     "calls_mlae": 2302496192.0769706,
     "calls_canonical": 17179869168,
-    "toffoli_sampling": 8.362172231001224e+24,
-    "toffoli_mlae": 5.775654549180338e+17,
-    "toffoli_canonical": 4.309452923120941e+18,
-    "ratio_to_per_call": 2302496193.6920476,
-    "max_depth_toffoli": 2.6934080766973814e+17,
-    "days_mlae": 6684785.357847613,
-    "days_canonical": 49877927.350936815
+    "toffoli_sampling": 9.149559624475289e+24,
+    "toffoli_mlae": 6.319493811928979e+17,
+    "toffoli_canonical": 4.715233719150901e+18,
+    "ratio_to_per_call": 2302496193.69201,
+    "max_depth_toffoli": 2.947021074192271e+17,
+    "days_mlae": 7314228.948991874,
+    "days_canonical": 54574464.34202432
    },
    "D2": {
     "free": false,
     "margin_rel": 39508944680.76885,
     "degree": 17960.132183315276,
-    "C_call": 75265815.69655688,
+    "C_call": 82332619.04842083,
     "calls_sampling": 7787.669654870344,
     "calls_mlae": 1158.3132519325281,
     "calls_canonical": 8176,
-    "toffoli_sampling": 586550439937.9856,
-    "toffoli_mlae": 87586522727.67868,
-    "toffoli_canonical": 615778440123.8947,
-    "toffoli_best": 87586522727.67868,
-    "days_best": 1.0137329019407255,
-    "ratio_to_per_call": 1163.6959211442577
+    "toffoli_sampling": 641622507037.962,
+    "toffoli_mlae": 95810231778.67345,
+    "toffoli_canonical": 673594761408.4637,
+    "toffoli_best": 95810231778.67345,
+    "days_best": 1.1089147196605724,
+    "ratio_to_per_call": 1163.6971213356674
    }
   },
   {
@@ -123,32 +123,32 @@
    "consistent": true,
    "D1": {
     "degree": 86646.23114506592,
-    "C_call": 279263529.6129563,
+    "C_call": 305562440.6741104,
     "calls_sampling": 3.6803746006403697e+18,
     "calls_mlae": 24192821616.791004,
     "calls_canonical": 137438953456,
-    "toffoli_sampling": 1.027794401272704e+27,
-    "toffoli_mlae": 6.756172756406815e+18,
-    "toffoli_canonical": 3.83816872488385e+19,
-    "ratio_to_per_call": 24192821618.24172,
-    "max_depth_toffoli": 2.398855453027086e+18,
-    "days_mlae": 78196443.9398937,
-    "days_canonical": 444232491.3060012
+    "toffoli_sampling": 1.1245842455666757e+27,
+    "toffoli_mlae": 7.392417620463306e+18,
+    "toffoli_canonical": 4.199618206215409e+19,
+    "ratio_to_per_call": 24192821618.24167,
+    "max_depth_toffoli": 2.624761378856926e+18,
+    "days_mlae": 85560389.1257327,
+    "days_canonical": 486066922.01567227
    },
    "D2": {
     "free": false,
     "margin_rel": 149842198.12486836,
     "degree": 17960.132183315276,
-    "C_call": 75265815.69655688,
+    "C_call": 82332619.04842083,
     "calls_sampling": 226738969.45653373,
     "calls_mlae": 197653.69303676116,
     "calls_canonical": 1048560,
-    "toffoli_sampling": 1.7065693891473696e+16,
-    "toffoli_mlae": 14876971562837.54,
-    "toffoli_canonical": 78921128837770.53,
-    "toffoli_best": 14876971562837.54,
-    "days_best": 172.18717086617522,
-    "ratio_to_per_call": 197659.07570597288
+    "toffoli_sampling": 1.8668013638964388e+16,
+    "toffoli_mlae": 16273789480377.74,
+    "toffoli_canonical": 86331134297480.72,
+    "toffoli_best": 16273789480377.74,
+    "days_best": 188.35404491177943,
+    "ratio_to_per_call": 197659.0769061643
    }
   },
   {
@@ -165,27 +165,27 @@
    "consistent": true,
    "D1": {
     "degree": 45189.387717846366,
-    "C_call": 156136704.63411424,
+    "C_call": 170827699.5356469,
     "calls_sampling": 5188186293.467936,
     "calls_mlae": 908339.6820742409,
     "calls_canonical": 8388592,
-    "toffoli_sampling": 8.10066311295094e+17,
-    "toffoli_mlae": 141825569778459.8,
-    "toffoli_canonical": 1309767516531082.2,
-    "ratio_to_per_call": 908342.2767939756,
-    "max_depth_toffoli": 81860444462505.84,
-    "days_mlae": 1641.4996502136553,
-    "days_canonical": 15159.346256146784,
+    "toffoli_sampling": 8.8628592971877e+17,
+    "toffoli_mlae": 155170021553752.0,
+    "toffoli_canonical": 1433004316971199.8,
+    "ratio_to_per_call": 908342.2768997274,
+    "max_depth_toffoli": 89562742106445.7,
+    "days_mlae": 1795.9493235387963,
+    "days_canonical": 16585.69811309259,
     "channel_route": {
-     "toffoli": 11302332853081.49,
+     "toffoli": 12359507454376.494,
      "channels": [
       {
        "T": 1,
        "p_n": 6.081146416099683e-07,
        "gap_eV": 0.9231789498718239,
        "calls": 288811.7788392479,
-       "C_call": 39131099.97287959,
-       "toffoli": 11301927722092.645
+       "C_call": 42791263.45853827,
+       "toffoli": 12359064186307.92
       }
      ]
     }
@@ -194,16 +194,16 @@
     "free": false,
     "margin_rel": 0.9488406619820146,
     "degree": 38855.1911322904,
-    "C_call": 137324140.775013,
+    "C_call": 150241560.63259,
     "calls_sampling": 23663544.916728564,
     "calls_mlae": 117384.49874621912,
     "calls_canonical": 1048560,
-    "toffoli_sampling": 3249576378511665.5,
-    "toffoli_mlae": 16120130561618.977,
-    "toffoli_canonical": 143993006182036.47,
-    "toffoli_best": 16120130561618.977,
-    "days_best": 186.57558520392334,
-    "ratio_to_per_call": 117387.44892662119
+    "toffoli_sampling": 3555248361656760.0,
+    "toffoli_mlae": 17636473553774.84,
+    "toffoli_canonical": 157537734084977.12,
+    "toffoli_best": 17636473553774.84,
+    "days_best": 204.12585131683844,
+    "ratio_to_per_call": 117387.44911538933
    }
   },
   {
@@ -220,27 +220,27 @@
    "consistent": true,
    "D1": {
     "degree": 45251.379786331134,
-    "C_call": 156320821.077514,
+    "C_call": 171029173.75822237,
     "calls_sampling": 5348729438.184258,
     "calls_mlae": 922286.435829696,
     "calls_canonical": 8388592,
-    "toffoli_sampling": 8.361177779035644e+17,
-    "toffoli_mlae": 144172978048540.84,
-    "toffoli_canonical": 1311311994255254.0,
-    "ratio_to_per_call": 922289.0274933403,
-    "max_depth_toffoli": 81956974320266.58,
-    "days_mlae": 1668.668727413667,
-    "days_canonical": 15177.222155732106,
+    "toffoli_sampling": 9.147887769122028e+17,
+    "toffoli_mlae": 157738330356437.25,
+    "toffoli_canonical": 1434694402022902.5,
+    "ratio_to_per_call": 922289.02759845,
+    "max_depth_toffoli": 89668372422177.12,
+    "days_mlae": 1825.6751198661718,
+    "days_canonical": 16605.259282672483,
     "channel_route": {
-     "toffoli": 11378071619254.098,
+     "toffoli": 12442325193346.367,
      "channels": [
       {
        "T": 1,
        "p_n": 5.992873355494022e-07,
        "gap_eV": 0.9251727361940656,
        "calls": 290931.05516348785,
-       "C_call": 39106383.30061735,
-       "toffoli": 11377666488265.252
+       "C_call": 42764216.594951645,
+       "toffoli": 12441881925277.793
       }
      ]
     }
@@ -249,16 +249,16 @@
     "free": false,
     "margin_rel": 0.9510084892677935,
     "degree": 38907.898669093505,
-    "C_call": 137480682.15931824,
+    "C_call": 150412860.12720007,
     "calls_sampling": 23909903.193245236,
     "calls_mlae": 118445.37300031517,
     "calls_canonical": 1048560,
-    "toffoli_sampling": 3287150206501605.5,
-    "toffoli_mlae": 16284355809687.07,
-    "toffoli_canonical": 144157149215963.56,
-    "toffoli_best": 16284355809687.07,
-    "days_best": 188.47634038989665,
-    "ratio_to_per_call": 118448.31982151567
+    "toffoli_sampling": 3596357367928558.5,
+    "toffoli_mlae": 17816150589879.02,
+    "toffoli_canonical": 157717351883045.47,
+    "toffoli_best": 17816150589879.02,
+    "days_best": 206.2054466421183,
+    "ratio_to_per_call": 118448.32000942196
    }
   },
   {
@@ -275,32 +275,32 @@
    "consistent": true,
    "D1": {
     "degree": 40750.55861494462,
-    "C_call": 142953382.19849604,
+    "C_call": 156401504.9512162,
     "calls_sampling": 585251638.2199591,
     "calls_mlae": 305078.63204677205,
     "calls_canonical": 2097136,
-    "toffoli_sampling": 8.366370152588475e+16,
-    "toffoli_mlae": 43612427418565.39,
-    "toffoli_canonical": 299793089261214.06,
-    "ratio_to_per_call": 305081.4660544927,
-    "max_depth_toffoli": 18737042758139.074,
-    "days_mlae": 504.773465492655,
-    "days_canonical": 3469.8274220047924
+    "toffoli_sampling": 9.153423743603438e+16,
+    "toffoli_mlae": 47715200448642.06,
+    "toffoli_canonical": 327995669755442.25,
+    "ratio_to_per_call": 305081.4662143123,
+    "max_depth_toffoli": 20499701655460.855,
+    "days_mlae": 552.2592644518757,
+    "days_canonical": 3796.246177725026
    },
    "D2": {
     "free": false,
     "margin_rel": 2566.9413919679737,
     "degree": 17960.132183315276,
-    "C_call": 75265815.69655688,
+    "C_call": 82332619.04842083,
     "calls_sampling": 2109.698166769725,
     "calls_mlae": 614.0048341626758,
     "calls_canonical": 4080,
-    "toffoli_sampling": 159193284384.2996,
-    "toffoli_mlae": 46618705673.728485,
-    "toffoli_canonical": 307489659030.79767,
-    "toffoli_best": 46618705673.728485,
-    "days_best": 0.5395683527051909,
-    "ratio_to_per_call": 619.3875033744052
+    "toffoli_sampling": 174140243540.37866,
+    "toffoli_mlae": 50995894173.579506,
+    "toffoli_canonical": 336360353786.13214,
+    "toffoli_best": 50995894173.579506,
+    "days_best": 0.5902302566386517,
+    "ratio_to_per_call": 619.388703565815
    }
   },
   {
@@ -317,32 +317,32 @@
    "consistent": true,
    "D1": {
     "degree": 47175.323806546345,
-    "C_call": 162034934.81755316,
+    "C_call": 177281991.82392183,
     "calls_sampling": 13772261843.759626,
     "calls_mlae": 1479936.715561843,
     "calls_canonical": 8388592,
-    "toffoli_sampling": 2.2315875505489966e+18,
-    "toffoli_mlae": 239801854371155.78,
-    "toffoli_canonical": 1359245363062036.8,
-    "ratio_to_per_call": 1479939.2158312404,
-    "max_depth_toffoli": 84952809870690.5,
-    "days_mlae": 2775.4844255920807,
-    "days_canonical": 15732.006516921721
+    "toffoli_sampling": 2.441574012025573e+18,
+    "toffoli_mlae": 262366571976224.94,
+    "toffoli_canonical": 1487146741626284.5,
+    "ratio_to_per_call": 1479939.2159177111,
+    "max_depth_toffoli": 92946643647388.5,
+    "days_mlae": 3036.6501386137143,
+    "days_canonical": 17212.346546600515
    },
    "D2": {
     "free": false,
     "margin_rel": 51017.404106950016,
     "degree": 17960.132183315276,
-    "C_call": 75265815.69655688,
+    "C_call": 82332619.04842083,
     "calls_sampling": 2491.0972451611487,
     "calls_mlae": 657.9922526618498,
     "calls_canonical": 4080,
-    "toffoli_sampling": 187899597125.34515,
-    "toffoli_mlae": 49929454607.45463,
-    "toffoli_canonical": 307489659030.79767,
-    "toffoli_best": 49929454607.45463,
-    "days_best": 0.5778872061047989,
-    "ratio_to_per_call": 663.3749218735792
+    "toffoli_sampling": 205541828566.99857,
+    "toffoli_mlae": 54617493543.795456,
+    "toffoli_canonical": 336360353786.13214,
+    "toffoli_best": 54617493543.795456,
+    "days_best": 0.6321469160161511,
+    "ratio_to_per_call": 663.376122064989
    }
   },
   {
@@ -359,32 +359,32 @@
    "consistent": true,
    "D1": {
     "degree": 64658.56103791179,
-    "C_call": 213960149.39470854,
+    "C_call": 234102512.82585952,
     "calls_sampling": 74406197304694.89,
     "calls_mlae": 108779000.87888968,
     "calls_canonical": 536870896,
-    "toffoli_sampling": 1.5919961091205084e+22,
-    "toffoli_mlae": 2.3274371684185356e+16,
-    "toffoli_canonical": 1.1486897751896203e+17,
-    "ratio_to_per_call": 108779002.77237774,
-    "max_depth_toffoli": 7179311069614440.0,
-    "days_mlae": 269379.30190029345,
-    "days_canonical": 1329502.054617616
+    "toffoli_sampling": 1.7418677758846212e+22,
+    "toffoli_mlae": 2.5465437891702524e+16,
+    "toffoli_canonical": 1.2568282625993875e+17,
+    "ratio_to_per_call": 108779002.77236815,
+    "max_depth_toffoli": 7855176613541918.0,
+    "days_mlae": 294738.8644872977,
+    "days_canonical": 1454662.3409715134
    },
    "D2": {
     "free": false,
     "margin_rel": 18917.227728219972,
     "degree": 18045.753300391872,
-    "C_call": 75520110.41427438,
+    "C_call": 82610887.67891978,
     "calls_sampling": 36328374.985017315,
     "calls_mlae": 79666.15824004285,
     "calls_canonical": 524272,
-    "toffoli_sampling": 2743523295170660.0,
-    "toffoli_mlae": 6016802197557.937,
-    "toffoli_canonical": 39593484458101.305,
-    "toffoli_best": 6016802197557.937,
-    "days_best": 69.63891432358723,
-    "ratio_to_per_call": 79671.52278448835
+    "toffoli_sampling": 3001119748713013.0,
+    "toffoli_mlae": 6581735318247.804,
+    "toffoli_canonical": 43311018573271.21,
+    "toffoli_best": 6581735318247.804,
+    "days_best": 76.17749210934957,
+    "ratio_to_per_call": 79671.52397428235
    }
   },
   {
@@ -401,27 +401,27 @@
    "consistent": true,
    "D1": {
     "degree": 51264.00383785736,
-    "C_call": 174178314.5105469,
+    "C_call": 190570201.9256826,
     "calls_sampling": 102783337667.44363,
     "calls_mlae": 4042982.567551336,
     "calls_canonical": 33554416,
-    "toffoli_sampling": 1.790262851508887e+19,
-    "toffoli_mlae": 704200294342603.9,
-    "toffoli_canonical": 5844452028396716.0,
-    "ratio_to_per_call": 4042984.8935067225,
-    "max_depth_toffoli": 365278226454107.94,
-    "days_mlae": 8150.466369706064,
-    "days_canonical": 67644.12069903607,
+    "toffoli_sampling": 1.958744141432362e+19,
+    "toffoli_mlae": 770472447548341.4,
+    "toffoli_canonical": 6394472275886424.0,
+    "ratio_to_per_call": 4042984.8935606703,
+    "max_depth_toffoli": 399654489538647.2,
+    "days_mlae": 8917.505179957656,
+    "days_canonical": 74010.0957857225,
     "channel_route": {
-     "toffoli": 79304831901519.22,
+     "toffoli": 86724728338475.88,
      "channels": [
       {
        "T": 1,
        "p_n": 1.3257944224951578e-08,
        "gap_eV": 1.0138783193805183,
        "calls": 1956003.2889557367,
-       "C_call": 40543910.16994662,
-       "toffoli": 79304426770530.38
+       "C_call": 44337267.88293822,
+       "toffoli": 86724285070407.3
       }
      ]
     }
@@ -430,16 +430,16 @@
     "free": false,
     "margin_rel": 21.841363882257788,
     "degree": 32169.984964851497,
-    "C_call": 117469078.45771946,
+    "C_call": 128514640.58841355,
     "calls_sampling": 50705184.39731323,
     "calls_mlae": 106978.04031928207,
     "calls_canonical": 524272,
-    "toffoli_sampling": 5956291689312109.0,
-    "toffoli_mlae": 12567016942507.666,
-    "toffoli_canonical": 61586153832174.34,
-    "toffoli_best": 12567016942507.666,
-    "days_best": 145.4515849827276,
-    "ratio_to_per_call": 106981.48915019284
+    "toffoli_sampling": 6516358992058013.0,
+    "toffoli_mlae": 13748687670553.922,
+    "toffoli_canonical": 67377070918637.33,
+    "toffoli_best": 13748687670553.922,
+    "days_best": 159.12832952030004,
+    "ratio_to_per_call": 106981.48948325703
    }
   },
   {
@@ -456,27 +456,27 @@
    "consistent": true,
    "D1": {
     "degree": 37985.65708359885,
-    "C_call": 134741624.65039912,
+    "C_call": 147415574.97434247,
     "calls_sampling": 150330397.55232513,
     "calls_mlae": 154619.32044657035,
     "calls_canonical": 1048560,
-    "toffoli_sampling": 2.025576240567166e+16,
-    "toffoli_mlae": 20834063570300.406,
-    "toffoli_canonical": 141285083074411.34,
-    "ratio_to_per_call": 154622.3271714031,
-    "max_depth_toffoli": 8830292371463.906,
-    "days_mlae": 241.1349950266251,
-    "days_canonical": 1635.244017064946,
+    "toffoli_sampling": 2.2161042434565564e+16,
+    "toffoli_mlae": 22793739293841.848,
+    "toffoli_canonical": 154574518563165.1,
+    "ratio_to_per_call": 154622.32737489967,
+    "max_depth_toffoli": 9660879705943.533,
+    "days_mlae": 263.8164270120584,
+    "days_canonical": 1789.0569278144108,
     "channel_route": {
-     "toffoli": 1654476379553.3542,
+     "toffoli": 1809094601568.188,
      "channels": [
       {
        "T": 1,
        "p_n": 2.303210163995329e-05,
        "gap_eV": 0.9795848636633545,
        "calls": 46928.775686035224,
-       "C_call": 35237785.205373496,
-       "toffoli": 1654071248564.5088
+       "C_call": 38530902.18096427,
+       "toffoli": 1808651333499.6128
       }
      ]
     }
@@ -485,16 +485,16 @@
     "free": false,
     "margin_rel": 129.66785668723895,
     "degree": 17960.132183315276,
-    "C_call": 75265815.69655688,
+    "C_call": 82332619.04842083,
     "calls_sampling": 11118.727319403217,
     "calls_mlae": 1482.2307388449638,
     "calls_canonical": 8176,
-    "toffoli_sampling": 837265212191.3201,
-    "toffoli_mlae": 111966436598.52194,
-    "toffoli_canonical": 615778440123.8947,
-    "toffoli_best": 111966436598.52194,
-    "days_best": 1.2959078310014114,
-    "ratio_to_per_call": 1487.6134080566933
+    "toffoli_sampling": 915877208760.2694,
+    "toffoli_mlae": 122479206831.75685,
+    "toffoli_canonical": 673594761408.4637,
+    "toffoli_best": 122479206831.75685,
+    "days_best": 1.4175834124045932,
+    "ratio_to_per_call": 1487.614608248103
    }
   },
   {
@@ -511,27 +511,27 @@
    "consistent": true,
    "D1": {
     "degree": 42850.333108617655,
-    "C_call": 149189712.44470495,
+    "C_call": 163225772.05565357,
     "calls_sampling": 1642995629.9643319,
     "calls_mlae": 511162.16499935865,
     "calls_canonical": 4194288,
-    "toffoli_sampling": 2.451180459874165e+17,
-    "toffoli_mlae": 76260541539855.98,
-    "toffoli_canonical": 625745025761265.5,
-    "ratio_to_per_call": 511164.8805417523,
-    "max_depth_toffoli": 39109038789392.29,
-    "days_mlae": 882.6451567112962,
-    "days_canonical": 7242.419279644277,
+    "toffoli_sampling": 2.6817923062826106e+17,
+    "toffoli_mlae": 83435282295728.27,
+    "toffoli_canonical": 684616340291831.8,
+    "ratio_to_per_call": 511164.8806738688,
+    "max_depth_toffoli": 42788493563985.195,
+    "days_mlae": 965.6861376820401,
+    "days_canonical": 7923.8002348591635,
     "channel_route": {
-     "toffoli": 5994911985591.33,
+     "toffoli": 6555459565572.219,
      "channels": [
       {
        "T": 1,
        "p_n": 1.9857063891653574e-06,
        "gap_eV": 0.9601880191453451,
        "calls": 159826.95122541394,
-       "C_call": 37503698.07880388,
-       "toffoli": 5994506854602.484
+       "C_call": 41010436.470071584,
+       "toffoli": 6555016297503.644
       }
      ]
     }
@@ -540,16 +540,16 @@
     "free": false,
     "margin_rel": 0.06596051967439785,
     "degree": 47363.25689727852,
-    "C_call": 162593096.09702775,
+    "C_call": 177892774.3688014,
     "calls_sampling": 7277110505.558422,
     "calls_mlae": 1575053.28597107,
     "calls_canonical": 8388592,
-    "toffoli_sampling": 1.1832079281440817e+18,
-    "toffoli_mlae": 256093195414822.34,
-    "toffoli_canonical": 1363927550305747.0,
-    "toffoli_best": 256093195414822.34,
-    "days_best": 2964.0416135974806,
-    "ratio_to_per_call": 1575055.7776573626
+    "toffoli_sampling": 1.2945453776654067e+18,
+    "toffoli_mlae": 280191042088159.3,
+    "toffoli_canonical": 1492270347196000.8,
+    "toffoli_best": 280191042088159.3,
+    "days_best": 3242.9518760203623,
+    "ratio_to_per_call": 1575055.777742139
    }
   },
   {
@@ -566,27 +566,27 @@
    "consistent": true,
    "D1": {
     "degree": 44743.17718071158,
-    "C_call": 154811459.3388239,
+    "C_call": 169377515.28995883,
     "calls_sampling": 4166307593.5519257,
     "calls_mlae": 813984.5661748515,
     "calls_canonical": 4194288,
-    "toffoli_sampling": 6.449921590173283e+17,
-    "toffoli_mlae": 126014543699797.1,
-    "toffoli_canonical": 649324251298306.0,
-    "ratio_to_per_call": 813987.1831063796,
-    "max_depth_toffoli": 40582740385457.32,
-    "days_mlae": 1458.501663192096,
-    "days_canonical": 7515.326982619283,
+    "toffoli_sampling": 7.056788285727809e+17,
+    "toffoli_mlae": 137871126571140.0,
+    "toffoli_canonical": 710418523118559.5,
+    "ratio_to_per_call": 813987.183216835,
+    "max_depth_toffoli": 44401129990655.68,
+    "days_mlae": 1595.7306316104166,
+    "days_canonical": 8222.436610168512,
     "channel_route": {
-     "toffoli": 7889408274761.006,
+     "toffoli": 8627123025409.569,
      "channels": [
       {
        "T": 1,
        "p_n": 1.1557736991674603e-06,
        "gap_eV": 0.9778364292286336,
        "calls": 209493.80657749227,
-       "C_call": 37655518.994378015,
-       "toffoli": 7889003143772.16
+       "C_call": 41176570.46859547,
+       "toffoli": 8626679757340.994
       }
      ]
     }
@@ -595,16 +595,16 @@
     "free": false,
     "margin_rel": 0.8469189733260845,
     "degree": 38871.29736732375,
-    "C_call": 137371976.29306206,
+    "C_call": 150293905.89644837,
     "calls_sampling": 37345440.65718416,
     "calls_mlae": 133715.3493135021,
     "calls_canonical": 1048560,
-    "toffoli_sampling": 5130217393743648.0,
-    "toffoli_mlae": 18369146926901.77,
-    "toffoli_canonical": 144043164592842.0,
-    "toffoli_best": 18369146926901.77,
-    "days_best": 212.60586720951122,
-    "ratio_to_per_call": 133718.29846659562
+    "toffoli_sampling": 5612792587060302.0,
+    "toffoli_mlae": 20097045394702.785,
+    "toffoli_canonical": 157592621234848.47,
+    "toffoli_best": 20097045394702.785,
+    "days_best": 232.60469206831928,
+    "ratio_to_per_call": 133718.29865510005
    }
   },
   {
@@ -621,27 +621,27 @@
    "consistent": true,
    "D1": {
     "degree": 33216.31668814405,
-    "C_call": 120576683.67589833,
+    "C_call": 131915218.68911433,
     "calls_sampling": 14414878.743553769,
     "calls_mlae": 47878.92666136541,
     "calls_canonical": 262128,
-    "toffoli_sampling": 1738098679618902.2,
-    "toffoli_mlae": 5773487325777.838,
-    "toffoli_canonical": 31606930069584.723,
-    "ratio_to_per_call": 47882.28660606197,
-    "max_depth_toffoli": 1975407808662.2424,
-    "days_mlae": 66.82276997428053,
-    "days_canonical": 365.8209498794528,
+    "toffoli_sampling": 1901542325101029.5,
+    "toffoli_mlae": 6316402349202.66,
+    "toffoli_canonical": 34579115712608.734,
+    "ratio_to_per_call": 47882.28691102409,
+    "max_depth_toffoli": 2161167027783.76,
+    "days_mlae": 73.10650867132708,
+    "days_canonical": 400.2212466737122,
     "channel_route": {
-     "toffoli": 543636259871.876,
+     "toffoli": 594719528546.7938,
      "channels": [
       {
        "T": 2,
        "p_n": 0.0014976277801295138,
        "gap_eV": 0.1369681276658299,
        "calls": 5818.31554021232,
-       "C_call": 93296074.12016986,
-       "toffoli": 543231128883.0304
+       "C_call": 102062699.8150007,
+       "toffoli": 594276260478.2188
       }
      ]
     }
@@ -650,16 +650,16 @@
     "free": false,
     "margin_rel": 0.9712927414859501,
     "degree": 26786.972200347846,
-    "C_call": 101481530.54714361,
+    "C_call": 111019849.10377668,
     "calls_sampling": 51590.94655178811,
     "calls_mlae": 5764.597381968683,
     "calls_canonical": 65520,
-    "toffoli_sampling": 5235933349440.184,
-    "toffoli_mlae": 585405296299.0846,
-    "toffoli_canonical": 6649475012437.695,
-    "toffoli_best": 585405296299.0846,
-    "days_best": 6.775524262720886,
-    "ratio_to_per_call": 5768.589546716902
+    "toffoli_sampling": 5728062369369.099,
+    "toffoli_mlae": 640427999558.7644,
+    "toffoli_canonical": 7274463781348.023,
+    "toffoli_best": 640427999558.7644,
+    "days_best": 7.412361106004218,
+    "ratio_to_per_call": 5768.590074015677
    }
   },
   {
@@ -676,27 +676,27 @@
    "consistent": true,
    "D1": {
     "degree": 38557.24626275424,
-    "C_call": 136439244.5124906,
+    "C_call": 149273239.80659747,
     "calls_sampling": 199103500.28776702,
     "calls_mlae": 177942.56330635125,
     "calls_canonical": 1048560,
-    "toffoli_sampling": 2.7165531564186376e+16,
-    "toffoli_mlae": 24278754035123.44,
-    "toffoli_canonical": 143065139357006.0,
-    "ratio_to_per_call": 177945.53262057088,
-    "max_depth_toffoli": 8941545889126.072,
-    "days_mlae": 281.0040976287435,
-    "days_canonical": 1655.8465203357177,
+    "toffoli_sampling": 2.9720824988056864e+16,
+    "toffoli_mlae": 26562506192298.195,
+    "toffoli_canonical": 156522391599674.4,
+    "ratio_to_per_call": 177945.53281427608,
+    "max_depth_toffoli": 9782621770725.365,
+    "days_mlae": 307.4364142627106,
+    "days_canonical": 1811.601754625861,
     "channel_route": {
-     "toffoli": 1353166764088.7751,
+     "toffoli": 1479610412339.8215,
      "channels": [
       {
        "T": 1,
        "p_n": 3.347159955570896e-05,
        "gap_eV": 0.9948492101920805,
        "calls": 38928.44168440824,
-       "C_call": 34739548.8644164,
-       "toffoli": 1352761633099.9297
+       "C_call": 37985694.06375532,
+       "toffoli": 1479167144271.2463
       }
      ]
     }
@@ -705,16 +705,16 @@
     "free": false,
     "margin_rel": 22.996156051360263,
     "degree": 19253.61712060309,
-    "C_call": 79107465.96030168,
+    "C_call": 86536445.09460622,
     "calls_sampling": 92741.1052691547,
     "calls_mlae": 4564.248116792127,
     "calls_canonical": 32752,
-    "toffoli_sampling": 7336918959189.256,
-    "toffoli_mlae": 361471233522.3498,
-    "toffoli_canonical": 2591332856120.6465,
-    "toffoli_best": 361471233522.3498,
-    "days_best": 4.183694832434604,
-    "ratio_to_per_call": 4569.369390542051
+    "toffoli_sampling": 8025928832205.876,
+    "toffoli_mlae": 395417074625.51685,
+    "toffoli_canonical": 2834684917807.118,
+    "toffoli_best": 395417074625.51685,
+    "days_best": 4.576586511869408,
+    "ratio_to_per_call": 4569.37044494058
    }
   },
   {
@@ -731,27 +731,27 @@
    "consistent": true,
    "D1": {
     "degree": 48765.32711928185,
-    "C_call": 166757244.6563776,
+    "C_call": 182449502.5903122,
     "calls_sampling": 30092956465.149662,
     "calls_mlae": 2187625.305485223,
     "calls_canonical": 16777200,
-    "toffoli_sampling": 5.018218504097814e+18,
-    "toffoli_mlae": 364802773414271.0,
-    "toffoli_canonical": 2797720050179967.5,
-    "ratio_to_per_call": 2187627.7349508195,
-    "max_depth_toffoli": 174857477815561.16,
-    "days_mlae": 4222.254321924433,
-    "days_canonical": 32381.019099305176,
+    "toffoli_sampling": 5.490444938981744e+18,
+    "toffoli_mlae": 399131592107827.3,
+    "toffoli_canonical": 3060992238126254.5,
+    "ratio_to_per_call": 2187627.735023601,
+    "max_depth_toffoli": 191311987178636.62,
+    "days_mlae": 4619.578612359112,
+    "days_canonical": 35428.15090423906,
     "channel_route": {
-     "toffoli": 17275012165249.94,
+     "toffoli": 18890592882272.812,
      "channels": [
       {
        "T": 1,
        "p_n": 2.502540517188373e-07,
        "gap_eV": 1.008199988741991,
        "calls": 450212.03318451496,
-       "C_call": 38369036.43175745,
-       "toffoli": 17274607034261.094
+       "C_call": 41957355.54316893,
+       "toffoli": 18890149614204.24
       }
      ]
     }
@@ -760,16 +760,16 @@
     "free": false,
     "margin_rel": 0.16494728705501283,
     "degree": 49549.27398404225,
-    "C_call": 169085566.844716,
+    "C_call": 184997329.9007835,
     "calls_sampling": 18141315879.648293,
     "calls_mlae": 2538207.2247719243,
     "calls_canonical": 16777200,
-    "toffoli_sampling": 3.06743467922451e+18,
-    "toffoli_mlae": 429174612500903.2,
-    "toffoli_canonical": 2836782777198158.5,
-    "toffoli_best": 429174612500903.2,
-    "days_best": 4967.29875579749,
-    "ratio_to_per_call": 2538209.6207835795
+    "toffoli_sampling": 3.356094999064886e+18,
+    "toffoli_mlae": 469562002585752.4,
+    "toffoli_canonical": 3103737646479493.5,
+    "toffoli_best": 469562002585752.4,
+    "days_best": 5434.745400298059,
+    "ratio_to_per_call": 2538209.6208501207
    }
   }
  ]
