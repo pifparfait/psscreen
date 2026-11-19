@@ -389,9 +389,11 @@ optimization, CASCI on the AVAS orbitals misses S$_1$ by 1.2--2.3~eV and NEVPT2 
 These errors are larger than those of CASPT2 in a (12e,11o) $\pi$ space with larger basis
 sets~\cite{Momeni2015}, quoted in ref~\citenum{Zhou2026PRA}. The basis is not the cause: with def2-TZVP the
 SC-NEVPT2 S$_1$ of BDP and I2-BDP moves by $-0.02$ to $-0.03$~eV and their S$_1$--T$_1$ gaps by less than
-0.01~eV. The missing
-$\sigma$--$\pi$ polarization of a $\pi$-only reference and the singlet-only state averaging remain as
-explanations. \todo{SA(3S+2T) runs for BDP and I2-BDP on tars.} A controlled (12e,11o) $\pi$ space with second-order dynamic correlation misses
+0.01~eV. Nor is the state
+averaging: averaging over three singlets and two triplets changes the gaps by $-0.02$ (BDP) and $-0.03$~eV
+(I2-BDP, 0.93~eV) and T$_2-$S$_1$ by less than 0.03~eV. The most likely remaining cause is the $\sigma$--$\pi$
+polarization that a $\pi$-only reference lacks and second-order perturbation theory recovers only in part.
+A controlled (12e,11o) $\pi$ space with second-order dynamic correlation misses
 the gaps by several times the budget, in double- and triple-$\zeta$ bases alike.
 
 \begin{table}
@@ -555,7 +557,7 @@ matter, for example the heavy-atom one-centre terms; the part $\lVert\chi\rVert/
 I2-BDP) is the off-resonant weight that the filter removes, and only a channel-resolved route avoids it.
 
 \paragraph{Limitations.} The benchmark has nine dyes from one family and three measured ISC rates, two
-for nearly identical dyes, and the factor-2 agreement holds for B3LYP only. We used def2-SVP (def2-TZVP for one NEVPT2 check), GFN2-xTB
+for nearly identical dyes, and the factor-2 agreement holds for B3LYP only. We used def2-SVP (def2-TZVP for two NEVPT2 checks), GFN2-xTB
 geometries, one conformer, the gas phase and vertical energies; the SOC model is not yet benchmarked; and the
 cost model takes pipeline rates, an assumed trial-state overlap, THC rank and one-norm, and an oracle margin
 for D2.
