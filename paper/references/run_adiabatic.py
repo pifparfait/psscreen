@@ -1,19 +1,21 @@
-"""Vertical-to-adiabatic corrections for the S1 and T1 energies (B3LYP/def2-SVP, as in the pipeline).
+"""Vertical-to-adiabatic corrections for the S1 and T1 energies, with the same DeltaSCF treatment as the pipeline.
 
 The pipeline and all multireference results of the paper use vertical energies at the GFN2-xTB ground-state geometry,
 whereas the MLJ rate expression assumes adiabatic gaps. This script optimizes, starting from the xTB geometry,
   S0 : RKS B3LYP,
-  T1 : UKS B3LYP (M_S = 1), started from the S0 minimum,
-  S1 : TDA-B3LYP lowest singlet, started from the S0 minimum,
-with ASE's BFGS optimizer driving PySCF energies and analytic gradients (no density fitting, since PySCF has no
-DF-TDDFT gradients; def2 ECP on iodine). At every
-minimum it evaluates the S0, T1 (UKS) and S1 (TDA) total energies, and reports the relaxation energies
+  T1 : UKS B3LYP (M_S = 1, HOMO->LUMO occupation held by MOM),
+  S1 : DeltaSCF sum rule E_S1 = 2 E_mix - E_T1, with E_mix the M_S = 0 HOMO->LUMO mixed determinant (MOM); its
+       gradient is 2 g_mix - g_T1,
+with ASE's BFGS optimizer driving PySCF energies and analytic gradients (B3LYP/def2-SVP, density fitting, def2 ECP on
+iodine, grid level 2, as in psscreen.deltascf). This is the treatment that gives the pipeline's S1 and T1, and it avoids
+TDDFT gradients, which PySCF does not provide with density fitting. At every minimum it evaluates the S0, T1 and S1
+energies and reports the relaxation energies
     lambda_S1 = E_S1(S0 min) - E_S1(S1 min),   lambda_T1 = E_T1(S0 min) - E_T1(T1 min),
 so that the adiabatic S1-T1 gap is the vertical gap at the S0 minimum minus lambda_S1 plus lambda_T1, plus the effect of
 replacing the xTB geometry by the DFT S0 minimum. Each optimization is check-pointed: the last geometry is written to
 paper/references/results/NAME.adiabatic_<state>.xyz after every step and reused on restart.
 
-Usage (repository root): python paper/references/run_adiabatic.py NAME [--states S0 T1 S1] [--fmax 0.03]
+Usage (repository root): PYTHONUNBUFFERED=1 python paper/references/run_adiabatic.py NAME [--states S0 T1 S1]
 Environment: OMP_NUM_THREADS, PSS_MAX_MEMORY_MB (default 40000).
 Writes paper/references/results/NAME.adiabatic.json.
 """
@@ -30,7 +32,7 @@ import numpy as np  # noqa: E402
 from ase import Atoms  # noqa: E402
 from ase.calculators.calculator import Calculator, all_changes  # noqa: E402
 from ase.optimize import BFGS  # noqa: E402
-from pyscf import dft, gto, tdscf  # noqa: E402
+from pyscf import dft, gto, scf  # noqa: E402
 
 from psscreen.backends import _ecp  # noqa: E402
 from psscreen.geometry import read_xyz, to_pyscf_atom, write_xyz  # noqa: E402
@@ -45,13 +47,12 @@ ap.add_argument("--basis", default="def2-svp")
 ap.add_argument("--xc", default="b3lyp")
 ap.add_argument("--fmax", type=float, default=0.03, help="eV/Angstrom")
 ap.add_argument("--max-steps", type=int, default=200)
-ap.add_argument("--nroots", type=int, default=3, help="TDA roots computed for the S1 gradient")
 a = ap.parse_args()
 
 RES = os.path.join(ROOT, "paper", "references", "results")
 OUT = os.path.join(RES, f"{a.name}.adiabatic.json")
 MEM = int(os.environ.get("PSS_MAX_MEMORY_MB", 40000))
-res = json.load(open(OUT)) if os.path.exists(OUT) else {"name": a.name, "method": f"{a.xc}/{a.basis}; T1 UKS, S1 TDA",
+res = json.load(open(OUT)) if os.path.exists(OUT) else {"name": a.name, "method": f"{a.xc}/{a.basis}, DF; T1 UKS (MOM), S1 DeltaSCF sum rule",
                                                          "minima": {}, "timings_s": {}}
 
 
@@ -64,36 +65,67 @@ def save():
 def build(sym, xyz, spin=0):
     atom = to_pyscf_atom(sym, xyz)
     mol = gto.M(atom=atom, basis=a.basis, ecp=_ecp(atom, a.basis), spin=spin, verbose=0, max_memory=MEM)
-    mf = (dft.UKS if spin else dft.RKS)(mol, xc=a.xc)   # no density fitting: PySCF has no DF-TDDFT gradients
+    mf = (dft.UKS if spin else dft.RKS)(mol, xc=a.xc).density_fit()
     mf.conv_tol = 1e-9
-    mf.grids.level = 3
+    mf.max_cycle = 150
+    mf.grids.level = 2
     return mol, mf
 
 
-_guess = {}
+_prev = {}      # converged orbitals per state, reused as guess and MOM reference at the next geometry
+
+
+def _occupations(nmo, nocc, kind):
+    oa, ob = np.zeros(nmo), np.zeros(nmo)
+    if kind == "T":
+        oa[:nocc + 1] = 1
+        ob[:nocc - 1] = 1
+    else:                          # mixed determinant: alpha HOMO -> alpha LUMO
+        oa[:nocc - 1] = 1
+        oa[nocc] = 1
+        ob[:nocc] = 1
+    return oa, ob
+
+
+def _uks_state(sym, xyz, kind):
+    """UKS with MOM for the triplet (kind 'T') or the mixed determinant (kind 'M'); returns the converged object."""
+    mol, mf = build(sym, xyz, spin=2 if kind == "T" else 0)
+    if kind == "M":
+        mf = dft.UKS(mol, xc=a.xc).density_fit()
+        mf.conv_tol, mf.max_cycle, mf.grids.level = 1e-9, 150, 2
+    if kind in _prev:
+        mo0, occ = _prev[kind]
+    else:
+        _, m0 = build(sym, xyz, 0)
+        m0.kernel()
+        nocc = mol.nelectron // 2
+        mo0 = (m0.mo_coeff, m0.mo_coeff)
+        occ = _occupations(len(m0.mo_energy), nocc, kind)
+    mf = scf.addons.mom_occ(mf, mo0, occ)
+    dm0 = np.array([(mo0[s] * occ[s]) @ mo0[s].T for s in (0, 1)])
+    mf.kernel(dm0)
+    assert mf.converged, f"UKS ({kind}) not converged"
+    _prev[kind] = ((mf.mo_coeff[0], mf.mo_coeff[1]), (mf.mo_occ[0], mf.mo_occ[1]))
+    return mf
 
 
 def energy_grad(sym, xyz, state, grad=True):
-    """Total energy (Ha) and gradient (Ha/Bohr) of S0, T1 (UKS) or S1 (TDA root 1)."""
-    spin = 2 if state == "T1" else 0
-    mol, mf = build(sym, xyz, spin)
-    dm0 = _guess.get(state)
-    mf.kernel(dm0=dm0 if dm0 is not None and dm0.shape[-1] == mol.nao else None)
-    assert mf.converged, f"SCF not converged ({state})"
-    _guess[state] = mf.make_rdm1()
-    if state in ("S0", "T1"):
+    """Total energy (Ha) and gradient (Ha/Bohr) of S0, T1 or S1 (DeltaSCF sum rule)."""
+    if state == "S0":
+        mol, mf = build(sym, xyz, 0)
+        dm0 = _prev.get("S0")
+        mf.kernel(dm0=dm0)
+        assert mf.converged, "RKS not converged"
+        _prev["S0"] = mf.make_rdm1()
         return mf.e_tot, (mf.nuc_grad_method().kernel() if grad else None)
-    td = tdscf.TDA(mf)
-    td.nstates = a.nroots
-    td.conv_tol = 1e-7
-    td.kernel()
-    assert all(td.converged), "TDA not converged"
-    e = mf.e_tot + td.e[0]
+    mt = _uks_state(sym, xyz, "T")
+    if state == "T1":
+        return mt.e_tot, (mt.nuc_grad_method().kernel() if grad else None)
+    mm = _uks_state(sym, xyz, "M")
+    e = 2 * mm.e_tot - mt.e_tot
     if not grad:
         return e, None
-    g = td.nuc_grad_method()
-    g.state = 1
-    return e, g.kernel()
+    return e, 2 * mm.nuc_grad_method().kernel() - mt.nuc_grad_method().kernel()
 
 
 class PySCFCalc(Calculator):
@@ -152,7 +184,7 @@ for st in a.states:
     conv = opt.run(fmax=a.fmax, steps=a.max_steps)
     xyz = atoms.get_positions()
     write_xyz(ckpt, sym, xyz, f"{a.name} {st} minimum")
-    _guess.clear()
+    _prev.clear()
     res["minima"][st] = all_energies(sym, xyz)
     res["minima"][st].update({"converged": bool(conv), "steps": opt.nsteps,
                               "rmsd_from_xtb_A": float(np.sqrt(((xyz - xyz0) ** 2).sum(1).mean()))})

@@ -6,6 +6,7 @@
 #   nohup bash paper/references/run_checks2_tars.sh > paper/references/logs/checks2.log 2>&1 &
 # Jobs run JOBS at a time (default 3), each with THREADS OpenMP threads (default 16).
 set -uo pipefail
+export PYTHONUNBUFFERED=1
 cd "$(dirname "$0")/../.."
 THREADS="${THREADS:-16}"
 JOBS="${JOBS:-3}"
@@ -14,6 +15,7 @@ LOGDIR=paper/references/logs
 mkdir -p "$LOGDIR" paper/references/results paper/quantum/results
 python -c "import ase" 2>/dev/null || pip install -q ase
 
+# Optional: pass job names as arguments to run only those (e.g. "adiabatic_BDP adiabatic_I2-BDP").
 JOBLIST=(
   "paper/references/run_soc_benchmark.py I2-BDP"
   "paper/references/run_soc_benchmark.py I2-BDP-0"
@@ -43,6 +45,8 @@ run_one() {
 }
 
 for job in "${JOBLIST[@]}"; do
+  tag=$(echo "$job" | awk '{print $1"_"$2}' | sed 's|.*/||; s|\.py||; s|^run_||')
+  if [ "$#" -gt 0 ] && [[ " $* " != *" $tag "* ]]; then continue; fi
   while [ "$(jobs -rp | wc -l)" -ge "$JOBS" ]; do wait -n; done
   run_one "$job" &
   echo "started $job"
