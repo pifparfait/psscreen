@@ -121,10 +121,13 @@ method~\cite{Gilbert2008}. Higher states keep their TDDFT energies.
 whose per-element scale factor reproduces the atomic valence spin--orbit constant in the same basis
 (e.g.\ \SI{28}{cm^{-1}} for C, \SI{5069}{cm^{-1}} for I), in the spirit of effective nuclear
 charges~\cite{Koseki1992}; it reproduces the El-Sayed rules~\cite{ElSayed1963} in formaldehyde. For
-iodine it acts on pseudo-valence orbitals of a scalar-relativistic effective core potential, and it has not
-been benchmarked against a standard SOC treatment for these dyes \todo{SOMF or X2C benchmark of $V_1$ for
-I2-BDP and $V_2$ for I2-BDP-0}; the measured rates are its only test. The ISC
-rate isThe ISC
+iodine it acts on pseudo-valence orbitals of a scalar-relativistic effective core potential. We checked it for
+I2-BDP and I2-BDP-0 against an all-electron treatment: spin-free X2C B3LYP with an uncontracted DZP-DKH basis on
+iodine, TDA states and the Breit--Pauli spin--orbit mean-field (SOMF) operator, which gives
+\SI{5433}{cm^{-1}} for the iodine 5p constant (script \texttt{run\_soc\_benchmark.py}, Table~S6). The coupling of
+S$_1$ summed over T$_1$--T$_4$, $\sum_n V_n^2$, agrees with the effective operator within 2\% for I2-BDP and
+20\% for I2-BDP-0, but its split among nearly degenerate triplets does not: $V_2$ of I2-BDP-0 is
+\SI{3.5}{cm^{-1}} instead of \SI{8.0}{cm^{-1}}, five times less rate in that channel. The ISC
 rate is the golden rule~\cite{Baryshnikov2017} with a Marcus--Levich--Jortner (MLJ) Franck--Condon weighted density of
 states~\cite{Jortner1976}, summed over all triplets:
 \begin{equation}
@@ -237,8 +240,12 @@ experiment, with a mean error of $-0.055$~eV and a standard deviation of 0.02~eV
 Figure~S1); uncorrected TDDFT places them 0.35--0.76~eV too high. Vertical energies are compared with band maxima in
 the gas phase, as for every method in this paper; because vertical and band-maximum energies, and vertical and
 adiabatic gaps, differ by 0.1--0.2~eV for BODIPYs~\cite{Momeni2015,Chibani2013}, part of the agreement may come
-from error cancellation. \todo{Estimate both corrections for BDP and I2-BDP from S$_1$ and T$_1$ optimizations
-and apply them to all methods.} It does not transfer to the $\pi$-extended distyryl dyes, whose S$_1$ is
+from error cancellation. For BDP we optimized S$_0$, T$_1$ and S$_1$ with B3LYP ($\Delta$SCF for the
+excited states, script \texttt{run\_adiabatic.py}): the DFT S$_0$ minimum and the S$_1$ relaxation together lower
+S$_1$ by 0.12~eV from the vertical value at the xTB geometry to the adiabatic one (without zero-point energy), and
+the relaxation energies $\lambda_{\mathrm{S}_1}=0.05$~eV and $\lambda_{\mathrm{T}_1}=0.10$~eV widen the S$_1$--T$_1$
+gap from 0.72~eV (vertical) to 0.75~eV (adiabatic). This shift is within the 0.08~eV budget but above the
+0.016~eV tolerance of a near-resonant channel. \todo{I2-BDP when it finishes.} It does not transfer to the $\pi$-extended distyryl dyes, whose S$_1$ is
 0.21--0.23~eV too low.
 
 
@@ -446,8 +453,10 @@ as for azaBDP\_Br2. The filter is the right observable once the Hamiltonian meet
 
 The THC rank is not free: fitting the two-electron integrals of the (12e,11o) BODIPY-core Hamiltonian to THC
 form (least squares, best of several starts) and repeating CASCI with the fitted integrals shifts the S$_1$--T$_1$
-gap by $-0.12$~eV and T$_2-$S$_1$ by $+0.12$~eV at rank 22 ($2N$), beyond the budget, but by less than 0.01~eV at
-rank 33 ($3N$) (script \texttt{thc\_error.py}). We therefore cost rank 33. One walk step then costs
+gap by $-0.15$~eV and T$_2-$S$_1$ by $+0.07$~eV at rank 22 ($2N$), beyond the budget. At rank 33 ($3N$) the
+S$_1$--T$_1$ error is below 0.001~eV and the T$_2-$S$_1$ error is 0.02~eV; rank 44 does not reduce the latter
+(0.016~eV), so the fit, not the rank, limits it (script \texttt{thc\_error.py}, best of eight starts). Rank 33
+meets the 0.08~eV budget but is only at the tolerance of a near-resonant channel. We therefore cost rank 33. One walk step then costs
 $3.25\times10^{3}$ Toffolis on 193 logical qubits with the Givens-rotation angles loaded in five batches (rank 22:
 $2.97\times10^{3}$ on 158). The qubit count depends on this loading choice (374 wires at rank 22 when all angles are
 loaded at once, 131 with ten batches), and the 177 qubits of ref~\citenum{Zhou2026PRA} lie in this range, so qubit
@@ -562,7 +571,8 @@ I2-BDP) is the off-resonant weight that the filter removes, and only a channel-r
 
 \paragraph{Limitations.} The benchmark has nine dyes from one family and three measured ISC rates, two
 for nearly identical dyes, and the factor-2 agreement holds for B3LYP only. We used def2-SVP (def2-TZVP for two NEVPT2 checks), GFN2-xTB
-geometries, one conformer, the gas phase and vertical energies; the SOC model is not yet benchmarked; and the
+geometries, one conformer, the gas phase and vertical energies; the SOC model matches an all-electron SOMF treatment for the summed coupling but not channel by
+channel; and the
 cost model takes pipeline rates, an assumed trial-state overlap and one-norm, and an oracle margin
 for D2.
 
@@ -586,7 +596,7 @@ quantum algorithms for photosensitizer design, which motivated this study.
 
 \begin{suppinfo}
 Absorption parity plot (Figure~S1); canonical-window CASCI, SA-CASSCF/SC-NEVPT2 and active-space sweep
-(Tables~S1--S3, Figure~S2); amplitude-estimation simulation (Figure~S3). \todo{Geometries, per-dye
+(Tables~S1--S3, Figure~S2); amplitude-estimation simulation (Figure~S3); all-electron SOC benchmark (Table~S6). \todo{Geometries, per-dye
 outputs, accuracy-budget tables for all dyes, decision-cost tables for all dyes.}
 \end{suppinfo}
 
