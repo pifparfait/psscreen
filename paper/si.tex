@@ -38,6 +38,29 @@ amplitude estimation, resource estimation}
 \renewcommand{\thesection}{S\arabic{section}}
 
 \section{Absorption}
+\begin{table}
+  \caption{Lowest singlet excitation: TDDFT+$\Delta$SCF (B3LYP/def2-SVP, gas phase) versus
+  experimental absorption maxima. Distyryl dyes: (E,E) isomers.}
+  \label{tab:abs}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    Dye & $\lambda_\mathrm{calc}$ (nm) & $\lambda_\mathrm{exp}$ (nm) & $E_\mathrm{calc}$ (eV) &
+    $E_\mathrm{exp}$ (eV) & error (eV) \\
+    \midrule
+    BODIPY core     & 507 & 503 & 2.45 & 2.46 & $-0.02$ \\
+    BDP             & 517 & 503 & 2.40 & 2.46 & $-0.07$ \\
+    I-BDP           & 519 & 505 & 2.39 & 2.46 & $-0.06$ \\
+    I2-BDP          & 548 & 537 & 2.26 & 2.31 & $-0.05$ \\
+    I3-BDP          & 551 & 539 & 2.25 & 2.30 & $-0.05$ \\
+    aza-BDP-Ph$_4$  & 678 & 650 & 1.83 & 1.91 & $-0.08$ \\
+    \midrule
+    BDP-0           & 705 & 628 & 1.76 & 1.97 & $-0.22$ \\
+    I-BDP-0         & 708 & 631 & 1.75 & 1.96 & $-0.21$ \\
+    I2-BDP-0        & 730 & 644 & 1.70 & 1.93 & $-0.23$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
 \begin{figure}
   \centering
   \includegraphics[width=0.48\textwidth]{figures/absorption_parity.pdf}
@@ -48,7 +71,7 @@ amplitude estimation, resource estimation}
 
 \section{Multireference results on the canonical (12e,11o) window}
 The active orbitals are the canonical orbitals around the Fermi level (6 occupied, 5 virtual); see
-Table~3 of the main text for their composition. CASCI and SC-NEVPT2 on RHF orbitals (Table~\ref{tab:cas},
+Table~2 of the main text for their composition. CASCI and SC-NEVPT2 on RHF orbitals (Table~\ref{tab:cas},
 Figure~\ref{fig:cas}); SA-CASSCF over three singlets with CASCI triplets on the same orbitals
 (Table~\ref{tab:sanevpt2}); nested window growth, warm-started from the previous size
 (Table~\ref{tab:sweep}). Scripts: \texttt{paper/references/run\_sa\_nevpt2.py} and \texttt{run\_cas\_sweep.py}.
@@ -181,29 +204,6 @@ $\pm\phi$ (\texttt{qml.QSVT} with \texttt{PCPhase} projectors). Each $M_S$ secto
 is block-encoded in a randomly rotated basis, and phases are computed by fixed-point iteration. The simulations
 use 6--11 wires per $M_S$ sector and polynomial degrees 3324--8000 (Table~\ref{tab:filter}).
 
-\begin{table}
-  \caption{Lowest singlet excitation: TDDFT+$\Delta$SCF (B3LYP/def2-SVP, gas phase) versus
-  experimental absorption maxima. Distyryl dyes: (E,E) isomers.}
-  \label{tab:abs}
-  \begin{tabular}{lrrrrr}
-    \toprule
-    Dye & $\lambda_\mathrm{calc}$ (nm) & $\lambda_\mathrm{exp}$ (nm) & $E_\mathrm{calc}$ (eV) &
-    $E_\mathrm{exp}$ (eV) & error (eV) \\
-    \midrule
-    BODIPY core     & 507 & 503 & 2.45 & 2.46 & $-0.02$ \\
-    BDP             & 517 & 503 & 2.40 & 2.46 & $-0.07$ \\
-    I-BDP           & 519 & 505 & 2.39 & 2.46 & $-0.06$ \\
-    I2-BDP          & 548 & 537 & 2.26 & 2.31 & $-0.05$ \\
-    I3-BDP          & 551 & 539 & 2.25 & 2.30 & $-0.05$ \\
-    aza-BDP-Ph$_4$  & 678 & 650 & 1.83 & 1.91 & $-0.08$ \\
-    \midrule
-    BDP-0           & 705 & 628 & 1.76 & 1.97 & $-0.22$ \\
-    I-BDP-0         & 708 & 631 & 1.75 & 1.96 & $-0.21$ \\
-    I2-BDP-0        & 730 & 644 & 1.70 & 1.93 & $-0.23$ \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
 \begin{figure}
   \centering
   \includegraphics[width=0.48\textwidth]{figures/mlj_gap_sensitivity.pdf}
@@ -237,11 +237,11 @@ use 6--11 wires per $M_S$ sector and polynomial degrees 3324--8000 (Table~\ref{t
   atoms, uncontracted DZP-DKH on I, TDA states, Breit--Pauli spin--orbit mean field without picture-change
   correction). Triplet energies (eV) from the all-electron TDA; the pipeline values differ by at most 0.04~eV.
   Atomic valence constants with the same SOMF operator: C 24.7 (exp.\ 28), N 70.5 (76), F 254 (269),
-  I 5433 (5069)~cm$^{-1}$. Script \texttt{paper/references/run\_soc\_benchmark.py}.}
+  I 5433 (5069)~cm$^{-1}$. T$_5$ is listed but not included in the sum. Script \texttt{paper/references/run\_soc\_benchmark.py}.}
   \label{tab:socbench}
   \begin{tabular}{llrrrrrr}
     \toprule
-    Dye & & T$_1$ & T$_2$ & T$_3$ & T$_4$ & T$_5$ & $\sum_{n\le4}V_n^2$ \\
+    Dye & & T$_1$ & T$_2$ & T$_3$ & T$_4$ & T$_5$ & $\sum_{n\le4}V_n^2$ (cm$^{-2}$) \\
     \midrule
     I2-BDP   & $E$ (eV) & 1.67 & 2.61 & 2.75 & 3.45 & 3.80 & \\
              & eff.     & 13.2 & 29.4 & 8.8 & 4.3 & 1119 & 1135 \\
