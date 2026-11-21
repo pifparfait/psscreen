@@ -141,6 +141,7 @@ w(r"""    \bottomrule
 
 # --- geometries -----------------------------------------------------------------------------------------------
 w(r"\input{si_tn_shift}\clearpage  % written by paper/analysis/tn_shift_check.py")
+w(r"\input{si_tda_full}\clearpage  % written by paper/analysis/tda_full_check.py")
 w(r"""\section{Cartesian coordinates}
 GFN2-xTB ground-state geometries (\AA) used for every calculation in the paper (lowest conformer for the distyryl
 dyes). The same files are in the repository (\texttt{validation/runs}, \texttt{screening/runs/candidates\_round1}).
