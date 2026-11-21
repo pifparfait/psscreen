@@ -115,8 +115,9 @@ the response kernel). Singlets are obtained by full TDDFT (random-phase approxim
 Davidson solver~\cite{Stratmann1998} in the space of orbital pairs within 60~eV of the frontier orbitals, and
 triplets by the Tamm--Dancoff approximation (TDA) in a 10~eV window (at most 40 occupied and 60 virtual
 orbitals); the windowed solver reproduces PySCF when the window spans the whole space
-(\texttt{tests/test\_tdwin.py}); against the full TDA, the window places T$_2$ and T$_3$ 0.017--0.025~eV too high for
-the BODIPY core and I2-BDP, which leaves their $\kisc$ unchanged (Table~S11). Because TDDFT overestimates S$_1$ of cyanine-like dyes by several tenths of
+(\texttt{tests/test\_tdwin.py}); against the full TDA, the window places T$_2$ and T$_3$ 0.016--0.025~eV too high in
+the four dyes we checked, which doubles $\kisc$ of aza-BDP-Br$_2$ and leaves the other three unchanged
+(Table~S11). Because TDDFT overestimates S$_1$ of cyanine-like dyes by several tenths of
 an eV~\cite{Momeni2015,LeGuennic2015}, the S$_1$ and T$_1$ energies are replaced with $\Delta$SCF
 values (separate self-consistent-field solutions for the excited states)~\cite{Hait2021}: T$_1$ from an unrestricted $M_S=1$ calculation and S$_1$ from the spin-purified sum
 rule~\cite{Ziegler1977} with a mixed determinant converged by the maximum-overlap
@@ -359,6 +360,10 @@ factor-2 tolerance is 0.016~eV (Figure~\ref{fig:tolcurve}), and $\Phi_T$ drops b
 inconsistency as in the distyryl dye. A consistent treatment changes only this dye: shifting every T$_n$ by
 the $\Delta$SCF correction of T$_1$ ($-0.02$ to $-0.05$~eV) leaves $\kisc$ and $\Phi_T$ of the other fourteen dyes
 unchanged and raises $\kisc$ of aza-BDP-Br$_2$ by a factor of 5.6, with T$_2$ 0.06~eV above S$_1$ (Table~S10).
+The truncated TDA window adds an error of the same sign: the full TDA lowers T$_2$ of aza-BDP-Br$_2$ by
+0.017~eV, just above the factor-2 tolerance, to 0.09~eV above S$_1$, which doubles $\kisc$ ($\Phi_T$ 0.97 to 0.99),
+while the BODIPY core, I2-BDP and I2-BDP-0, whose rates do not run through a near-resonant T$_n$, are unchanged
+(Table~S11).
 Shifting the upper triplets by the much larger correction of S$_1$ ($-0.36$ to $-0.77$~eV) instead opens an
 S$_1\to$T$_{2,3}$ channel in every dye and predicts $\Phi_T=0.50$--0.86 for the BODIPY core, BDP and
 aza-BDP-Ph$_4$, which show no ISC, and 90 times the measured rate for I2-BDP; experiment thus supports
@@ -611,7 +616,7 @@ I2-BDP) is the off-resonant weight that the filter removes, and only a channel-r
 for nearly identical dyes, and the factor-2 agreement holds for B3LYP only. We used def2-SVP (def2-TZVP for two NEVPT2 checks), GFN2-xTB
 geometries, one conformer, the gas phase and vertical energies; the SOC model matches an all-electron SOMF treatment for the summed coupling but not channel by
 channel (a factor of 2.8 in the rate of the dominant I2-BDP channel); triplets come from a windowed TDA
-(0.02--0.03~eV above the full TDA for T$_2$ and T$_3$) and keep their TDDFT energies while S$_1$ and T$_1$ are $\Delta$SCF-corrected; and the
+(0.016--0.025~eV above the full TDA for T$_2$ and T$_3$, a factor of 2 in $\kisc$ of aza-BDP-Br$_2$) and keep their TDDFT energies while S$_1$ and T$_1$ are $\Delta$SCF-corrected; and the
 cost model takes pipeline rates, an assumed trial-state overlap and one-norm, and an oracle margin
 for D2.
 
