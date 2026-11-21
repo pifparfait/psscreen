@@ -241,6 +241,15 @@ $p$-iodophenyl (I-BDP), 2,6-diiodo (I2-BDP) and triiodo (I3-BDP) derivatives and
 derivatives (BDP-0, I-BDP-0, I2-BDP-0), all measured in toluene by Ly \emph{et al.}~\cite{Ly2021}; and
 tetraphenyl aza-BODIPY (aza-BDP-Ph$_4$)~\cite{Killoran2002,Loudet2008}. In ref~\citenum{Ly2021} absorption maxima, fluorescence and triplet yields and rates are measured at room temperature, the triplet yields from singlet-oxygen emission, and $\Delta E_\mathrm{ST}$ is the difference between the fluorescence maximum and the phosphorescence maximum in an ethyl-iodide-containing glass at 77~K; no phosphorescence was detected for the distyryl dyes, so their gaps are not known experimentally. Six heavy-atom candidates from a first screening round (Cl2-BDP, Br2-BDP, I1-BDP and
 three halogenated aza-BODIPYs) have no experimental data and are used only in the budget and cost analyses.
+Chart~\ref{chart:dyes} shows all fifteen structures.
+
+\begin{chart}
+  \centering
+  \includegraphics[width=\textwidth]{figures/chart_structures.pdf}
+  \caption{The fifteen dyes. Asterisks mark the screening candidates without experimental data; the distyryl
+  dyes are the (E,E) isomers.}
+  \label{chart:dyes}
+\end{chart}
 
 % ---------------------------------------------------------------------------------------------
 \section{Results}
@@ -319,7 +328,7 @@ spuriously good absorption, so automated screening of $\pi$-extended dyes must f
 up to a factor of 2.7, because the dominant channel lies in the inverted region of the MLJ curve, where the
 rate grows as the gap closes (Figure~S4). Keeping $\kisc$ within a factor of 2 for every error
 of either sign requires gap errors below 0.079--0.083~eV for the ISC-active validation dyes and
-0.062--0.083~eV over all dyes except azaBDP\_Br2; within a factor of 1.5, below 0.035--0.056~eV; within a factor of 3,
+0.062--0.083~eV over all dyes except aza-BDP-Br$_2$; within a factor of 1.5, below 0.035--0.056~eV; within a factor of 3,
 0.12--0.14~eV; within a factor of 10, 0.18--0.38~eV (Figure~\ref{fig:tolcurve}a). The factor-2 tolerance
 depends on the assumed reorganization energy, from 0.03--0.07~eV at $\lambda_s=0.05$~eV to
 0.09--0.13~eV at $\lambda_s=0.25$~eV (Figure~\ref{fig:tolcurve}b). The tolerance at small $\lambda_s$ partly reflects the resolved
@@ -342,13 +351,20 @@ dyes wrongly. A threshold observable inherits this edge sensitivity, and a
 smooth, error-aware window score is better suited to screening.
 
 \paragraph{The top screening candidate is the most fragile prediction.} The 2,6-dibromo aza-BODIPY
-(azaBDP\_Br2, $\Phi_T=0.97$) owes its rate to an uphill S$_1\to$T$_2$ channel: T$_2$ lies 0.11~eV above
+(aza-BDP-Br$_2$, $\Phi_T=0.97$) owes its rate to an uphill S$_1\to$T$_2$ channel: T$_2$ lies 0.11~eV above
 S$_1$ with 47~cm$^{-1}$ of SOC. A 0.1~eV error in that gap changes $\kisc$ by a factor of about 20, the
 factor-2 tolerance is 0.016~eV (Figure~\ref{fig:tolcurve}), and $\Phi_T$ drops below 0.5 if T$_2$ is
 0.08~eV higher. Moreover T$_2$ keeps its TDDFT energy while S$_1$ is $\Delta$SCF-corrected, the same
-inconsistency as in the distyryl dye. Two other candidates (Br2-BDP, azaBDP\_IPh2) sit at
+inconsistency as in the distyryl dye. A consistent treatment changes only this dye: shifting every T$_n$ by
+the $\Delta$SCF correction of T$_1$ ($-0.02$ to $-0.05$~eV) leaves $\kisc$ and $\Phi_T$ of the other fourteen dyes
+unchanged and raises $\kisc$ of aza-BDP-Br$_2$ by a factor of 5.6, with T$_2$ 0.06~eV above S$_1$ (Table~S10).
+Shifting the upper triplets by the much larger correction of S$_1$ ($-0.36$ to $-0.77$~eV) instead opens an
+S$_1\to$T$_{2,3}$ channel in every dye and predicts $\Phi_T=0.50$--0.86 for the BODIPY core, BDP and
+aza-BDP-Ph$_4$, which show no ISC, and 90 times the measured rate for I2-BDP; experiment thus supports
+upper-triplet errors closer to that of T$_1$ than to that of S$_1$, even though this shift would bring I2-BDP-0
+to $\Phi_T=0.86$ (0.76 measured). Two other candidates (Br2-BDP, aza-BDP-IPh$_2$) sit at
 $\Phi_T\approx0.5$, where the class flips for gap errors of 0.01--0.02~eV. A gap-free S$_1$--T$_1$ proxy
-would rank azaBDP\_Br2 ($V_1^2=1.8$~cm$^{-2}$) below azaBDP\_IPh2 (26~cm$^{-2}$) and Br2-BDP
+would rank aza-BDP-Br$_2$ ($V_1^2=1.8$~cm$^{-2}$) below aza-BDP-IPh$_2$ (26~cm$^{-2}$) and Br2-BDP
 (8.6~cm$^{-2}$), the opposite of the golden-rule order.
 
 
@@ -465,7 +481,7 @@ energies, however, S$_1$ lies 2.3--2.8~eV above T$_1$ instead of about 0.6~eV, s
 triplets that happen to lie near the misplaced S$_1$, and at CAS(6,6) the iodine-free BODIPY core
 ($2.5\times10^{8}$~s$^{-1}$) ranks above I2-BDP ($4.2\times10^{6}$~s$^{-1}$). The gap-free proxy ranks these
 dyes correctly, but only because iodine increases the coupling; it fails when an upper triplet controls ISC,
-as for azaBDP\_Br2. The filter is the right observable once the Hamiltonian meets the budget.
+as for aza-BDP-Br$_2$. The filter is the right observable once the Hamiltonian meets the budget.
 
 \subsection{Fault-tolerant resources, like for like}
 \label{sec:resources}
@@ -481,8 +497,10 @@ $2.97\times10^{3}$ on 158). The qubit count depends on this loading choice (374 
 loaded at once, 131 with ten batches), and the 177 qubits of ref~\citenum{Zhou2026PRA} lie in this range, so qubit
 counts should be compared together with the loading choice and the rank. The filter needs about $3\times10^{4}$
 walk steps at the MLJ width, about $10^{8}$ Toffolis, the same order as the gap-free proxy per
-shot~\cite{Zhou2026PRA}; with S$_1$ preparation one call costs $1.3$--$1.9\times10^{8}$ Toffolis. Our fits are not
-regularized for the THC one-norm, so we keep the double-factorization value of $\lambda$.
+shot~\cite{Zhou2026PRA}; with S$_1$ preparation one call costs $1.3$--$1.9\times10^{8}$ Toffolis. Our rank-33 fit is not
+regularized for the THC one-norm and gives $\lambda=37.5$~Ha. We keep the double-factorization value (15.9~Ha), to
+which regularized THC one-norms are close~\cite{Lee2021}; with 37.5~Ha the number of walk steps, and every cost
+below, grows by a factor of 2.1.
 
 \subsection{Cost of a screening decision}
 \label{sec:decision}
@@ -513,7 +531,7 @@ calls of $1.3$--$1.9\times10^{8}$ Toffolis; direct sampling costs $3\times10^{2}
 every dye, by 3--7 times for light-atom negatives and by $10^{2}$--$10^{4}$ for heavy-atom dyes, because
 certifying $p<p_\mathrm{th}$ takes about $1/p_\mathrm{th}$ samples but $1/\sqrt{p_\mathrm{th}}$ calls. D2 costs
 $5\times10^{10}$--$5\times10^{11}$ Toffolis for light-atom negatives, $4\times10^{11}$--$2\times10^{13}$ for
-heavy-atom dyes far from $\Phi_T=0.5$, and $3\times10^{14}$--$5\times10^{14}$ for Br2-BDP and azaBDP\_IPh2, at 0.94
+heavy-atom dyes far from $\Phi_T=0.5$, and $3\times10^{14}$--$5\times10^{14}$ for Br2-BDP and aza-BDP-IPh$_2$, at 0.94
 and 1.2 times the threshold rate. At $10^{6}$ Toffolis per second a D1 estimate for I2-BDP takes about 5 years
 with MLAE, and the deepest canonical circuit ($9\times10^{13}$ Toffolis) needs logical error rates below about
 $10^{-14}$.
@@ -552,8 +570,8 @@ Eklund \emph{et al.}~\cite{Eklund2026}, who simulate the dynamics, whereas our l
     I3-BDP       & 12372 & 4.3  & 20   & $6.0\times10^{-8}$ & $1.6\times10^{14}$ & $1.4\times10^{15}$ & $1.2\times10^{13}$ & $1.8\times10^{13}$ \\
     I2-BDP-0     &  2656 & 0.21 & 0.04 & $3.1\times10^{-9}$ & $7.7\times10^{14}$ & $6.4\times10^{15}$ & $8.7\times10^{13}$ & $1.4\times10^{13}$ \\
     Br2-BDP      &  1474 & 0.92 & 0.94 & $1.9\times10^{-7}$ & $8.3\times10^{13}$ & $6.8\times10^{14}$ & $6.6\times10^{12}$ & $2.8\times10^{14}$ \\
-    azaBDP\_Br2  &   855 & 5.7  & 35   & $2.2\times10^{-5}$ & $6.3\times10^{12}$ & $3.5\times10^{13}$ & $5.9\times10^{11}$ & $6.4\times10^{11}$ \\
-    azaBDP\_IPh2 &  7173 & 1.0  & 1.2  & $1.1\times10^{-8}$ & $4.0\times10^{14}$ & $3.1\times10^{15}$ & $1.9\times10^{13}$ & $4.7\times10^{14}$ \\
+    aza-BDP-Br$_2$  &   855 & 5.7  & 35   & $2.2\times10^{-5}$ & $6.3\times10^{12}$ & $3.5\times10^{13}$ & $5.9\times10^{11}$ & $6.4\times10^{11}$ \\
+    aza-BDP-IPh$_2$ &  7173 & 1.0  & 1.2  & $1.1\times10^{-8}$ & $4.0\times10^{14}$ & $3.1\times10^{15}$ & $1.9\times10^{13}$ & $4.7\times10^{14}$ \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -615,10 +633,12 @@ quantum algorithms for photosensitizer design, which motivated this study.
 \end{acknowledgement}
 
 \begin{suppinfo}
-Absorption energies and parity plot (Table~S1, Figure~S1); canonical-window CASCI, SA-CASSCF/SC-NEVPT2 and
+\sloppy
+Absorption energies and parity plot (Table~S1, Figure~S1); canonical-window CASCI, SA-CASSCF and SC-NEVPT2, and
 active-space sweep (Tables~S2--S4, Figure~S2); amplitude-estimation simulation (Figure~S3); MLJ gap dependence
 (Figure~S4); QSVT filter implementation and rates (Table~S5); all-electron SOC benchmark (Table~S6); pipeline results, accuracy
-budgets and decision costs for all fifteen dyes (Tables~S7--S9); Cartesian coordinates.
+budgets and decision costs for all fifteen dyes (Tables~S7--S9); treatment of the upper triplets (Table~S10);
+Cartesian coordinates.
 \end{suppinfo}
 
 \section*{Data and Software Availability}
