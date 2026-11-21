@@ -240,12 +240,13 @@ experiment, with a mean error of $-0.055$~eV and a standard deviation of 0.02~eV
 Figure~S1); uncorrected TDDFT places them 0.35--0.76~eV too high. Vertical energies are compared with band maxima in
 the gas phase, as for every method in this paper; because vertical and band-maximum energies, and vertical and
 adiabatic gaps, differ by 0.1--0.2~eV for BODIPYs~\cite{Momeni2015,Chibani2013}, part of the agreement may come
-from error cancellation. For BDP we optimized S$_0$, T$_1$ and S$_1$ with B3LYP ($\Delta$SCF for the
-excited states, script \texttt{run\_adiabatic.py}): the DFT S$_0$ minimum and the S$_1$ relaxation together lower
-S$_1$ by 0.12~eV from the vertical value at the xTB geometry to the adiabatic one (without zero-point energy), and
-the relaxation energies $\lambda_{\mathrm{S}_1}=0.05$~eV and $\lambda_{\mathrm{T}_1}=0.10$~eV widen the S$_1$--T$_1$
-gap from 0.72~eV (vertical) to 0.75~eV (adiabatic). This shift is within the 0.08~eV budget but above the
-0.016~eV tolerance of a near-resonant channel. \todo{I2-BDP when it finishes.} It does not transfer to the $\pi$-extended distyryl dyes, whose S$_1$ is
+from error cancellation. For BDP and I2-BDP we optimized S$_0$, T$_1$ and S$_1$ with B3LYP ($\Delta$SCF for the
+excited states, script \texttt{run\_adiabatic.py}). The DFT S$_0$ minimum and the S$_1$ relaxation together lower
+S$_1$ by 0.12 and 0.14~eV from the vertical value at the xTB geometry to the adiabatic one (without zero-point
+energy). The S$_1$ and T$_1$ relaxation energies are 0.05 and 0.10~eV for BDP and 0.08 and 0.08~eV for I2-BDP,
+so the S$_1$--T$_1$ gap changes from vertical (xTB geometry) to adiabatic by $+0.03$~eV for BDP (0.72 to 0.75~eV)
+and by $-0.01$~eV for I2-BDP (0.61 to 0.60~eV). Both shifts are within the 0.08~eV budget; the BDP shift is above
+the 0.016~eV tolerance of a near-resonant channel, but BDP has none. It does not transfer to the $\pi$-extended distyryl dyes, whose S$_1$ is
 0.21--0.23~eV too low.
 
 
