@@ -1,0 +1,13 @@
+{
+ "walk_wires": 193,
+ "filter_degree": 51264,
+ "filter_wires": 193,
+ "real_part_lcu": 1,
+ "H_SO_index": 5,
+ "H_SO_sign": 1,
+ "S1_filter_signal": 1,
+ "p_min": 3.103213193406004e-09,
+ "canonical_phase_bits": 19,
+ "total_MLAE": 201,
+ "total_canonical": 220
+}

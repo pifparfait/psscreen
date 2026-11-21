@@ -506,10 +506,14 @@ $2.97\times10^{3}$ on 158). The qubit count depends on this loading choice (374 
 loaded at once, 131 with ten batches), and the 177 qubits of ref~\citenum{Zhou2026PRA} lie in this range, so qubit
 counts should be compared together with the loading choice and the rank. The filter needs about $3\times10^{4}$
 walk steps at the MLJ width, about $10^{8}$ Toffolis, the same order as the gap-free proxy per
-shot~\cite{Zhou2026PRA}; with S$_1$ preparation one call costs $1.3$--$1.9\times10^{8}$ Toffolis. Our rank-33 fit is not
-regularized for the THC one-norm and gives $\lambda=37.5$~Ha. We keep the double-factorization value (15.9~Ha), to
-which regularized THC one-norms are close~\cite{Lee2021}; with 37.5~Ha the number of walk steps, and every cost
-below, grows by a factor of 2.1.
+shot~\cite{Zhou2026PRA}; with S$_1$ preparation one call costs $1.3$--$1.9\times10^{8}$ Toffolis. The whole decision
+circuit needs at most 201 logical qubits with MLAE and 220 with canonical estimation: the 193 of the walk, 8 for the
+$\Hso$ block encoding, the real-part combination and the S$_1$ filter, and 19 phase bits (script
+\texttt{logical\_qubits.py}). The unregularized rank-33 fit has
+$\lambda=37.5$--39.2~Ha. With a one-norm penalty in the fit~\cite{Lee2021} (script \texttt{thc\_regularized.py})
+$\lambda$ falls to 17.3~Ha while the S$_1$--T$_1$ error stays at 0.004~eV and the T$_2-$S$_1$ error at 0.013~eV, within the
+near-resonance tolerance. We keep the double-factorization value, $\lambda=15.9$~Ha, which is 9\% below that fit, so
+the costs below may be about 10\% low (with the unregularized 37.5~Ha every cost below would grow by a factor of 2.1).
 
 \subsection{Cost of a screening decision}
 \label{sec:decision}
@@ -617,7 +621,8 @@ I2-BDP) is the off-resonant weight that the filter removes, and only a channel-r
 
 \paragraph{Limitations.} The benchmark has nine dyes from one family and three measured ISC rates, two
 for nearly identical dyes, and the factor-2 agreement holds for B3LYP (PBE0 is within a factor of 2.4; BHandHLYP fails). We used def2-SVP (def2-TZVP for two NEVPT2 checks), GFN2-xTB
-geometries, one conformer, the gas phase and vertical energies; the SOC model matches an all-electron SOMF treatment for the summed coupling but not channel by
+geometries, one conformer, the gas phase and vertical energies (the adiabatic check covers S$_1$--T$_1$ of BDP and
+I2-BDP, not the near-resonant S$_1$--T$_2$ channel of aza-BDP-Br$_2$, whose relaxation is untested); the SOC model matches an all-electron SOMF treatment for the summed coupling but not channel by
 channel (a factor of 2.8 in the rate of the dominant I2-BDP channel); triplets come from a windowed TDA
 (0.016--0.025~eV above the full TDA for T$_2$ and T$_3$, a factor of 2 in $\kisc$ of aza-BDP-Br$_2$) and keep their TDDFT energies while S$_1$ and T$_1$ are $\Delta$SCF-corrected; and the
 cost model takes pipeline rates, an assumed trial-state overlap and one-norm, and an oracle margin
