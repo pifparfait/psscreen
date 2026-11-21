@@ -1,0 +1,48 @@
+\section{Functional and conformer dependence}
+\begin{table}
+  \caption{Dependence on the exchange--correlation functional (def2-SVP, $\Delta$SCF S$_1$ and T$_1$ with each
+  functional, same xTB geometries): error of S$_1$ against the absorption maximum (eV), S$_1-$T$_1$ gap (eV),
+  $\kisc$ (s$^{-1}$) and $\Phi_T$. Measured $\kisc$: I2-BDP $3.5\times10^{9}$, I3-BDP $3.9\times10^{9}$,
+  I2-BDP-0 $4.5\times10^{8}$~s$^{-1}$. Scripts \texttt{validation/run\_xc\_scan.py} and
+  \texttt{paper/analysis/xc\_conformer\_table.py}.}
+  \label{tab:xc}
+  \scriptsize\setlength{\tabcolsep}{2pt}
+  \begin{tabular}{lrrrrrrrrrrrr}
+    \toprule
+    & \multicolumn{4}{c}{B3LYP (20\%)} & \multicolumn{4}{c}{PBE0 (25\%)} & \multicolumn{4}{c}{BHandHLYP (50\%)} \\
+    Dye & $\delta$S$_1$ & S$_1-$T$_1$ & $\kisc$ & $\Phi_T$ & $\delta$S$_1$ & S$_1-$T$_1$ & $\kisc$ & $\Phi_T$ & $\delta$S$_1$ & S$_1-$T$_1$ & $\kisc$ & $\Phi_T$ \\
+    \midrule
+    BODIPY core & $-0.02$ & 0.71 & $2.4\times10^{-2}$ & 0.00 & $+0.05$ & 0.82 & $1.8\times10^{-2}$ & 0.00 & $+0.36$ & 1.26 & $1.2\times10^{-3}$ & 0.00 \\
+    BDP & $-0.07$ & 0.72 & $1.1\times10^{-2}$ & 0.00 & $+0.00$ & 0.83 & $9.2\times10^{-3}$ & 0.00 & $+0.34$ & 1.28 & $1.7\times10^{-5}$ & 0.00 \\
+    I-BDP & $-0.06$ & 0.72 & $2.9\times10^{0}$ & 0.00 & $+0.00$ & 0.84 & $3.2\times10^{-1}$ & 0.00 & $+0.34$ & 1.29 & $1.8\times10^{-2}$ & 0.00 \\
+    I2-BDP & $-0.05$ & 0.61 & $6.9\times10^{9}$ & 0.95 & $+0.02$ & 0.71 & $1.6\times10^{9}$ & 0.80 & $+0.37$ & 1.14 & $1.8\times10^{6}$ & 0.00 \\
+    I3-BDP & $-0.05$ & 0.61 & $7.1\times10^{9}$ & 0.95 & $+0.02$ & 0.72 & $1.6\times10^{9}$ & 0.81 & $+0.37$ & 1.15 & $1.9\times10^{6}$ & 0.00 \\
+    aza-BDP-Ph$_4$ & $-0.08$ & 0.73 & $1.4\times10^{5}$ & 0.00 & $+0.01$ & 0.88 & $3.3\times10^{4}$ & 0.00 & $+0.38$ & 1.46 & $9.1\times10^{6}$ & 0.02 \\
+    BDP-0 & $-0.22$ & 0.55 & $8.9\times10^{3}$ & 0.00 & $-0.14$ & 0.66 & $4.3\times10^{3}$ & 0.00 & $+0.24$ & 1.15 & $1.1\times10^{6}$ & 0.00 \\
+    I-BDP-0 & $-0.21$ & 0.55 & $2.4\times10^{4}$ & 0.00 & $-0.14$ & 0.66 & $1.1\times10^{4}$ & 0.00 & $+0.24$ & 1.16 & $1.4\times10^{7}$ & 0.02 \\
+    I2-BDP-0 & $-0.23$ & 0.50 & $1.7\times10^{7}$ & 0.04 & $-0.15$ & 0.60 & $7.6\times10^{6}$ & 0.02 & $+0.21$ & 1.06 & $1.5\times10^{7}$ & 0.03 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}
+  \caption{xTB conformers of the distyryl dyes (B3LYP/$\Delta$SCF): S$_1$ (eV), $\kisc$ (s$^{-1}$) and $\Phi_T$.
+  Conformer c0 is the one used in the main text; c1 of BDP-0 and I-BDP-0 has no result. Script
+  \texttt{validation/conformers.py}.}
+  \label{tab:conf}
+  \small
+  \begin{tabular}{llrrr}
+    \toprule
+    Dye & conformer & S$_1$ & $\kisc$ & $\Phi_T$ \\
+    \midrule
+    BDP-0 & c0 & 1.76 & $8.9\times10^{3}$ & 0.00 \\
+    BDP-0 & c2 & 1.72 & $3.2\times10^{5}$ & 0.00 \\
+    I-BDP-0 & c0 & 1.75 & $2.4\times10^{4}$ & 0.00 \\
+    I-BDP-0 & c2 & 1.71 & $7.5\times10^{4}$ & 0.00 \\
+    I2-BDP-0 & c0 & 1.70 & $1.7\times10^{7}$ & 0.04 \\
+    I2-BDP-0 & c1 & 1.66 & $1.8\times10^{7}$ & 0.05 \\
+    I2-BDP-0 & c2 & 1.66 & $1.2\times10^{7}$ & 0.03 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+

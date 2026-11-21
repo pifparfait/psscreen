@@ -44,12 +44,13 @@ that decision costs on a fault-tolerant computer. We address both for boron-dipy
 dyes with measured photophysics. With a Marcus--Levich--Jortner model, a factor-2 intersystem-crossing
 (ISC) rate requires singlet--triplet gaps accurate to about 0.08~eV, and to 0.016~eV through a
 near-resonant upper triplet, as for the top candidate of a screening round. A B3LYP/$\Delta$SCF pipeline
-meets this budget for the iodinated compact dyes but not for the one $\pi$-extended dye with a measured
+meets this budget for the iodinated compact dyes, whose rates it reproduces within a factor of 2 with a
+spin--orbit operator uncertain by a factor of about 3, but not for the one $\pi$-extended dye with a measured
 rate. A (12e,11o) window of canonical orbitals has a summed dipyrrin $\pi$ weight of only 2.5--6.7 out of
 11; in an AVAS-selected $\pi$ space, SA-CASSCF/SC-NEVPT2 still overestimates the measured
 S$_1$--T$_1$ gaps by about 0.35~eV. We implement the golden-rule rate as a QSVT spectral filter, verify it,
 and show that on bare active-space energies it ranks the dyes wrongly. Taking the pipeline rates as
-targets, a decision with tensor-hypercontraction qubitization needs $10^{3}$--$10^{6}$ calls of about
+targets, a decision with tensor-hypercontraction qubitization needs $10^{2}$--$10^{7}$ calls of about
 $1.6\times10^{8}$ Toffolis, because the rate is a small fraction of the spin--orbit block-encoding norm:
 $10^{11}$ Toffolis for light-atom negatives and about $5\times10^{14}$ near the triplet-yield threshold, with
 amplitude estimation cheaper than sampling in every case. When one channel dominates, phase estimation
@@ -117,7 +118,7 @@ triplets by the Tamm--Dancoff approximation (TDA) in a 10~eV window (at most 40 
 orbitals); the windowed solver reproduces PySCF when the window spans the whole space
 (\texttt{tests/test\_tdwin.py}); against the full TDA, the window places T$_2$ and T$_3$ 0.016--0.025~eV too high in
 the four dyes we checked, which doubles $\kisc$ of aza-BDP-Br$_2$ and leaves the other three unchanged
-(Table~S11). Because TDDFT overestimates S$_1$ of cyanine-like dyes by several tenths of
+(Table~S11); the rates of the remaining dyes run through T$_1$, which the window does not affect. Because TDDFT overestimates S$_1$ of cyanine-like dyes by several tenths of
 an eV~\cite{Momeni2015,LeGuennic2015}, the S$_1$ and T$_1$ energies are replaced with $\Delta$SCF
 values (separate self-consistent-field solutions for the excited states)~\cite{Hait2021}: T$_1$ from an unrestricted $M_S=1$ calculation and S$_1$ from the spin-purified sum
 rule~\cite{Ziegler1977} with a mixed determinant converged by the maximum-overlap
@@ -279,8 +280,8 @@ measured 0.77 and 0.59~eV (Table~\ref{tab:isc}). Without heavy atoms $\kisc$ is 
 Iodination at the 2,6 positions gives $\kisc=6.9\times10^{9}$~s$^{-1}$ for I2-BDP ($3.5\times10^{9}$
 measured) and $7.1\times10^{9}$~s$^{-1}$ for I3-BDP ($3.9\times10^{9}$ measured), through the
 S$_1\to$T$_1$ channel. These two nearly identical dyes are the only test of the factor-2
-agreement, which depends on the functional (PBE0: $1.6\times10^{9}$~s$^{-1}$; BHandHLYP:
-$1.8\times10^{6}$~s$^{-1}$), on the SOC model (with the all-electron SOMF coupling of the S$_1\to$T$_1$ channel,
+agreement, which depends on the functional (PBE0: $1.6\times10^{9}$~s$^{-1}$ for both, a factor of 2.2--2.4 below
+experiment; BHandHLYP: $1.8\times10^{6}$~s$^{-1}$; Table~S12), on the SOC model (with the all-electron SOMF coupling of the S$_1\to$T$_1$ channel,
 $\kisc$(I2-BDP) would be $2.0\times10^{10}$~s$^{-1}$, 5.6 times the measured value) and on treating T$_{n\ge2}$ like T$_1$: uncorrected TDDFT gives
 $3\times10^{11}$~s$^{-1}$ for I2-BDP and $\Phi_T=0.47$ for BDP, where no ISC is observed. Varying $\lambda_s$
 (0.05--0.2~eV) and $S$ (0.5--1.2) moves $\kisc$(I2-BDP) within $1.7\times10^{9}$--$2.5\times10^{10}$~s$^{-1}$.
@@ -313,7 +314,7 @@ $3\times10^{11}$~s$^{-1}$ for I2-BDP and $\Phi_T=0.47$ for BDP, where no ISC is 
 $\kisc=1.7\times10^{7}$~s$^{-1}$, 26 times below experiment, and $\Phi_T=0.04$ instead of 0.76. In the
 uncorrected TDDFT spectrum T$_2$ lies 0.08~eV above S$_1$ with 8~cm$^{-1}$ of SOC, which gives
 $\kisc=1.1\times10^{9}$~s$^{-1}$ and $\Phi_T=0.67$, close to experiment; the $\Delta$SCF step lowers S$_1$
-and T$_1$ but not T$_2$ and closes that channel. Conformers change $\kisc$ by less than a factor of 1.5. Across
+and T$_1$ but not T$_2$ and closes that channel. The three xTB conformers of I2-BDP-0 change its $\kisc$ by less than a factor of 1.5 (Table~S13). Across
 our treatments T$_2$ lies 0.08 (uncorrected B3LYP), 0.12 (BHandHLYP/$\Delta$SCF), 0.44 (PBE0/$\Delta$SCF),
 0.51 (B3LYP/$\Delta$SCF), 0.54 (canonical-window SA-CASSCF/SC-NEVPT2) and 0.72~eV (AVAS $\pi$-space SC-NEVPT2)
 above S$_1$, and within
@@ -343,7 +344,8 @@ $V_1$ of I2-BDP.
 class ($\Phi_T$ above or below 0.5) does not flip for any gap error up to 0.5~eV in seven of the nine
 dyes and needs about 0.4~eV in the other two. It is tight only for dyes near $\Phi_T=0.5$, as for two
 screening candidates below, and there it is also set by $k_r+k_\mathrm{ic}$, which the pipeline knows only
-to a factor of 2--4.
+to a factor of 2--4. The class of I2-BDP-0 is already wrong in the pipeline ($\Phi_T=0.04$ against 0.76), because
+of the position of its T$_2$ rather than a small gap error.
 
 \paragraph{Window membership is the tightest requirement for red-absorbing dyes.} The dyes that absorb
 near the therapeutic window lie 0.00--0.07~eV from its 650~nm edge in experiment: aza-BDP-Ph$_4$ sits on
@@ -363,7 +365,8 @@ unchanged and raises $\kisc$ of aza-BDP-Br$_2$ by a factor of 5.6, with T$_2$ 0.
 The truncated TDA window adds an error of the same sign: the full TDA lowers T$_2$ of aza-BDP-Br$_2$ by
 0.017~eV, just above the factor-2 tolerance, to 0.09~eV above S$_1$, which doubles $\kisc$ ($\Phi_T$ 0.97 to 0.99),
 while the BODIPY core, I2-BDP and I2-BDP-0, whose rates do not run through a near-resonant T$_n$, are unchanged
-(Table~S11).
+(Table~S11). Both corrections together raise $\kisc$ of aza-BDP-Br$_2$ by a factor of 9 ($\Phi_T=0.997$): its
+class is robust and only its rate is fragile.
 Shifting the upper triplets by the much larger correction of S$_1$ ($-0.36$ to $-0.77$~eV) instead opens an
 S$_1\to$T$_{2,3}$ channel in every dye and predicts $\Phi_T=0.50$--0.86 for the BODIPY core, BDP and
 aza-BDP-Ph$_4$, which show no ISC, and 90 times the measured rate for I2-BDP; experiment thus supports
@@ -613,7 +616,7 @@ matter, for example the heavy-atom one-centre terms; the part $\lVert\chi\rVert/
 I2-BDP) is the off-resonant weight that the filter removes, and only a channel-resolved route avoids it.
 
 \paragraph{Limitations.} The benchmark has nine dyes from one family and three measured ISC rates, two
-for nearly identical dyes, and the factor-2 agreement holds for B3LYP only. We used def2-SVP (def2-TZVP for two NEVPT2 checks), GFN2-xTB
+for nearly identical dyes, and the factor-2 agreement holds for B3LYP (PBE0 is within a factor of 2.4; BHandHLYP fails). We used def2-SVP (def2-TZVP for two NEVPT2 checks), GFN2-xTB
 geometries, one conformer, the gas phase and vertical energies; the SOC model matches an all-electron SOMF treatment for the summed coupling but not channel by
 channel (a factor of 2.8 in the rate of the dominant I2-BDP channel); triplets come from a windowed TDA
 (0.016--0.025~eV above the full TDA for T$_2$ and T$_3$, a factor of 2 in $\kisc$ of aza-BDP-Br$_2$) and keep their TDDFT energies while S$_1$ and T$_1$ are $\Delta$SCF-corrected; and the
@@ -644,6 +647,7 @@ Absorption energies and parity plot (Table~S1, Figure~S1); canonical-window CASC
 active-space sweep (Tables~S2--S4, Figure~S2); amplitude-estimation simulation (Figure~S3); MLJ gap dependence
 (Figure~S4); QSVT filter implementation and rates (Table~S5); all-electron SOC benchmark (Table~S6); pipeline results, accuracy
 budgets and decision costs for all fifteen dyes (Tables~S7--S9); treatment of the upper triplets (Table~S10); convergence of the triplet TDA window (Table~S11);
+functional and conformer dependence (Tables~S12 and S13);
 Cartesian coordinates.
 \end{suppinfo}
 
