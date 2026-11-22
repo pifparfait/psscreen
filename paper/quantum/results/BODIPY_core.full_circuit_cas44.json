@@ -1,0 +1,32 @@
+{
+ "name": "BODIPY_core",
+ "active_space": "CAS(4,4), B3LYP/def2-SVP orbitals",
+ "gamma2": 0.9418252438981184,
+ "S1_filter": {
+  "degree": 306,
+  "poly_err": 4.620119424203484e-05,
+  "sigma_eV": 0.402727276481522,
+  "gap_eV": 1.208181829444566,
+  "success": 0.9044495096731231,
+  "fidelity_with_S1": 0.9999981205498797
+ },
+ "alpha_so_cm": 5.890322433931463,
+ "rotation_err_Ha": 4.43627188709626e-20,
+ "so_matrix_err_Ha": 1.3387427020969253e-08,
+ "hso_antihermitian_part_Ha": 2.631816323346706e-20,
+ "p_after_HSO": 0.17995650193765167,
+ "p_after_HSO_pred": 0.18010234566169667,
+ "isc_filter": {
+  "degree": 3324,
+  "poly_err": 9.383649558492024e-07,
+  "alpha_Ha": 1.094370181838599
+ },
+ "p_call": 9.095363427706093e-07,
+ "p_pred": 9.05846323772456e-07,
+ "ratio_call_to_pred": 1.0040735596108465,
+ "k_exact": 14027.932328321664,
+ "K_prime": 13452833448.699305,
+ "k_from_call": 14085.075946878005,
+ "seconds_sim": 200.1996874809265,
+ "seconds": 333.6195878982544
+}
