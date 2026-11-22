@@ -546,12 +546,15 @@ $\Hso$ block encoding, the real-part combination and the S$_1$ filter, and 19--2
 \texttt{logical\_qubits.py}); registers that load the S$_1$ trial state and the $\Hso$ coefficients are not counted. The unregularized rank-33 fit has
 $\lambda=37.5$--39.2~Ha. With a one-norm penalty in the fit~\cite{Lee2021} (script \texttt{thc\_regularized.py})
 $\lambda$ falls to 17.3~Ha while the S$_1$--T$_1$ error stays at 0.004~eV and the T$_2-$S$_1$ error at 0.013~eV, within the
-near-resonance tolerance. We cost this regularized value, $\lambda=17.3$~Ha; the double-factorization value
+near-resonance tolerance. The same regularized fit (three starts) gives $\lambda=12.0$~Ha for I2-BDP, with gap errors
+below 0.005~eV, and 11.5~Ha for aza-BDP-Br$_2$, where the fit is twenty times worse and T$_2-$S$_1$ is off by
+0.027~eV (0.032~eV without the penalty), above the near-resonance tolerance: for the one dye where that tolerance
+matters, rank 33 is not enough. We cost the BODIPY-core value, $\lambda=17.3$~Ha, for all dyes; the double-factorization value
 (15.9~Ha) would lower every cost below by 7\% and the unregularized 37.5~Ha would double it.
 For a near-resonant channel the errors add up: with phase estimation of S$_1$ at 0.1~mHa (0.003~eV), the THC
-fit (0.013~eV) and the TDA window of the reference (0.017~eV) still give 0.021~eV in quadrature, above the
-0.016~eV tolerance, so deciding the rate of aza-BDP-Br$_2$ to a factor of 2 would also need a better
-factorization.
+fit (0.027~eV for aza-BDP-Br$_2$ itself) and the TDA window of the reference (0.017~eV) give 0.032~eV in
+quadrature, twice the 0.016~eV tolerance, so deciding the rate of aza-BDP-Br$_2$ to a factor of 2 needs a higher
+THC rank or a better factorization.
 
 \subsection{Cost of a screening decision}
 \label{sec:decision}
