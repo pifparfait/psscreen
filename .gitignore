@@ -4,3 +4,13 @@ __pycache__/
 .pytest_cache/
 validation/runs/*.log
 screening/runs/*/inputs/
+# LaTeX build artifacts
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/main.pdf
+paper/si.pdf
+paper/acs-*.bib
