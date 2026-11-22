@@ -49,11 +49,15 @@ ap.add_argument("--sa-mix", action="store_true",
                 help="state-average over the singlets and the two lowest triplets (equal weights) instead of singlets only")
 ap.add_argument("--skip-avas-block", action="store_true", help="skip CASCI/NEVPT2 on the unoptimized AVAS orbitals")
 ap.add_argument("--select-only", action="store_true", help="stop after the orbital selection (quick check)")
+ap.add_argument("--geom", default=None, help="xyz file to use instead of the GFN2-xTB geometry (e.g. the DFT S0 minimum)")
+ap.add_argument("--tag", default="", help="suffix for the output file name")
 a = ap.parse_args()
 
 geo = os.path.join(ROOT, "validation", "runs", f"{a.name}.xyz")
 if not os.path.exists(geo):
     geo = os.path.join(ROOT, "validation", "runs", "set3", f"{a.name}_c0.xyz")
+if a.geom:
+    geo = a.geom if os.path.isabs(a.geom) else os.path.join(ROOT, a.geom)
 sym, xyz = read_xyz(geo)
 sym = [s.capitalize() for s in sym]
 xyz = np.asarray(xyz, float)
@@ -115,7 +119,7 @@ mol = gto.M(atom=atom, basis=a.basis, ecp=_ecp(atom, a.basis), verbose=4, unit="
 
 outdir = os.path.join(ROOT, "paper", "references", "results")
 os.makedirs(outdir, exist_ok=True)
-tag = ("" if a.basis == "def2-svp" else "_" + a.basis.replace("-", "")) + ("_samix" if a.sa_mix else "")
+tag = ("" if a.basis == "def2-svp" else "_" + a.basis.replace("-", "")) + ("_samix" if a.sa_mix else "") + a.tag
 fout = os.path.join(outdir, f"{a.name}.pi_cas_12_11{tag}.json")
 out = {"name": a.name, "geometry": os.path.relpath(geo, ROOT), "basis": a.basis, "cas": [12, 11],
        "sa_weights": "singlets + 2 triplets, equal" if a.sa_mix else "singlets only, equal",

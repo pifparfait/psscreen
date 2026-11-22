@@ -44,6 +44,9 @@ ap.add_argument("--light-basis", default="def2-svp")
 ap.add_argument("--heavy-basis", default="unc-dzp-dkh", help="basis for Br/I; prefix unc- to decontract")
 ap.add_argument("--xc", default="b3lyp")
 ap.add_argument("--atom-check-only", action="store_true")
+ap.add_argument("--effective", action="store_true",
+                help="also evaluate the effective one-electron operator of psscreen (per-element 1/r_A terms scaled to the "
+                     "atomic constants, calibrated here in the all-electron X2C basis) on the same TDA states")
 a = ap.parse_args()
 
 OUT = os.path.join(ROOT, "paper", "references", "results", f"{a.name}.soc_benchmark.json")
@@ -143,9 +146,39 @@ res["E_singlets_eV"], res["E_triplets_eV"] = eS.tolist(), eT.tolist()
 res["timings_s"]["tda"] = time.time() - t0
 save()
 
+def effective_ao():
+    """sum_A s_A * (p x (1/r_A) p) with s_A from the X2C free atom in this basis (same invariant as psscreen.soc)."""
+    from psscreen.soc import _raw_atom_integrals
+    h = np.zeros((3, mol.nao, mol.nao))
+    scales = {}
+    for ia in range(mol.natm):
+        el = mol.atom_pure_symbol(ia)
+        if el not in ZETA_EXP_CM:
+            continue
+        if el not in scales:
+            spin = {"C": 2, "N": 3, "B": 1, "F": 1, "Br": 1, "I": 1, "Cl": 1}[el]
+            am = gto.M(atom=f"{el} 0 0 0", basis=basis_for([el]), spin=spin, verbose=0)
+            amf = scf.ROHF(am).x2c()
+            amf.kernel()
+            C, e = amf.mo_coeff, amf.mo_energy
+            S = am.intor("int1e_ovlp")
+            pmask = np.array([lab[2].endswith("p") for lab in am.ao_labels(fmt=False)])
+            pchar = np.einsum("pi,pq,qi->pi", C, S, C)[pmask].sum(0)
+            homo = int(np.ceil(am.nelectron / 2)) - 1
+            cand = sorted([i for i in range(C.shape[1]) if pchar[i] > 0.9], key=lambda i: abs(e[i] - e[homo]))[:3]
+            Ip = np.einsum("pi,kpq,qj->kij", C[:, cand], _raw_atom_integrals(am, 0), C[:, cand])
+            scales[el] = (ZETA_EXP_CM[el] / CM1_PER_HARTREE) / np.sqrt((Ip ** 2).sum() / 6.0)
+        h += scales[el] * _raw_atom_integrals(mol, ia)
+    res["effective_scales"] = {k: float(v) for k, v in scales.items()}
+    return h
+
+
 h_somf, h_bp1e = somf_ao(mol, mf.make_rdm1())
 res["timings_s"]["somf"] = time.time() - t0
-for tag, h in (("somf", h_somf), ("bp1e", h_bp1e)):
+ops = [("somf", h_somf), ("bp1e", h_bp1e)]
+if a.effective:
+    ops.append(("eff_ae", effective_ao()))
+for tag, h in ops:
     blocks = _spin_blocks(1j * np.einsum("pi,kpq,qj->kij", mf.mo_coeff, h, mf.mo_coeff))
     V = np.zeros((len(xS), len(xT)))
     for m, Xs in enumerate(xS):

@@ -104,6 +104,25 @@ def _uks_state(sym, xyz, kind):
     mf = scf.addons.mom_occ(mf, mo0, occ)
     dm0 = np.array([(mo0[s] * occ[s]) @ mo0[s].T for s in (0, 1)])
     mf.kernel(dm0)
+    if not mf.converged:
+        # second attempt: level shift and damping from the last density, then a polish without level shift
+        mol2, mf2 = build(sym, xyz, spin=2 if kind == "T" else 0)
+        if kind == "M":
+            mf2 = dft.UKS(mol2, xc=a.xc).density_fit()
+            mf2.grids.level = 2
+        mf2.conv_tol, mf2.max_cycle = 1e-9, 400
+        mf2.level_shift, mf2.damp, mf2.diis_start_cycle = 0.25, 0.5, 8
+        mf2 = scf.addons.mom_occ(mf2, mo0, occ)
+        mf2.kernel(mf.make_rdm1())
+        if mf2.converged:
+            mol3, mf3 = build(sym, xyz, spin=2 if kind == "T" else 0)
+            if kind == "M":
+                mf3 = dft.UKS(mol3, xc=a.xc).density_fit()
+                mf3.grids.level = 2
+            mf3.conv_tol, mf3.max_cycle = 1e-9, 100
+            mf3 = scf.addons.mom_occ(mf3, mf2.mo_coeff, mf2.mo_occ)
+            mf3.kernel(mf2.make_rdm1())
+            mf = mf3 if mf3.converged else mf2
     assert mf.converged, f"UKS ({kind}) not converged"
     _prev[kind] = ((mf.mo_coeff[0], mf.mo_coeff[1]), (mf.mo_occ[0], mf.mo_occ[1]))
     return mf
@@ -155,8 +174,10 @@ def all_energies(sym, xyz):
 
 t0 = time.time()
 geo = os.path.join(ROOT, "validation", "runs", f"{a.name}.xyz")
-if not os.path.exists(geo):
-    geo = os.path.join(ROOT, "validation", "runs", "set3", f"{a.name}_c0.xyz")
+for alt in (os.path.join(ROOT, "validation", "runs", "set3", f"{a.name}_c0.xyz"),
+            os.path.join(ROOT, "screening", "runs", "candidates_round1", f"{a.name}.xyz")):
+    if not os.path.exists(geo):
+        geo = alt
 sym, xyz0 = read_xyz(geo)
 sym = [s.capitalize() for s in sym]
 xyz0 = np.asarray(xyz0, float)
