@@ -1,5 +1,8 @@
 # Decision-aware resource estimate (quantum contribution, option A), revised after review
 
+> **Superseded (2026-11-22).** These are working notes from the first version of the cost model. The current model (λ = 17.3 Ha regularized THC, filter degree computed directly by `degree_direct.py`, QPE at 0.1 mHa, D2 with a factor-2 indifference zone and no known margin) is documented in the docstring of `decision_cost.py`, and its numbers are in `results/decision_cost.md`.
+
+
 Code: `paper/quantum/decision_cost.py` (cost model and tables), `alpha_so.py` (spin-orbit block-encoding
 normalization), `degree_check.py` (filter degree from our own polynomials), `ae_demo.py` (amplitude estimation on the
 actual filter circuit). Results: `paper/quantum/results/decision_cost.md`, `alpha_so.json`, `degree_check.json`,

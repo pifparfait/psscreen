@@ -10,23 +10,29 @@ class is decided without any call (k_ISC <= K').
 A screening campaign needs a decision per dye, taken with confidence 1 - delta:
   D1  rate estimate: k_ISC to relative statistical error r (default 0.2: the statistical part uses about a quarter
       of the factor-2 budget in ln k, leaving the rest to the systematic gap error);
-  D2  triplet-yield class: is Phi_T > 0.5, i.e. k_ISC > k_r + k_ic?
+  D2  triplet-yield class: is Phi_T > 0.5, i.e. k_ISC > k_r + k_ic? Tested with an indifference zone
+      k_th/F < k_ISC < k_th F (F = 2, the factor-2 budget) and no knowledge of the margin: inside the zone the test
+      may return either class (or 'within a factor of 2'). The first version, with the margin known in advance (an
+      oracle margin), is kept in the json under D2.oracle.
 
 Estimators (all with confidence 1 - delta = 0.95 per decision):
   * direct sampling of the success flag. D1: Dagum-Karp-Luby-Ross stopping rule, which needs no prior knowledge of
     p (expected calls Y1/p, Y1 = 1 + 4(e-2)(1+r) ln(2/delta)/r^2). D2: Wald's sequential probability ratio test
-    against p_th, expected calls ~ ln(1/delta)/KL(p || p_th);
+    between the zone edges p_th/F and p_th F, expected calls from Wald's approximations at the true p;
   * maximum-likelihood amplitude estimation (MLAE, no QPE and no controlled Grover operator): calls = c/(r sqrt(p))
     with the empirical 95th-percentile constant c from paper/quantum/ae_demo.py (simulated on the actual filter
-    circuit, valid for r >= 0.05). For D2 the required angle precision is |asin sqrt(p_th) - asin sqrt(p)|;
+    circuit, valid for r >= 0.05). For D2 the precision is halved stage by stage until the interval excludes one zone edge (final angle
+    precision max(theta - theta0, theta1 - theta)/2, at most 2x the last stage in total, confidence delta/L per stage
+    with the constant scaled by the normal quantile);
   * canonical QAE (Brassard et al. 2002, Thm 12) as a rigorous check: M rounded up to a power of two, median of 16
     runs, 2(M-1)+1 calls per run; the overhead of controlling the walk operator is neglected.
 
 Cost of one call (Toffolis), CAS(12,11) with THC qubitization (paper/quantum/thc_pennylane_resources.py):
   C_A = C_S1 + C_SO + d * C_walk
   C_walk = 3.25e3 (THC rank 33, 193 logical qubits, angles in 5 batches);
-  d = filter degree, fitted to our own Chebyshev filters (paper/quantum/degree_check.py):
-      d = s(eps) lambda'/Delta, s(eps) linear in ln(1/eps), lambda' = lambda + |E0 - c0| (shift of the
+  d = filter degree of our own Chebyshev filters: d = s(eps) lambda'/Delta, with s(eps) computed directly for
+      eps = 1e-2 ... 1e-7 (paper/quantum/degree_direct.py; linear in alpha/Delta, degree_check.py) and interpolated
+      in ln(1/eps), lambda = 17.3 Ha (regularized THC fit), lambda' = lambda + |E0 - c0| (shift of the
       block-encoded operator relative to its identity coefficient, 3.46 Ha for the BODIPY core), Delta the MLJ width;
       polynomial precision eps = r sqrt(p)/4 so that the induced error in p stays below r p / 2;
   C_S1 = coherent S1 preparation: a spin-adapted sum of D = 1e4 configuration state functions (so that triplet
@@ -35,11 +41,11 @@ Cost of one call (Toffolis), CAS(12,11) with THC qubitization (paper/quantum/thc
       succeeds with probability gamma^2 (assumed 0.5); it is folded into the amplitude-estimation good state, so the
       success probability seen by the estimators is gamma^2 p and the call count scales as 1/gamma;
   C_SO = one-body H_SO by a single basis rotation (3 x N(N-1)/2 Givens rotations x rotation bits, conservative).
-One QPE for E(S1) at 0.5 mHa (0.014 eV, about a fifth of the factor-2 gap budget) is added once per dye; its error
-enters as a systematic gap error, not as statistics.
+One QPE for E(S1) at 0.1 mHa (0.0027 eV, 1/30 of the 0.08 eV gap budget and 1/6 of the 0.016 eV near-resonant
+tolerance) is added once per dye; its error enters as a systematic gap error, not as statistics.
 A channel-resolved baseline is also costed: QPE for each triplet channel that carries >= 1% of k_ISC, plus amplitude
-estimation of V_n^2 through a T_n eigenstate filter (width = distance to the nearest other triplet), with the
-golden rule evaluated classically.
+estimation of V_n^2 through a T_n eigenstate filter (the same degree model with the line width replaced by the
+distance to the nearest other triplet), with the golden rule evaluated classically.
 
 Electronic inputs per dye (k_ISC, k_r, k_ic) come from the TDDFT/DeltaSCF pipeline; alpha_SO from the CAS(12,11)
 SOC integrals.
@@ -67,9 +73,10 @@ RES = ROOT / "paper" / "quantum" / "results"
 
 # --------------------------------------------------------------------------- cost model (CAS(12,11), THC)
 N_ORB = 11
-# Ha, one-norm (BODIPY core CAS(12,11), double factorization). Set PSSCREEN_LAMBDA to test another value, e.g.
-# 37.5 (unregularized THC fit at rank 33, paper/quantum/thc_error.py); outputs then get a _lambda<value> suffix.
-LAMBDA = float(os.environ.get("PSSCREEN_LAMBDA", 15.9))
+# Ha, one-norm of the regularized rank-33 THC fit of the BODIPY core CAS(12,11) (paper/quantum/thc_regularized.py;
+# double factorization gives 15.9). Set PSSCREEN_LAMBDA to test another value, e.g. 37.5 (unregularized THC fit,
+# paper/quantum/thc_error.py); outputs then get a _lambda<value> suffix.
+LAMBDA = float(os.environ.get("PSSCREEN_LAMBDA", 17.3))
 SUFFIX = "" if "PSSCREEN_LAMBDA" not in os.environ else f"_lambda{LAMBDA:g}"
 _dc = json.loads((RES / "degree_check.json").read_text())
 SHIFT = _dc["bodipy_core_cas12_11"]["abs_E0_minus_c0_Ha"]
@@ -82,16 +89,30 @@ GAMMA2 = 0.5                    # assumed overlap of the sum-of-Slaters state wi
 DELTA21_HA = 0.5 / HA_EV        # S1-S2 gap used for the S1 eigenstate filter (spin-adapted trial state)
 EPS_S = 1e-3
 DELTA_HA = math.sqrt(2 * P.lambda_s * KB_EV * P.T) / HA_EV
-EPS_E_HA = 0.5e-3               # QPE precision for the filter centre: ~1/5 of the factor-2 gap budget
+EPS_E_HA = 0.1e-3               # QPE precision for the filter centre: 0.0027 eV, 1/30 of the 0.08 eV budget and 1/6 of
+                                # the 0.016 eV near-resonant tolerance
+F_IND = 2.0                     # D2 indifference zone: k within a factor F_IND of the threshold is not decided
 TOFFOLI_RATE = 1e6              # Toffolis per second, for wall-clock estimates
 DELTA_CONF = 0.05               # failure probability per decision
 R_D1 = 0.2
 XANADU = {"isc_toffoli_per_shot": 7.96e7, "isc_shots": 483, "tp_toffoli_per_shot": 2.72e7, "tp_shots": 133}
 
-# degree slope s(eps) = a ln(1/eps) + b from our own filters
-_le = np.array([math.log(1 / float(k)) for k in _dc["fits"]])
-_sl = np.array([v["slope"] for v in _dc["fits"].values()])
-DEG_A, DEG_B = np.polyfit(_le, _sl, 1)
+# degree slope s(eps) = d / (alpha/Delta), computed directly on a grid eps = 1e-2 ... 1e-7 (degree_direct.py),
+# interpolated in ln(1/eps); below 1e-7 linear extrapolation from the last two points
+_dd = json.loads((RES / "degree_direct.json").read_text())
+_rk = "400" if len(_dd["ratios"].get("400", {}).get("slope", [])) == len(_dd["eps"]) else "200"
+_LE = np.array([math.log(1 / e) for e in _dd["eps"]])
+_SL = np.array(_dd["ratios"][_rk]["slope"])
+DEG_A, DEG_B = np.polyfit(_LE, _SL, 1)    # reported only (linear summary of the grid)
+
+
+def slope(eps_poly):
+    le = math.log(1 / min(eps_poly, 0.01))
+    if le <= _LE[-1]:
+        return float(np.interp(le, _LE, _SL))
+    return float(_SL[-1] + (_SL[-1] - _SL[-2]) / (_LE[-1] - _LE[-2]) * (le - _LE[-1]))
+
+
 _ae = json.loads((RES / "ae_demo.json").read_text())
 C_MLAE = _ae["c_mlae_q95"]      # eps_rel ~ C_MLAE / (sqrt(p) N_calls) at the confidence level of ae_demo
 
@@ -110,9 +131,8 @@ def c_so(n=N_ORB):
     return 3 * n * (n - 1) / 2 * BETH
 
 
-def degree(eps_poly):
-    eps_poly = min(eps_poly, 0.01)
-    return (DEG_A * math.log(1 / eps_poly) + DEG_B) * LAMBDA_P / DELTA_HA
+def degree(eps_poly, width_ha=DELTA_HA):
+    return slope(eps_poly) * LAMBDA_P / width_ha
 
 
 def c_call(eps_poly):
@@ -156,8 +176,41 @@ def kl(a, b):
 
 
 def sprt_calls(p, p_th):
-    """Wald SPRT, H0: p = p_th vs the true p, error delta on both sides; expected number of trials."""
+    """Wald SPRT, H0: p = p_th vs the true p, error delta on both sides; expected number of trials (oracle margin)."""
     return max(math.log((1 - DELTA_CONF) / DELTA_CONF) / kl(p, p_th), 1.0)
+
+
+def sprt_zone_calls(p, p0, p1, delta=DELTA_CONF):
+    """Wald SPRT of H0: p <= p0 against H1: p >= p1 (indifference zone p0 < p < p1), errors delta, evaluated at the
+    true p with Wald's approximations for the operating characteristic L(p) and the average sample number. Needs no
+    knowledge of the margin."""
+    lnA, lnB = math.log((1 - delta) / delta), math.log(delta / (1 - delta))
+    zs, zf = math.log(p1 / p0), math.log((1 - p1) / (1 - p0))
+    drift = p * zs + (1 - p) * zf
+    var = p * zs ** 2 + (1 - p) * zf ** 2 - drift ** 2
+    if abs(drift) < 1e-12 * var ** 0.5:
+        return -lnA * lnB / var
+    # h != 0 with p (p1/p0)^h + (1-p) ((1-p1)/(1-p0))^h = 1, on the side opposite to the drift
+    from scipy.optimize import brentq
+    g = lambda h: p * math.expm1(h * zs) + (1 - p) * math.expm1(h * zf)  # noqa: E731
+    sgn = 1.0 if drift < 0 else -1.0
+    H = 1.0
+    while g(sgn * H) < 0:
+        H *= 2
+    h = brentq(g, sgn * 1e-9 * H, sgn * H) if sgn > 0 else brentq(g, sgn * H, sgn * 1e-9 * H)
+    Ah, Bh = math.expm1(h * lnA), math.expm1(h * lnB)
+    L = Ah / (Ah - Bh)          # probability of accepting H0
+    return max((L * lnB + (1 - L) * lnA) / drift, 1.0)
+
+
+def z_two_sided(delta):
+    from scipy.stats import norm
+    return float(norm.isf(delta / 2))
+
+
+def adaptive_stages(theta, dth):
+    """Number of precision-halving stages from dth_0 = theta (or pi/4) down to dth."""
+    return max(1, math.ceil(math.log2(max(min(theta, math.pi / 4), dth) / dth)) + 1)
 
 
 # --------------------------------------------------------------------------- dyes
@@ -196,7 +249,7 @@ def channel_route(d, alpha_cm, r=R_D1):
         rn = r * k / c["k"] if len(dom) > 1 else r      # share of the relative error
         rn = min(rn, 0.5)
         eps = rn * math.sqrt(pn) / 4
-        d_tn = LAMBDA_P / gap * math.log(1 / eps)
+        d_tn = degree(eps, gap)               # same degree model, with the line width replaced by the gap
         cc = c_s1() + c_so() + d_tn * C_WALK
         calls = mlae_calls(pn, r=rn)
         cost = calls * cc + c_qpe_s1()
@@ -233,16 +286,46 @@ def analyse_one(name, d, r=R_D1):
         out["D2"] = {"free": True, "toffoli_best": 0.0}
     elif p < 1:
         marg = abs(p - p_th) / p
+        # (a) oracle margin, as in the first version: resolution |theta - theta_th|
         epsp = max(abs(p - p_th) / (4 * math.sqrt(p)), 1e-15)
         cc = c_call(epsp)
-        e = {"free": False, "margin_rel": marg, "degree": degree(epsp), "C_call": cc,
-             "calls_sampling": sprt_calls(p, p_th), "calls_mlae": mlae_calls(p, p_th=p_th),
-             "calls_canonical": canonical_calls(p, abs(p - p_th))}
+        e = {"free": False, "margin_rel": marg, "oracle": {
+            "degree": degree(epsp), "C_call": cc, "calls_sampling": sprt_calls(p, p_th),
+            "calls_mlae": mlae_calls(p, p_th=p_th), "calls_canonical": canonical_calls(p, abs(p - p_th))}}
         for k_ in ("sampling", "mlae", "canonical"):
-            e["toffoli_" + k_] = e["calls_" + k_] * cc + qpe
+            e["oracle"]["toffoli_" + k_] = e["oracle"]["calls_" + k_] * cc + qpe
+        # (b) indifference zone k_th/F < k < k_th F, margin unknown. Sampling: SPRT between the zone edges.
+        # Amplitude estimation: precision halved stage by stage until the confidence interval excludes one edge,
+        # i.e. final angle precision dth = max(theta - theta0, theta1 - theta)/2; each stage at confidence
+        # delta/L (L stages), the MLAE constant scaled by the two-sided normal quantile z(delta/L)/z(delta);
+        # total calls <= 2x the last stage (geometric schedule).
+        p0, p1 = p_th / F_IND, min(p_th * F_IND, 0.999)
+        th, th0, th1 = (math.asin(math.sqrt(v)) for v in (p, p0, p1))
+        dth = max(th - th0, th1 - th) / 2
+        L = adaptive_stages(th, dth)
+        zfac = z_two_sided(DELTA_CONF / L) / z_two_sided(DELTA_CONF)
+        eps_z = max(dth / 2, 1e-15)                 # amplitude error of the polynomial below dth/2
+        ccz = c_call(eps_z)
+        mlae_z = 2 * max(C_MLAE * zfac / (2 * dth), 100.0)
+        nrep_L = math.ceil(math.log(L / DELTA_CONF) / (2 * (8 / math.pi ** 2 - 0.5) ** 2))
+        dp = math.sin(th + dth) ** 2 - p
+        canon_z = 2 * canonical_calls(p, dp) * nrep_L / N_REP
+        inside = bool(p0 < p < p1)
+        e["zone"] = {"F": F_IND, "inside": inside, "stages": L, "z_factor": zfac, "degree": degree(eps_z),
+                     "C_call": ccz, "calls_sampling": sprt_zone_calls(p, p0, p1), "calls_mlae": mlae_z,
+                     "calls_canonical": canon_z}
+        for k_ in ("sampling", "mlae", "canonical"):
+            e["zone"]["toffoli_" + k_] = e["zone"]["calls_" + k_] * ccz + qpe
+        # headline numbers: the indifference-zone test (no oracle margin)
+        z = e["zone"]
+        e.update({"degree": z["degree"], "C_call": ccz, "calls_sampling": z["calls_sampling"],
+                  "calls_mlae": z["calls_mlae"], "calls_canonical": z["calls_canonical"],
+                  "toffoli_sampling": z["toffoli_sampling"], "toffoli_mlae": z["toffoli_mlae"],
+                  "toffoli_canonical": z["toffoli_canonical"], "inside_zone": inside})
         e["toffoli_best"] = min(e["toffoli_sampling"], e["toffoli_mlae"])
+        e["toffoli_oracle_best"] = min(e["oracle"]["toffoli_sampling"], e["oracle"]["toffoli_mlae"])
         e["days_best"] = e["toffoli_best"] / TOFFOLI_RATE / 86400
-        e["ratio_to_per_call"] = e["toffoli_best"] / cc
+        e["ratio_to_per_call"] = e["toffoli_best"] / ccz
         out["D2"] = e
     return out
 
@@ -311,23 +394,26 @@ def main():
                  f"{fmt(e['channel_route']['toffoli'])} ({len(e['channel_route']['channels'])} ch.) |")
     L += ["", "## D2: is Φ_T above 0.5 (k_ISC > k_r + k_ic)?", "",
           "| Dye | k_ISC / threshold | p | p_th | calls, sampling (SPRT) | calls, MLAE | Toffolis, sampling | "
-          "Toffolis, MLAE | best | total/per call |", "|---|---|---|---|---|---|---|---|---|---|"]
+          "Toffolis, MLAE | Toffolis, canonical | best | inside zone | best, oracle margin | total/per call |",
+          "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in rows:
         e = r.get("D2")
         if e is None:
             continue
         if e["free"]:
             L.append(f"| {r['name']} | {r['k_isc']/r['k_threshold']:.1e} | {r['p']:.1e} | {r['p_th']:.1e} | "
-                     "0 (K′ < threshold) | 0 | 0 | 0 | 0 | 0 |")
+                     "0 (K′ < threshold) | 0 | 0 | 0 | 0 | 0 | no | 0 | 0 |")
             continue
         L.append(f"| {r['name']} | {r['k_isc']/r['k_threshold']:.1e} | {r['p']:.1e} | {r['p_th']:.1e} | "
                  f"{e['calls_sampling']:.1e} | {e['calls_mlae']:.1e} | {fmt(e['toffoli_sampling'])} | "
-                 f"{fmt(e['toffoli_mlae'])} | {fmt(e['toffoli_best'])} | {e['ratio_to_per_call']:.1e} |")
+                 f"{fmt(e['toffoli_mlae'])} | {fmt(e['toffoli_canonical'])} | {fmt(e['toffoli_best'])} | "
+                 f"{'yes' if e['inside_zone'] else 'no'} | {fmt(e['toffoli_oracle_best'])} | {e['ratio_to_per_call']:.1e} |")
     nrep100 = math.ceil(math.log(100 / DELTA_CONF) / (2 * (8 / math.pi ** 2 - 0.5) ** 2))
     L += ["", f"δ = {DELTA_CONF} per decision. For a campaign of N dyes with a family-wise error δ, replace δ by δ/N. "
           f"For canonical QAE (median of runs) this raises the number of runs from {N_REP} to {nrep100} for N = 100 "
-          f"(×{nrep100/N_REP:.1f}); for MLAE the tail has not been characterized. The D2 call counts assume that the "
-          "margin to the threshold is known (an oracle margin); an adaptive test adds a logarithmic overhead. "
+          f"(×{nrep100/N_REP:.1f}); for MLAE the tail has not been characterized. D2 uses an indifference zone of a factor "
+          f"{F_IND:g} around the threshold and no knowledge of the margin (dyes marked 'inside' may return either class); "
+          "the oracle-margin costs of the first version are kept in the json (D2.oracle). "
           "With r = 0.4 instead of 0.2 the D1 MLAE costs halve. Sensitivity: γ² = 0.1 / 0.9 multiplies the calls by "
           f"{math.sqrt(0.5/0.1):.2f} / {math.sqrt(0.5/0.9):.2f}; an S1 filter gap of 0.1 eV instead of 0.5 eV "
           f"(no spin-adapted trial state) raises C_S1 from {c_s1():.1e} to {c_s1(0.1/HA_EV):.1e}."]
@@ -335,6 +421,48 @@ def main():
     print("\n".join(L))
     if not SUFFIX:
         fig(rows)
+        latex_table(rows)
+
+
+TABLE_DYES = ["BDP", "I-BDP", "I2-BDP", "I3-BDP", "I2-BDP-0", "Br2-BDP", "azaBDP_Br2", "azaBDP_IPh2"]
+TEX_NAME = {"azaBDP_Br2": "aza-BDP-Br$_2$", "azaBDP_IPh2": "aza-BDP-IPh$_2$"}
+
+
+def _tex(x, sig=2):
+    if x == 0:
+        return "0"
+    e = int(math.floor(math.log10(abs(x))))
+    m = x / 10 ** e
+    if round(m, sig - 1) >= 10:
+        m, e = m / 10, e + 1
+    return f"${m:.{sig-1}f}\\times10^{{{e}}}$"
+
+
+def _plain(x):
+    if 0.01 <= x < 1:
+        return f"{x:.2f}"
+    if 1 <= x < 10:
+        return f"{x:.1f}"
+    if 10 <= x < 1000:
+        return f"{x:.0f}"
+    return _tex(x, 1)
+
+
+def latex_table(rows):
+    """Body rows of Table 2 of the paper (paper/quantum/results/decision_table.tex)."""
+    by = {r["name"]: r for r in rows}
+    out = []
+    for n in TABLE_DYES:
+        r = by[n]
+        d1 = r.get("D1") if r["k_isc"] >= 1e6 else None
+        e2 = r["D2"]
+        d2 = "0" if e2.get("free") else _tex(e2["toffoli_best"]) + ("$^a$" if e2["inside_zone"] else "")
+        cells = [TEX_NAME.get(n, n), f"{r['alpha_so_cm']:.0f}", _plain(r["v_eff_cm"]),
+                 _plain(r["k_isc"] / r["k_threshold"]), _tex(r["p"]),
+                 _tex(d1["toffoli_mlae"]) if d1 else "--", _tex(d1["toffoli_canonical"]) if d1 else "--",
+                 _tex(d1["channel_route"]["toffoli"]) if d1 else "--", d2]
+        out.append("    " + " & ".join(cells) + " \\\\")
+    (RES / "decision_table.tex").write_text("% generated by paper/quantum/decision_cost.py\n" + "\n".join(out) + "\n")
 
 
 def fig(rows):

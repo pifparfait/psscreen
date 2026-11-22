@@ -159,34 +159,46 @@ Figure~\ref{fig:cas}); SA-CASSCF over three singlets with CASCI triplets on the 
 
 \paragraph{Cost of one call.} For the (12e,11o) active space with THC qubitization, one call costs
 $C = C_{\mathrm{S}_1} + C_\mathrm{SO} + d\,C_\mathrm{walk}$. $C_\mathrm{walk}=3.25\times10^{3}$ Toffolis per
-walk step comes from PennyLane's THC estimator (rank 33). The filter degree $d=(0.55\ln(1/\varepsilon)-0.11)\,\lambda'/\Delta$
-is fitted to our own Chebyshev filters, with $\Delta=\sqrt{2\lambda_sk_BT}$ the MLJ width, polynomial precision
-$\varepsilon=r\sqrt p/4$, and $\lambda'=\lambda+\lvert E_0-c_0\rvert=19.4$~Ha the normalization of the shifted
-operator ($c_0$ is the identity coefficient); a direct evaluation at the precisions used gives degrees 7--10\%
-higher than the fit.
+walk step comes from PennyLane's THC estimator (rank 33). The filter degree is $d=s(\varepsilon)\,\lambda'/\Delta$,
+with $\Delta=\sqrt{2\lambda_sk_BT}$ the MLJ width and $\lambda'=\lambda+\lvert E_0-c_0\rvert=20.8$~Ha the
+normalization of the shifted operator ($\lambda=17.3$~Ha from the regularized THC fit, $c_0$ the identity
+coefficient). The slope $s(\varepsilon)$ is the smallest even degree of our own Chebyshev filter that reaches a
+uniform error $\varepsilon$, divided by $\alpha/\Delta$; it is computed directly for
+$\varepsilon=10^{-2}$--$10^{-7}$ at $\alpha/\Delta=200$ and 400 (the two agree within 7\%; we use 400) and
+rises from 2.6 to 9.7 over that range (script \texttt{degree\_direct.py}). Below $10^{-8}$ the target
+$\sqrt\rho$ reaches the double-precision noise of $\rho$ and the degree is not meaningful; no reported cost
+needs it. The polynomial precision is $\varepsilon=r\sqrt p/4$ for D1 and half the final angle precision for D2.
 
 \paragraph{S$_1$ preparation.} S$_1$ is prepared as a spin-adapted sum of $10^{4}$ configuration state
 functions (an assumption), so that the triplet components that a spin-free eigenstate filter cannot reject are
 absent by construction, followed by an eigenstate filter for a 0.5~eV S$_1$--S$_2$ gap
-($C_{\mathrm{S}_1}=2.4\times10^{7}$ Toffolis). The filter succeeds with probability $\gamma^2$, the overlap of
+($C_{\mathrm{S}_1}=2.6\times10^{7}$ Toffolis). The filter succeeds with probability $\gamma^2$, the overlap of
 the trial state with S$_1$ (assumed 0.5); its flag is part of the good state, so the estimators see $\gamma^2p$
-and the number of calls scales as $1/\gamma$. One phase estimation of $E(\mathrm{S}_1)$ to 0.5~mHa
-($4.4\times10^{8}$ Toffolis, a sixth of the factor-2 gap budget) fixes the filter centre once per dye.
+and the number of calls scales as $1/\gamma$. One phase estimation of $E(\mathrm{S}_1)$ to 0.1~mHa
+($2.2\times10^{9}$ Toffolis; 0.003~eV, a sixth of the 0.016~eV tolerance of a near-resonant channel) fixes the
+filter centre once per dye.
 
 \paragraph{Estimators.} Direct sampling of the success flag uses the Dagum--Karp--Luby--Ross stopping rule for
-D1 and Wald's sequential probability ratio test for D2. MLAE needs neither phase estimation nor a controlled
+D1 and, for D2, Wald's sequential probability ratio test between the edges of an indifference zone
+$k_\mathrm{th}/2<\kisc<2k_\mathrm{th}$, with its expected sample number from Wald's approximations at the true
+$p$; this test needs no knowledge of the margin. MLAE needs neither phase estimation nor a controlled
 walk; its constant ($\varepsilon_\mathrm{rel}\sqrt p\,N_\mathrm{calls}=45$) is the empirical value of the
 simulation in Figure~\ref{fig:ae}. Canonical amplitude estimation uses the rigorous Brassard bound on a
-power-of-two grid with the median of 16 runs. The D2 call counts assume that the margin to the threshold is
-known.
+power-of-two grid with the median of 16 runs. For D2 both amplitude estimators refine their angle precision in
+$L$ halving stages until the confidence interval excludes one edge of the zone (final precision
+$\max(\theta-\theta_0,\theta_1-\theta)/2$), at confidence $0.05/L$ per stage: for canonical estimation the
+number of runs grows accordingly, and for MLAE the constant is scaled by the ratio of the two-sided normal
+quantiles (an assumption; the MLAE tail was characterized only at 0.95). The geometric schedule at most doubles
+the calls of the last stage. Compared with a test that knows the margin, this costs 2--5 times more outside the
+zone.
 
 \paragraph{Channel-resolved route.} Every triplet that carries at least 1\% of $\kisc$ is located by phase
 estimation, and its coupling $V_n^2$ is estimated by amplitude estimation through a T$_n$ eigenstate filter
-whose width is the distance to the nearest other triplet; the golden rule is then evaluated classically.
+whose width is the distance to the nearest other triplet, with the degree of our filter at that width; the golden rule is then evaluated classically.
 
 \paragraph{Sensitivities.} A factor 10 in $\kisc$ changes the D1 cost by a factor of about 3. $\gamma^2=0.1$ or
 0.9 multiplies the number of calls by 2.24 or 0.75, and an S$_1$ filter gap of 0.1~eV instead of 0.5~eV raises
-$C_{\mathrm{S}_1}$ to $1.2\times10^{8}$ Toffolis.
+$C_{\mathrm{S}_1}$ to $1.3\times10^{8}$ Toffolis.
 
 \paragraph{Amplitude-estimation simulation.} On the filter circuit for the BODIPY core (CAS(4,4), $M_S=1$,
 $p=5.6\times10^{-6}$), the good-state probability after $m$ Grover iterations follows $\sin^2((2m+1)\theta)$ to

@@ -33,7 +33,10 @@ a = ap.parse_args()
 OUT = os.path.join(ROOT, "paper", "quantum", "results", f"{a.name}.thc_regularized.json")
 EPS = 1e-8
 
-sym, xyz = read_xyz(os.path.join(ROOT, "validation", "runs", f"{a.name}.xyz"))
+_xyz = os.path.join(ROOT, "validation", "runs", f"{a.name}.xyz")
+if not os.path.exists(_xyz):
+    _xyz = os.path.join(ROOT, "screening", "runs", "candidates_round1", f"{a.name}.xyz")
+sym, xyz = read_xyz(_xyz)
 atom = to_pyscf_atom(sym, xyz)
 mol = gto.M(atom=atom, basis="def2-svp", ecp=_ecp(atom, "def2-svp"), verbose=0)
 mf = dft.RKS(mol, xc="b3lyp").density_fit()
