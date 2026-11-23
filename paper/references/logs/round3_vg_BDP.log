@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "/home/parfait/psscreen-paper/paper/references/run_vertical_gradients.py", line 41, in <module>
-    sym, xyz = read_xyz(geo)
-               ^^^^^^^^^^^^^
-  File "/home/parfait/psscreen-paper/psscreen/geometry.py", line 44, in read_xyz
-    lines = open(path).read().splitlines()
-            ^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: '/home/parfait/psscreen-paper/paper/references/results/BDP.adiabatic_S0.xyz'
