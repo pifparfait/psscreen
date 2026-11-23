@@ -433,3 +433,4 @@ max_memory 50000 MB (current use 13771 MB)
 
 Excitation energies (eV)
 [1.2045428  2.21058663 2.50738571 2.6784562  2.82685209]
+somf V(S1,Tn) cm-1: [ 0.46   3.476 30.844  6.589  3.022]
