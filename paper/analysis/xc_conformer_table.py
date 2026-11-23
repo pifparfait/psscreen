@@ -1,8 +1,8 @@
 """SI table: functional (B3LYP, PBE0, BHandHLYP; Delta-SCF S1/T1 in each) and conformer dependence.
 
 Reads validation/runs (B3LYP), validation/runs_xc/<xc> (from the tars XC scan, validation/run_xc_scan.py) and the
-three xTB conformers of the distyryl dyes in validation/runs/set3 (validation/conformers.py; conformer c1 of BDP-0
-and I-BDP-0 has no result). Usage (repository root): python paper/analysis/xc_conformer_table.py
+three xTB conformers of the distyryl dyes in validation/runs/set3 (validation/conformers.py).
+Usage (repository root): python paper/analysis/xc_conformer_table.py
 Output: paper/si_xc_conf.tex
 """
 from __future__ import annotations
@@ -54,7 +54,7 @@ def main():
     T += [r"    \bottomrule", r"  \end{tabular}", r"\end{table}", "",
           r"\begin{table}",
           r"  \caption{xTB conformers of the distyryl dyes (B3LYP/$\Delta$SCF): S$_1$ (eV), $\kisc$ (s$^{-1}$) and $\Phi_T$.",
-          r"  Conformer c0 is the one used in the main text; c1 of BDP-0 and I-BDP-0 has no result. Script",
+          r"  Conformer c0 is the one used in the main text. Script",
           r"  \texttt{validation/conformers.py}.}",
           r"  \label{tab:conf}",
           r"  \small",

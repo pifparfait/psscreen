@@ -139,10 +139,11 @@ S$_1$ summed over T$_1$--T$_4$, $\sum_n V_n^2$, agrees with the effective operat
 of individual channels do not. $V_1$ of I2-BDP, the channel that
 carries its rate, is \SI{22.2}{cm^{-1}} instead of \SI{13.2}{cm^{-1}}, 2.8 times more rate, and $V_2$ of
 I2-BDP-0 is \SI{3.5}{cm^{-1}} instead of \SI{8.0}{cm^{-1}}, five times less rate in that channel. The one-electron Breit--Pauli operator on the same all-electron states gives
-$V_1=\SI{23.6}{cm^{-1}}$, close to SOMF, so the difference comes mainly from the states and the basis rather than
-from two-electron screening. We keep the
-effective operator for all dyes; the difference between the two operators makes the computed rates
-uncertain by a factor of about 3. The ISC
+$V_1=\SI{23.6}{cm^{-1}}$, close to SOMF, and our effective operator, recalibrated on the free atoms in the same
+all-electron basis and evaluated on the same states, gives $V_1=\SI{20.7}{cm^{-1}}$ and every I2-BDP channel within
+7\% of SOMF (16\% for the weak T$_4$). The operator is therefore not the problem: the channel-by-channel
+difference comes from the states, that is from the ECP and basis of the pipeline. We keep the pipeline
+treatment for all dyes; this difference makes the computed rates uncertain by a factor of about 3. The ISC
 rate is the golden rule~\cite{Baryshnikov2017} with a Marcus--Levich--Jortner (MLJ) Franck--Condon weighted density of
 states~\cite{Jortner1976}, summed over all triplets:
 \begin{equation}
@@ -337,7 +338,7 @@ $\kisc=1.7\times10^{7}$~s$^{-1}$, 26 times below experiment, and $\Phi_T=0.04$ i
 uncorrected TDDFT spectrum T$_2$ lies 0.08~eV above S$_1$ with 8~cm$^{-1}$ of SOC, which gives
 $\kisc=1.1\times10^{9}$~s$^{-1}$ and $\Phi_T=0.67$, close to experiment; the $\Delta$SCF step lowers S$_1$
 by 0.46~eV but the triplets only by the 0.02~eV correction of T$_1$, and closes that channel. The three xTB conformers of I2-BDP-0 change its $\kisc$ by less than a factor of 1.5; those of BDP-0 and I-BDP-0
-change it by factors of 36 and 3, at rates below $10^{6}$~s$^{-1}$ (Table~S13). Across
+change it by factors of 47 and 3, at rates below $10^{6}$~s$^{-1}$ (Table~S13). Across
 our treatments T$_2$ lies 0.08 (uncorrected B3LYP), 0.12 (BHandHLYP/$\Delta$SCF), 0.44 (PBE0/$\Delta$SCF),
 0.51 (B3LYP/$\Delta$SCF), 0.54 (canonical-window SA-CASSCF/SC-NEVPT2) and 0.72~eV (AVAS $\pi$-space SC-NEVPT2)
 above S$_1$, and 0.28--0.33~eV above the experimental S$_1$ with B3LYP, PBE0 or BHandHLYP. Its position is therefore uncertain by about 0.4~eV, 25 times
