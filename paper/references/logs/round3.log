@@ -21,3 +21,4 @@ finished pi_I2-BDP_dft (exit 1)
 started conf_c1
 finished conf_c1 (exit 0)
 finished soc_I2-BDP (exit 0)
+finished soc_I2-BDP-0 (exit 0)
