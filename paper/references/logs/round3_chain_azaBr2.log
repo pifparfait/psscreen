@@ -1,0 +1,1 @@
+xTB geometry: {'E_S0_Ha': np.float64(-6766.9977645195295), 'E_T1_Ha': np.float64(-6766.95649473546), 'E_S1_Ha': np.float64(-6766.931456222898), 'S1_minus_T1_eV': np.float64(0.6813326363462773), 'S1_vert_eV': np.float64(1.80434067094452), 'T1_vert_eV': np.float64(1.1230080345982427)}
