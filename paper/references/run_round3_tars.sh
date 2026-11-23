@@ -34,8 +34,10 @@ JOBLIST=(
 )
 
 push() {
-  git add -f paper/references/results/*.json paper/references/results/*.npz paper/references/results/*.xyz \
-            paper/references/results/*.log validation/runs/set3/*.json validation/runs/set3/*.log 2>/dev/null
+  for f in paper/references/results/*.json paper/references/results/*.npz paper/references/results/*.xyz \
+           paper/references/results/*.log validation/runs/set3/*.json validation/runs/set3/*.log; do
+    [ -e "$f" ] && git add -f "$f"
+  done
   if git diff --cached --quiet; then return 0; fi
   git -c user.name="Parfait" -c user.email="26543855+pifparfait@users.noreply.github.com" \
     commit -q -m "Add round-3 review calculations: $1 ($(date -u +%Y-%m-%d))"
