@@ -1,0 +1,7 @@
+{
+ "name": "BDP",
+ "method": "B3LYP/def2-SVP DF, grid 3, analytic",
+ "E_S0_Ha": -1068.9443663336438,
+ "max_abs_grad_Ha_bohr": 0.0005544706365103735,
+ "time_s": 49454.27121067047
+}

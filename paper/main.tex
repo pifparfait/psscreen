@@ -44,8 +44,8 @@ dyes with measured photophysics. With a Marcus--Levich--Jortner model, a factor-
 (ISC) rate requires singlet--triplet gaps accurate to about 0.08~eV in a single-mode line shape (0.03--0.13~eV over plausible
 reorganization energies), and to 0.016~eV, close to $k_BT\ln2$, through a near-resonant upper triplet, as for the top
 candidate of a screening round. A B3LYP/$\Delta$SCF pipeline
-reproduces the one independent measured rate of the compact iodinated dyes within a factor of 2, but only with an
-assumed reorganization energy about twice the computed one and an effective spin--orbit operator, and it fails for
+reproduces the one independent measured rate of the compact iodinated dyes within a factor of 2, with an assumed reorganization energy twice the energy-based estimate but 1.3 times a harmonic multimode one, and with an
+effective spin--orbit operator, and it fails for
 the one $\pi$-extended dye with a measured rate. A (12e,11o) window of canonical orbitals has a summed dipyrrin $\pi$ weight of only 2.2--6.7 out of
 11; in an AVAS-selected $\pi$ space, SA-CASSCF/SC-NEVPT2 still overestimates the measured
 S$_1$--T$_1$ gaps by about 0.35~eV. We implement the golden-rule rate as a QSVT spectral filter, verify its polynomial in simulation,
@@ -161,7 +161,8 @@ and I2-BDP the vertical and adiabatic S$_1$--T$_1$ gaps differ by $+0.03$ and $-
 (Section~\ref{sec:baseline}), well inside the tolerance of Section~\ref{sec:budget}, so we use vertical gaps for
 all dyes. The same optimizations give an S$_1\leftrightarrow$T$_1$ reorganization energy (the energy of T$_1$ at
 the S$_1$ minimum above that at the T$_1$ minimum, and vice versa) of 0.09~eV for BDP and 0.12~eV for I2-BDP, about
-half of $\lambda_s+S\hbar\omega$; the consequences for the rates are given in Section~\ref{sec:baseline}. The radiative rate follows from the oscillator
+half of $\lambda_s+S\hbar\omega$, while projecting the same displacement on the S$_0$ normal modes gives 0.13 and
+0.19~eV (SI Section~S12); the consequences for the rates are given in Section~\ref{sec:baseline}. The radiative rate follows from the oscillator
 strength~\cite{Strickler1962} with the refractive index of toluene, $n=1.496$ ($2.0$--$2.9\times10^{8}$~s$^{-1}$ for BDP and I2-BDP against
 $1.2$--$1.3\times10^{8}$~s$^{-1}$ measured), the internal-conversion rate is fixed for all dyes at the value measured for
 BDP, $k_\mathrm{ic}=1.5\times10^{8}$~s$^{-1}$~\cite{Ly2021} (the measured non-radiative rate of I2-BDP is
@@ -305,8 +306,16 @@ $3\times10^{11}$~s$^{-1}$ for I2-BDP and $\Phi_T=0.47$ for BDP, where no ISC is 
 (0.05--0.2~eV) and $S$ (0.5--1.2) moves $\kisc$(I2-BDP) within $1.7\times10^{9}$--$2.5\times10^{10}$~s$^{-1}$. With
 line-shape parameters consistent with the computed reorganization energy ($\lambda_s+S\hbar\omega\approx0.12$~eV,
 for example $\lambda_s=0.05$~eV and $S=0.4$), $\kisc$(I2-BDP) is $0.6$--$9\times10^{8}$~s$^{-1}$, 4--60 times below
-experiment, and $1.8\times10^{8}$--$2.6\times10^{9}$~s$^{-1}$ with the SOMF coupling. The factor-2 agreement
-therefore comes from a compensation between the assumed line shape and the coupling and does not validate either.
+experiment, and $1.8\times10^{8}$--$2.6\times10^{9}$~s$^{-1}$ with the SOMF coupling. A multimode line shape
+built without fitted parameters points the other way: projecting the displacement between the $\Delta$SCF S$_1$
+and T$_1$ minima on the B3LYP S$_0$ normal modes (displaced harmonic oscillators, Kubo line shape at 298~K, script
+\texttt{fcwd\_multimode.py}, SI Section~S12) gives an S$_1\leftrightarrow$T$_1$ reorganization energy of 0.19~eV
+for I2-BDP (0.13~eV for BDP), carried by C--C and C--N stretches at 1100--1600~cm$^{-1}$ with a total Huang--Rhys
+factor of 1.2, close to the assumed effective mode, and $\kisc=4.1\times10^{9}$~s$^{-1}$ in the gas phase and
+$0.8$--$1.1\times10^{10}$~s$^{-1}$ with an outer-sphere term of 0.05--0.10~eV. The harmonic reorganization energy is
+1.5 times the energy-based one, so the line shape is uncertain by about that much in $\lambda$ and by up to an
+order of magnitude in $\kisc$; within that range the factor-2 agreement may come from a compensation between line
+shape and coupling and does not validate either.
 
 \begin{table}
   \caption{Triplet photophysics (B3LYP/$\Delta$SCF). $V_1$ is the S$_1$--T$_1$ SOC; rates in s$^{-1}$.
@@ -677,8 +686,9 @@ matter, for example the heavy-atom one-centre terms; the part $\lVert\chi\rVert/
 I2-BDP) is the off-resonant weight that the filter removes, and only a channel-resolved route avoids it.
 
 \paragraph{Limitations.} The benchmark has nine dyes from one family and three measured ISC rates, two
-for nearly identical dyes, and the factor-2 agreement holds for B3LYP (PBE0 is within a factor of 2.4; BHandHLYP fails) and only with a line shape whose
-reorganization energy is about twice the computed one; $k_r$ and $k_\mathrm{ic}$ are not the measured values. We used def2-SVP (def2-TZVP for two NEVPT2 checks), GFN2-xTB
+for nearly identical dyes, and the factor-2 agreement holds for B3LYP (PBE0 is within a factor of 2.4; BHandHLYP fails) and with a line shape whose
+reorganization energy (0.24~eV) is twice the energy-based estimate and 1.3 times the harmonic multimode one, which
+alone leaves an order of magnitude in $\kisc$; $k_r$ and $k_\mathrm{ic}$ are not the measured values. We used def2-SVP (def2-TZVP for two NEVPT2 checks), GFN2-xTB
 geometries, one conformer, the gas phase and vertical energies (the adiabatic check covers S$_1$--T$_1$ of BDP and
 I2-BDP, not the near-resonant S$_1$--T$_2$ channel of aza-BDP-Br$_2$, whose relaxation is untested); the SOC model matches an all-electron SOMF treatment for the summed coupling but not channel by
 channel (a factor of 2.8 in the rate of the dominant I2-BDP channel); triplets come from a windowed TDA
@@ -691,8 +701,10 @@ core.
 
 For BODIPY photosensitizers a factor-2 ISC rate needs singlet--triplet gaps to about 0.08~eV, and 0.016~eV
 through a near-resonant upper triplet, which makes the top screening candidate the most fragile prediction. A
-B3LYP/$\Delta$SCF pipeline reproduces the one independent measured rate of the compact iodinated dyes, but through a
-compensation between the assumed line shape and the spin--orbit coupling; neither it nor our multireference
+B3LYP/$\Delta$SCF pipeline reproduces the one independent measured rate of the compact iodinated dyes, with a line shape that a
+parameter-free multimode model reproduces to within a factor of 2 in the rate, although the reorganization energy is
+uncertain by a factor of 1.5 and the rate changes by a factor of 3--40 between spin--orbit operators, so the agreement does not yet
+validate the coupling; neither it nor our multireference
 calculations explain the one $\pi$-extended dye with a measured rate. On a fault-tolerant computer a screening
 decision costs $1\times10^{11}$--$7\times10^{15}$ Toffolis for a Hamiltonian that would reproduce the pipeline rates,
 set by the spin--orbit normalization and the distance to the threshold, with maximum-likelihood amplitude estimation
