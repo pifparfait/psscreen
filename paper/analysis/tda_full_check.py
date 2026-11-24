@@ -51,14 +51,18 @@ def main():
         t = json.loads(f.read_text())
         win, w20, full = t["window10"]["E_T_eV"], t["window20"]["E_T_eV"], t["full"]["E_T_eV"]
         n = min(len(win), len(full), 5)
-        dfull = {i + 1: full[i] - win[i] for i in range(n)}
-        d20 = {i + 1: w20[i] - win[i] for i in range(n)}
+        # The pipeline sets T_n = T_n(TDA) + [T1(DeltaSCF) - T1(TDA)], so a full TDA changes the gap of T_n by
+        # its own shift minus that of T1 (the DeltaSCF T1 stays fixed).
+        dfull_raw = {i + 1: full[i] - win[i] for i in range(n)}
+        dfull = {i: dfull_raw[i] - dfull_raw[1] for i in dfull_raw}
+        d20_raw = {i + 1: w20[i] - win[i] for i in range(n)}
+        d20 = {i: d20_raw[i] - d20_raw[1] for i in d20_raw}
         ctrl = max(abs(a - b) for a, b in zip(t["pipeline_E_T_eV"], win))
         d = load_run(name)
         base, new = rates(d, {}), rates(d, dfull)
         chans = {c["T"]: c["dE_eV"] for c in d["photophysics"]["channels"]}
         rows.append({"dye": name, "control_max_abs_eV": ctrl, "window": t.get("pipeline_window"),
-                     "dE_20_minus_10_eV": d20, "dE_full_minus_10_eV": dfull,
+                     "dE_20_minus_10_eV": d20, "dE_full_minus_10_eV": dfull, "dE_full_minus_10_raw_eV": dfull_raw,
                      "gap_T2_S1_pipeline_eV": chans.get(2), "gap_T2_S1_full_eV": chans.get(2, 0) + dfull[2],
                      "pipeline": {"k": base[0], "phi": base[1], "dom_T": base[2][0], "dom_dE": base[2][1]},
                      "full": {"k": new[0], "phi": new[1], "dom_T": new[2][0], "dom_dE": new[2][1]}})
@@ -79,10 +83,11 @@ def main():
         return f"${m}\\times10^{{{int(e)}}}$"
     T = [r"\section{Convergence of the triplet TDA window}",
          r"\begin{table}",
-         r"  \caption{Shift of T$_2$ and T$_3$ (eV) when the pipeline TDA window (10~eV, at most 40 occupied $\times$ 60",
+         r"  \caption{Shift of T$_2$ and T$_3$ relative to T$_1$ (eV) when the pipeline TDA window (10~eV, at most 40 occupied $\times$ 60",
          r"  virtual orbitals) is widened to 20~eV without caps and replaced by the full TDA (B3LYP/def2-SVP, same geometry),",
          r"  the resulting T$_2$--S$_1$ gap (eV), and $\kisc$ (s$^{-1}$) and $\Phi_T$ with every T$_{n\ge2}$ shifted by its",
-         r"  full-TDA correction. Scripts \texttt{paper/references/run\_tda\_full.py} and \texttt{paper/analysis/tda\_full\_check.py}.}",
+         r"  full-TDA correction minus that of T$_1$ (the pipeline anchors every T$_n$ to the $\Delta$SCF T$_1$, so a",
+         r"  window error common to all triplets cancels). Scripts \texttt{paper/references/run\_tda\_full.py} and \texttt{paper/analysis/tda\_full\_check.py}.}",
          r"  \label{tab:tdafull}",
          r"  \footnotesize\setlength{\tabcolsep}{3pt}",
          r"  \begin{tabular}{lrrrrrrll}",

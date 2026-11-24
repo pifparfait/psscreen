@@ -52,9 +52,11 @@ S$_1$--T$_1$ gaps by about 0.35~eV. We implement the golden-rule rate as a QSVT 
 and show that on bare active-space energies it ranks the dyes wrongly. Taking the pipeline rates as
 targets, a decision with tensor-hypercontraction qubitization needs $10^{3}$--$10^{7}$ calls of about
 $2\times10^{8}$ Toffolis, because the rate is a small fraction of the spin--orbit block-encoding norm:
-$10^{11}$--$10^{12}$ Toffolis for light-atom negatives and up to $6\times10^{14}$ to find that a dye lies within a
-factor of 2 of the triplet-yield threshold, with maximum-likelihood amplitude estimation up to 270 times cheaper
-than sampling for heavy-atom dyes. When one channel dominates, phase estimation
+$10^{11}$--$10^{12}$ Toffolis for light-atom negatives and up to $6\times10^{14}$ for a dye within a
+factor of 2 of the triplet-yield threshold, with maximum-likelihood amplitude estimation 4--140 times cheaper
+than sampling for the ISC-active heavy-atom dyes. These costs are for a (12e,11o) space that classical CASCI
+solves exactly in minutes, and they scale with a spin--orbit norm that varies 40-fold with the choice of active
+orbitals, so they measure how the decision cost scales rather than a quantum advantage. When one channel dominates, phase estimation
 of its energy with amplitude estimation of its coupling is 12--28 times cheaper than the filter.
 \end{abstract}
 
@@ -117,8 +119,9 @@ the response kernel). Singlets are obtained by full TDDFT (random-phase approxim
 Davidson solver~\cite{Stratmann1998} in the space of orbital pairs within 60~eV of the frontier orbitals, and
 triplets by the Tamm--Dancoff approximation (TDA) in a 10~eV window (at most 40 occupied and 60 virtual
 orbitals); the windowed solver reproduces PySCF when the window spans the whole space
-(\texttt{tests/test\_tdwin.py}); against the full TDA, the window places T$_2$ and T$_3$ 0.016--0.025~eV too high in
-the four dyes we checked, which doubles $\kisc$ of aza-BDP-Br$_2$ and leaves the other three unchanged
+(\texttt{tests/test\_tdwin.py}); against the full TDA, the window shifts T$_2$ and T$_3$ by 0.016--0.025~eV, but mostly together
+with T$_1$; since every T$_n$ is anchored to the $\Delta$SCF T$_1$ (below), the T$_n$--S$_1$ gaps change by
+$-0.010$ to $+0.004$~eV in the four dyes we checked and $\kisc$ by at most 11\%
 (Table~S11); the rates of the remaining dyes run through T$_1$, which the window does not affect. Because TDDFT overestimates S$_1$ of cyanine-like dyes by several tenths of
 an eV~\cite{Momeni2015,LeGuennic2015}, the S$_1$ and T$_1$ energies are replaced with $\Delta$SCF
 values (separate self-consistent-field solutions for the excited states)~\cite{Hait2021}: T$_1$ from an unrestricted $M_S=1$ calculation and S$_1$ from the spin-purified sum
@@ -135,15 +138,17 @@ I2-BDP and I2-BDP-0 against an all-electron treatment: spin-free exact two-compo
 iodine, TDA states and the Breit--Pauli spin--orbit mean-field (SOMF) operator, which gives
 \SI{5433}{cm^{-1}} for the iodine 5p constant (script \texttt{run\_soc\_benchmark.py}, Table~S6). The coupling of
 S$_1$ summed over T$_1$--T$_4$, $\sum_n V_n^2$, agrees with the effective operator within 2\% for I2-BDP and
-20\% for I2-BDP-0 (T$_5$, 2~eV above S$_1$, is left out; its $V^2$ differs by a factor of 1.7), but the couplings
+20\% for I2-BDP-0 (T$_5$, 1.1--1.5~eV above S$_1$, is left out; its $V^2$ differs by a factor of 1.7 for I2-BDP and 90 for I2-BDP-0), but the couplings
 of individual channels do not. $V_1$ of I2-BDP, the channel that
 carries its rate, is \SI{22.2}{cm^{-1}} instead of \SI{13.2}{cm^{-1}}, 2.8 times more rate, and $V_2$ of
 I2-BDP-0 is \SI{3.5}{cm^{-1}} instead of \SI{8.0}{cm^{-1}}, five times less rate in that channel. The one-electron Breit--Pauli operator on the same all-electron states gives
 $V_1=\SI{23.6}{cm^{-1}}$, close to SOMF, and our effective operator, recalibrated on the free atoms in the same
 all-electron basis and evaluated on the same states, gives $V_1=\SI{20.7}{cm^{-1}}$ and every I2-BDP channel within
 7\% of SOMF (16\% for the weak T$_4$), and every I2-BDP-0 channel 7--8\% below SOMF, including
-$V_2=\SI{3.2}{cm^{-1}}$. The operator is therefore not the problem: the channel-by-channel
-difference comes from the states, that is from the ECP and basis of the pipeline. We keep the pipeline
+$V_2=\SI{3.2}{cm^{-1}}$. The common 7\% is the recalibration itself (the ratio of the experimental to the SOMF iodine
+constant, 0.933), so this test shows that the one-centre form reproduces the SOMF channel pattern, not that the
+scale is independently right. The channel-by-channel difference therefore comes from the states: the ECP and
+basis of the pipeline, and its full-TDDFT rather than TDA singlet. We keep the pipeline
 treatment for all dyes; this difference makes the computed rates uncertain by a factor of about 3. The ISC
 rate is the golden rule~\cite{Baryshnikov2017} with a Marcus--Levich--Jortner (MLJ) Franck--Condon weighted density of
 states~\cite{Jortner1976}, summed over all triplets:
@@ -392,16 +397,15 @@ smooth, error-aware window score is better suited to screening.
 
 \paragraph{The top screening candidate is the most fragile prediction.} The 2,6-dibromo aza-BODIPY
 (aza-BDP-Br$_2$, $\Phi_T=0.97$) owes its rate to an uphill S$_1\to$T$_2$ channel: T$_2$ lies 0.11~eV above
-S$_1$ with 47~cm$^{-1}$ of SOC. A 0.1~eV error in that gap changes $\kisc$ by a factor of about 20, the
+S$_1$ with 47~cm$^{-1}$ of SOC. A 0.1~eV error in that gap changes $\kisc$ by a factor of 21 (lower T$_2$) to 77 (higher T$_2$), the
 factor-2 tolerance is 0.016~eV (Figure~\ref{fig:tolcurve}), and $\Phi_T$ drops below 0.5 if T$_2$ is
 0.08~eV higher. For an uphill channel the rate falls as $e^{-\Delta E/k_BT}$, so this tolerance approaches
 $k_BT\ln2=0.018$~eV whatever the line shape. T$_2$ carries the $\Delta$SCF correction of T$_1$ ($-0.05$~eV) while
 S$_1$ carries $-0.44$~eV, so its position rests on the assumption that the upper triplets err like T$_1$. Without
 that shift T$_2$ lies 0.16~eV above S$_1$ and $\kisc$ falls by a factor of 8.7 ($\Phi_T=0.80$; Table~S10); the other
-fourteen dyes do not change, because their rates run through T$_1$. The truncated TDA window places T$_2$ 0.017~eV
-too high, just above the factor-2 tolerance: the full TDA puts it 0.09~eV above S$_1$ and doubles $\kisc$ ($\Phi_T$
-0.97 to 0.99; Table~S11), while the BODIPY core, I2-BDP and I2-BDP-0 are unchanged. Across these treatments the class
-of the candidate holds ($\Phi_T=0.80$--0.99) and only its rate is fragile.
+fourteen dyes do not change, because their rates run through T$_1$. The truncated TDA window moves T$_2$ by only $+0.003$~eV relative to T$_1$: the full TDA puts it 0.110~eV above
+S$_1$ and lowers $\kisc$ by 11\% (Table~S11), and the BODIPY core, I2-BDP and I2-BDP-0 are unchanged. Across these treatments the class
+of the candidate holds ($\Phi_T=0.80$--0.97) and only its rate is fragile.
 Shifting the upper triplets by the much larger correction of S$_1$ ($-0.36$ to $-0.77$~eV) instead opens an
 S$_1\to$T$_{2,3}$ channel in every dye and predicts $\Phi_T=0.37$--0.87 for the BODIPY core, BDP and
 aza-BDP-Ph$_4$, which show no ISC, and 90 times the measured rate for I2-BDP; experiment thus supports
@@ -480,14 +484,14 @@ averaging: averaging over three singlets and two triplets changes the gaps by $-
 (I2-BDP, 0.93~eV) and T$_2-$S$_1$ by less than 0.03~eV. Nor is the geometry: on the B3LYP S$_0$ minima instead of the GFN2-xTB
 ones, S$_1$ drops by 0.08--0.09~eV, the S$_1$--T$_1$ gaps by 0.03--0.04~eV and T$_2-$S$_1$ by about 0.01~eV
 (\texttt{run\_pi\_cas.py --geom}). We have not identified the cause. A $\pi$-only reference lacks $\sigma$--$\pi$ polarization, but so does
-the CASPT2 of ref~\citenum{Momeni2015}, so the difference must also come from other choices: strong rather than partial or quasi-degenerate contraction in NEVPT2, or the IPEA shift of CASPT2.
+the CASPT2 of ref~\citenum{Momeni2015}, so the difference must also come from other choices: strong rather than partial or quasi-degenerate contraction in NEVPT2, or the zeroth-order Hamiltonian of CASPT2.
 A controlled (12e,11o) $\pi$ space with second-order dynamic correlation misses
 the gaps by several times the budget, in double- and triple-$\zeta$ bases alike.
 
 \begin{table}
   \caption{AVAS $\pi$-space (12e,11o) vertical energies (eV), SA-CASSCF orbitals over three singlets,
   def2-SVP, with experiment. T$_2-$S$_1$: lowest triplet above T$_1$ (SC-NEVPT2 interchanges T$_2$ and T$_3$
-  for the first three dyes).}
+  for all dyes except I2-BDP, I3-BDP and aza-BDP-Ph$_4$).}
   \label{tab:pi}
   \begin{tabular}{lccccccc}
     \toprule
@@ -550,7 +554,7 @@ meets the 0.08~eV budget but is only at the tolerance of a near-resonant channel
 $3.25\times10^{3}$ Toffolis on 193 logical qubits with the Givens-rotation angles loaded in five batches (rank 22:
 $2.97\times10^{3}$ on 158). The qubit count depends on this loading choice (374 wires at rank 22 when all angles are
 loaded at once, 131 with ten batches), and the 177 qubits of ref~\citenum{Zhou2026PRA} lie in this range, so qubit
-counts should be compared together with the loading choice and the rank. The filter needs about $3\times10^{4}$
+counts should be compared together with the loading choice and the rank. The filter needs $2$--$6\times10^{4}$
 walk steps at the MLJ width, about $10^{8}$ Toffolis, the same order as the gap-free proxy per
 shot~\cite{Zhou2026PRA}; with S$_1$ preparation one call costs $0.9$--$2.2\times10^{8}$ Toffolis. The whole decision
 circuit needs about 200 logical qubits with MLAE and 220 with canonical estimation: the 193 of the walk, 8 for the
@@ -564,15 +568,15 @@ below 0.005~eV, and 11.5~Ha for aza-BDP-Br$_2$, where the fit is twenty times wo
 matters, rank 33 is not enough. We cost the BODIPY-core value, $\lambda=17.3$~Ha, for all dyes; the double-factorization value
 (15.9~Ha) would lower every cost below by 7\% and the unregularized 37.5~Ha would double it.
 For a near-resonant channel the errors add up: with phase estimation of S$_1$ at 0.1~mHa (0.003~eV), the THC
-fit (0.027~eV for aza-BDP-Br$_2$ itself) and the TDA window of the reference (0.017~eV) give 0.032~eV in
-quadrature, twice the 0.016~eV tolerance, so deciding the rate of aza-BDP-Br$_2$ to a factor of 2 needs a higher
+fit (0.027~eV for aza-BDP-Br$_2$ itself) and the TDA window of the reference (0.003~eV) give 0.027~eV in
+quadrature, 1.7 times the 0.016~eV tolerance, so deciding the rate of aza-BDP-Br$_2$ to a factor of 2 needs a higher
 THC rank or a better factorization.
 
 \subsection{Cost of a screening decision}
 \label{sec:decision}
 
 \paragraph{The rate is a small fraction of the spin--orbit norm.} For the heavy-atom dyes of Table~\ref{tab:decision}, $\aso$ is
-850--12\,400~cm$^{-1}$ in the canonical (12e,11o) window with B3LYP orbitals (Table~S9 for all dyes). The
+850--12\,400~cm$^{-1}$ in the canonical (12e,11o) window with B3LYP orbitals (\texttt{paper/quantum/results/decision\_cost.json} for all dyes). The
 success probability $p=\gamma^2\kisc/K'=\gamma^2(V_\mathrm{eff}/\aso)^2$, with
 $V_\mathrm{eff}^2=\sum_nV_n^2\rho(\Delta E_n)/\rho_\mathrm{max}$ the Franck--Condon-weighted coupling, is
 $3\times10^{-9}$ to $2\times10^{-5}$ for the ISC-active dyes, and the number of calls, not the cost per call,
@@ -580,7 +584,7 @@ dominates. These $p$ combine the pipeline rate with the CAS(12,11) norm. With th
 couplings of the same Hamiltonian (script \texttt{cas\_consistent\_p.py}), $p$ is $6\times10^{-13}$ for the core,
 $5\times10^{-11}$ for I2-BDP, whose CASCI rate ($5\times10^{6}$~s$^{-1}$) runs uphill to T$_2$ because S$_1$ lies
 2.5~eV above T$_1$, and $6\times10^{-4}$ for aza-BDP-Br$_2$, where CASCI puts T$_2$ 0.04~eV below S$_1$. On the bare
-Hamiltonian the filter would thus see a $p$ 1200 times smaller or 27 times larger than the target, which is
+Hamiltonian the filter would thus see a $p$ 1200 times smaller (I2-BDP) or 27 and 800 times larger (aza-BDP-Br$_2$, core) than the target, which is
 another way of saying that the costs below are for a Hamiltonian that meets the budget. Two factors make $p$ small. For I2-BDP, $\aso/\lVert\chi\rVert=11$ and $\lVert\chi\rVert/V_\mathrm{eff}=270$:
 most of the norm of $\Hso\lvert\mathrm{S}_1\rangle$ goes to triplets far from resonance, which the filter
 rejects. $\aso$ also depends on the active space: with Hartree--Fock orbitals it is 8300~cm$^{-1}$ in the
@@ -691,10 +695,10 @@ I2-BDP) is the off-resonant weight that the filter removes, and only a channel-r
 for nearly identical dyes, and the factor-2 agreement holds for B3LYP (PBE0 is within a factor of 2.4; BHandHLYP fails) and with a line shape whose
 reorganization energy (0.24~eV) is twice the energy-based estimate and 1.3 times the harmonic multimode one, which
 alone leaves an order of magnitude in $\kisc$; $k_r$ and $k_\mathrm{ic}$ are not the measured values. We used def2-SVP (def2-TZVP for two NEVPT2 checks), GFN2-xTB
-geometries, one conformer, the gas phase and vertical energies (the adiabatic check covers S$_1$--T$_1$ of BDP and
+geometries, one conformer (three for the distyryl dyes), the gas phase and vertical energies (the adiabatic check covers S$_1$--T$_1$ of BDP and
 I2-BDP, not the near-resonant S$_1$--T$_2$ channel of aza-BDP-Br$_2$, whose relaxation is untested); the SOC model matches an all-electron SOMF treatment for the summed coupling but not channel by
 channel (a factor of 2.8 in the rate of the dominant I2-BDP channel); triplets come from a windowed TDA
-(0.016--0.025~eV above the full TDA for T$_2$ and T$_3$, a factor of 2 in $\kisc$ of aza-BDP-Br$_2$) and keep their TDDFT energies while S$_1$ and T$_1$ are $\Delta$SCF-corrected; and the
+(T$_n$--T$_1$ gaps within 0.010~eV of the full TDA) and keep their TDDFT energies while S$_1$ and T$_1$ are $\Delta$SCF-corrected; and the
 cost model takes pipeline rates and an assumed trial-state overlap, and its one-norm is that of the BODIPY
 core.
 
@@ -705,7 +709,7 @@ For BODIPY photosensitizers a factor-2 ISC rate needs singlet--triplet gaps to a
 through a near-resonant upper triplet, which makes the top screening candidate the most fragile prediction. A
 B3LYP/$\Delta$SCF pipeline reproduces the one independent measured rate of the compact iodinated dyes, with a line shape that a
 parameter-free multimode model reproduces to within a factor of 2 in the rate, although the reorganization energy is
-uncertain by a factor of 1.5 and the rate changes by a factor of 3--40 between spin--orbit operators, so the agreement does not yet
+uncertain by a factor of 1.5 and the rate of the dominant channel by a factor of about 3 between spin--orbit treatments, so the agreement does not yet
 validate the coupling; neither it nor our multireference
 calculations explain the one $\pi$-extended dye with a measured rate. On a fault-tolerant computer a screening
 decision costs $1\times10^{11}$--$7\times10^{15}$ Toffolis for a Hamiltonian that would reproduce the pipeline rates,
@@ -726,7 +730,7 @@ Absorption energies and parity plot (Table~S1, Figure~S1); canonical-window CASC
 active-space sweep (Tables~S2--S4, Figure~S2); amplitude-estimation simulation (Figure~S3); MLJ gap dependence
 (Figure~S4); QSVT filter implementation and rates (Table~S5); all-electron SOC benchmark (Table~S6); pipeline results, accuracy
 budgets and decision costs for all fifteen dyes (Tables~S7--S9); treatment of the upper triplets (Table~S10); convergence of the triplet TDA window (Table~S11);
-functional and conformer dependence (Tables~S12 and S13);
+functional and conformer dependence (Tables~S12 and S13); multimode line shape (Section~S12, Tables~S14 and S15);
 Cartesian coordinates.
 \end{suppinfo}
 

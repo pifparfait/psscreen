@@ -54,7 +54,7 @@ candidates of the first screening round. The machine-readable files are in the r
 \texttt{validation/runs} and \texttt{screening/runs/candidates\_round1}.
 
 \begin{table}
-  \caption{B3LYP/def2-SVP pipeline results: $\Delta$SCF S$_1$ and T$_1$, TDA T$_2$ and T$_3$ (eV), S$_1$--T$_n$
+  \caption{B3LYP/def2-SVP pipeline results: $\Delta$SCF S$_1$ and T$_1$, TDA T$_2$ and T$_3$ (eV; raw TDA, before the shift by the $\Delta$SCF correction of T$_1$ that the rates use), S$_1$--T$_n$
   spin--orbit couplings (cm$^{-1}$), ISC rate (s$^{-1}$) and triplet yield. Dyes below the line are the screening
   candidates without experimental data.}
   \label{tab:allpipe}
@@ -143,6 +143,7 @@ w(r"""    \bottomrule
 w(r"\input{si_tn_shift}\clearpage  % written by paper/analysis/tn_shift_check.py")
 w(r"\input{si_tda_full}\clearpage  % written by paper/analysis/tda_full_check.py")
 w(r"\input{si_xc_conf}\clearpage  % written by paper/analysis/xc_conformer_table.py")
+w(r"\input{si_fcwd}\clearpage  % written by paper/analysis/fcwd_table.py")
 w(r"""\section{Cartesian coordinates}
 GFN2-xTB ground-state geometries (\AA) used for every calculation in the paper (lowest conformer for the distyryl
 dyes). The same files are in the repository (\texttt{validation/runs}, \texttt{screening/runs/candidates\_round1}).

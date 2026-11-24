@@ -1,9 +1,10 @@
 \section{Convergence of the triplet TDA window}
 \begin{table}
-  \caption{Shift of T$_2$ and T$_3$ (eV) when the pipeline TDA window (10~eV, at most 40 occupied $\times$ 60
+  \caption{Shift of T$_2$ and T$_3$ relative to T$_1$ (eV) when the pipeline TDA window (10~eV, at most 40 occupied $\times$ 60
   virtual orbitals) is widened to 20~eV without caps and replaced by the full TDA (B3LYP/def2-SVP, same geometry),
   the resulting T$_2$--S$_1$ gap (eV), and $\kisc$ (s$^{-1}$) and $\Phi_T$ with every T$_{n\ge2}$ shifted by its
-  full-TDA correction. Scripts \texttt{paper/references/run\_tda\_full.py} and \texttt{paper/analysis/tda\_full\_check.py}.}
+  full-TDA correction minus that of T$_1$ (the pipeline anchors every T$_n$ to the $\Delta$SCF T$_1$, so a
+  window error common to all triplets cancels). Scripts \texttt{paper/references/run\_tda\_full.py} and \texttt{paper/analysis/tda\_full\_check.py}.}
   \label{tab:tdafull}
   \footnotesize\setlength{\tabcolsep}{3pt}
   \begin{tabular}{lrrrrrrll}
@@ -11,10 +12,10 @@
     & \multicolumn{2}{c}{$\Delta$T$_2$} & \multicolumn{2}{c}{$\Delta$T$_3$} & \multicolumn{2}{c}{T$_2-$S$_1$} & \multicolumn{2}{c}{$\kisc$ ($\Phi_T$)} \\
     Dye & 20~eV & full & 20~eV & full & pipeline & full & pipeline & full TDA \\
     \midrule
-    BODIPY core & $-0.013$ & $-0.025$ & $-0.013$ & $-0.025$ & $+0.444$ & $+0.420$ & $2.4\times10^{-2}$ (0.00) & $2.4\times10^{-2}$ (0.00) \\
-    I2-BDP & $-0.010$ & $-0.019$ & $-0.009$ & $-0.017$ & $+0.315$ & $+0.296$ & $6.9\times10^{9}$ (0.95) & $6.9\times10^{9}$ (0.95) \\
-    I2-BDP-0 & $-0.015$ & $-0.025$ & $-0.012$ & $-0.019$ & $+0.510$ & $+0.485$ & $1.7\times10^{7}$ (0.04) & $1.7\times10^{7}$ (0.04) \\
-    aza-BDP-Br$_2$ & $-0.012$ & $-0.017$ & $-0.011$ & $-0.016$ & $+0.107$ & $+0.090$ & $1.3\times10^{10}$ (0.97) & $2.4\times10^{10}$ (0.99) \\
+    BODIPY core & $-0.004$ & $-0.009$ & $-0.005$ & $-0.010$ & $+0.444$ & $+0.436$ & $2.4\times10^{-2}$ (0.00) & $2.4\times10^{-2}$ (0.00) \\
+    I2-BDP & $-0.002$ & $-0.004$ & $-0.001$ & $-0.001$ & $+0.315$ & $+0.312$ & $6.9\times10^{9}$ (0.95) & $6.9\times10^{9}$ (0.95) \\
+    I2-BDP-0 & $-0.005$ & $-0.008$ & $-0.002$ & $-0.002$ & $+0.510$ & $+0.502$ & $1.7\times10^{7}$ (0.04) & $1.7\times10^{7}$ (0.04) \\
+    aza-BDP-Br$_2$ & $+0.002$ & $+0.003$ & $+0.003$ & $+0.004$ & $+0.107$ & $+0.110$ & $1.3\times10^{10}$ (0.97) & $1.1\times10^{10}$ (0.97) \\
     \bottomrule
   \end{tabular}
 \end{table}
