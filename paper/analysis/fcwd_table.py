@@ -75,11 +75,11 @@ def main():
         r"or Duschinsky mixing along the displacement. The single-mode MLJ model of the main text assumes 0.24~eV, "
         r"above both estimates; its factor-2 agreement for I2-BDP survives because the multimode density of states at "
         r"the pipeline gap is within a factor of 1.7 of the MLJ one. "
-        r"For BDP the vertical-gradient model, which describes S$_1$ by TDA rather than $\Delta$SCF, gives an "
-        r"S$_1\leftrightarrow$T$_1$ reorganization energy of 0.18~eV against 0.13~eV from the minima and moves "
-        r"reorganization from T$_1$ to S$_1$ (0.07/0.11~eV against 0.12/0.05~eV), and its density of states at the "
-        r"pipeline gap is 2.2--2.7 times larger; a line shape built from vertical gradients, as for the upper triplets, "
-        r"is therefore uncertain by about a factor of 2--3."
+        r"The vertical-gradient model, which describes S$_1$ by TDA rather than $\Delta$SCF, gives an "
+        r"S$_1\leftrightarrow$T$_1$ reorganization energy of 0.18~eV for BDP (0.13~eV from the minima) and 0.14~eV for "
+        r"I2-BDP (0.19~eV), and its density of states at the pipeline gap is 2.2--2.7 times larger for BDP and about 3 "
+        r"times smaller for I2-BDP; a line shape built from vertical gradients, as for the upper triplets, is therefore "
+        r"uncertain by about a factor of 3 in either direction."
     )
     open(os.path.join(ROOT, "paper", "si_fcwd.tex"), "w").write("\n".join(L) + "\n")
 
