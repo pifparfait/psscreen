@@ -1,8 +1,477 @@
-Traceback (most recent call last):
-  File "/home/parfait/psscreen-paper/paper/references/run_pi_cas.py", line 61, in <module>
-    sym, xyz = read_xyz(geo)
-               ^^^^^^^^^^^^^
-  File "/home/parfait/psscreen-paper/psscreen/geometry.py", line 44, in read_xyz
-    lines = open(path).read().splitlines()
-            ^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: '/home/parfait/psscreen-paper/paper/references/results/BDP.adiabatic_S0.xyz'
+#INFO: **** input file is /home/parfait/psscreen-paper/paper/references/run_pi_cas.py ****
+"""Controlled pi active space for the BODIPY dyes: dipyrrin 2p_z AVAS selection, SA-CASSCF, CASCI and SC-NEVPT2.
+
+The earlier multireference runs (run_sa_nevpt2.py, run_cas_sweep.py) take the active orbitals from the canonical RHF
+orbitals around the Fermi level, so the same (ne,no) label can hold different kinds of orbitals in different dyes
+(pi, iodine lone pairs, sigma). This script fixes the active space by a reproducible rule:
+
+  1. Find the dipyrrin pi core: the two pyrrole rings bonded to boron through N and the meso atom (C, or N in
+     aza-BODIPYs) that bridges them. That is 11 atoms with 12 pi electrons, the (12e,11o) space of Zhou et al.
+  2. Rotate the molecule so that the best plane through those atoms is the xy plane.
+  3. AVAS-type selection: project the occupied and the virtual RHF orbitals separately onto the MINAO 2p_z functions
+     of the 11 core atoms and keep the 6 occupied and 5 virtual orbitals with the largest projection.
+     The projection eigenvalues of the kept and of the first rejected orbitals are stored.
+  4. CASCI singlets/triplets and SC-NEVPT2 on these orbitals (no optimisation): compare with the RHF-window runs.
+  5. SA-CASSCF over the lowest singlets (equal weights), then CASCI singlets/triplets and SC-NEVPT2.
+It also stores alpha_SO (paper/quantum/alpha_so.py) in both spaces. For every set of orbitals the script stores the composition of each active orbital (weight on the core 2p_z space,
+Mulliken weight on iodine/bromine, on the core atoms and on the rest) and the natural occupation numbers of the
+state-averaged and of each root's density.
+
+Usage (repository root): python paper/references/run_pi_cas.py NAME [--nsing 3] [--ntrip 3] [--no-nevpt2]
+                         [--basis def2-tzvp] [--sa-mix] [--skip-avas-block] [--select-only]
+Environment: OMP_NUM_THREADS, PSS_MAX_MEMORY_MB (default 40000).
+Writes paper/references/results/NAME.pi_cas_12_11[_<basis>][_samix].json, updated after every step.
+"""
+import argparse
+import json
+import os
+import sys
+import time
+
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, ROOT)
+import numpy as np  # noqa: E402
+from pyscf import fci, gto, mcscf, mrpt, scf  # noqa: E402
+
+from psscreen.backends import _ecp  # noqa: E402
+from psscreen.geometry import read_xyz, to_pyscf_atom  # noqa: E402
+
+EV = 27.211386245988
+NOCC_ACT, NVIR_ACT = 6, 5          # (12e, 11o)
+
+ap = argparse.ArgumentParser()
+ap.add_argument("name")
+ap.add_argument("--nsing", type=int, default=3)
+ap.add_argument("--ntrip", type=int, default=3)
+ap.add_argument("--max-macro", type=int, default=100)
+ap.add_argument("--no-nevpt2", action="store_true")
+ap.add_argument("--basis", default="def2-svp")
+ap.add_argument("--sa-mix", action="store_true",
+                help="state-average over the singlets and the two lowest triplets (equal weights) instead of singlets only")
+ap.add_argument("--skip-avas-block", action="store_true", help="skip CASCI/NEVPT2 on the unoptimized AVAS orbitals")
+ap.add_argument("--select-only", action="store_true", help="stop after the orbital selection (quick check)")
+ap.add_argument("--geom", default=None, help="xyz file to use instead of the GFN2-xTB geometry (e.g. the DFT S0 minimum)")
+ap.add_argument("--tag", default="", help="suffix for the output file name")
+a = ap.parse_args()
+
+geo = os.path.join(ROOT, "validation", "runs", f"{a.name}.xyz")
+if not os.path.exists(geo):
+    geo = os.path.join(ROOT, "validation", "runs", "set3", f"{a.name}_c0.xyz")
+if a.geom:
+    geo = a.geom if os.path.isabs(a.geom) else os.path.join(ROOT, a.geom)
+sym, xyz = read_xyz(geo)
+sym = [s.capitalize() for s in sym]
+xyz = np.asarray(xyz, float)
+
+
+# ---------------------------------------------------------------- 1) dipyrrin core
+def bonds(sym, xyz):
+    rcov = {"H": 0.32, "B": 0.85, "C": 0.75, "N": 0.71, "O": 0.63, "F": 0.64, "S": 1.03, "Cl": 1.0, "Br": 1.14,
+            "I": 1.33}
+    n = len(sym)
+    d = np.linalg.norm(xyz[:, None] - xyz[None], axis=-1)
+    adj = [set() for _ in range(n)]
+    for i in range(n):
+        for j in range(i + 1, n):
+            if d[i, j] < 1.25 * (rcov.get(sym[i], 1.0) + rcov.get(sym[j], 1.0)):
+                adj[i].add(j)
+                adj[j].add(i)
+    return adj
+
+
+def five_ring(adj, start, allowed):
+    """The 5-membered ring through `start` whose atoms are all in `allowed`."""
+    def dfs(path):
+        if len(path) == 5:
+            return path if start in adj[path[-1]] else None
+        for nb in adj[path[-1]]:
+            if nb in allowed and nb not in path:
+                r = dfs(path + [nb])
+                if r:
+                    return r
+        return None
+    return dfs([start])
+
+
+adj = bonds(sym, xyz)
+boron = [i for i, s in enumerate(sym) if s == "B"]
+assert len(boron) == 1, "expected one boron"
+cn = {i for i, s in enumerate(sym) if s in ("C", "N")}
+n_b = [j for j in adj[boron[0]] if sym[j] == "N"]
+assert len(n_b) == 2, "expected two N bonded to B"
+rings = [five_ring(adj, n, cn) for n in n_b]
+assert all(rings), "pyrrole ring not found"
+ring_atoms = set(rings[0]) | set(rings[1])
+meso = [k for k in cn - ring_atoms
+        if any(x in rings[0] for x in adj[k]) and any(x in rings[1] for x in adj[k])]
+assert len(meso) == 1, f"meso atom not unique: {meso}"
+core = sorted(ring_atoms | set(meso))
+assert len(core) == 11
+
+# ---------------------------------------------------------------- 2) rotate core plane to xy
+c0 = xyz[core].mean(0)
+_, _, vt = np.linalg.svd(xyz[core] - c0)
+R = vt                                            # rows: in-plane x, in-plane y, normal
+xyz_r = (xyz - c0) @ R.T
+planarity = float(np.abs(xyz_r[core, 2]).max())
+atom = to_pyscf_atom(sym, xyz_r)
+mol = gto.M(atom=atom, basis=a.basis, ecp=_ecp(atom, a.basis), verbose=4, unit="Angstrom",
+            max_memory=float(os.environ.get("PSS_MAX_MEMORY_MB", 40000)))
+
+outdir = os.path.join(ROOT, "paper", "references", "results")
+os.makedirs(outdir, exist_ok=True)
+tag = ("" if a.basis == "def2-svp" else "_" + a.basis.replace("-", "")) + ("_samix" if a.sa_mix else "") + a.tag
+fout = os.path.join(outdir, f"{a.name}.pi_cas_12_11{tag}.json")
+out = {"name": a.name, "geometry": os.path.relpath(geo, ROOT), "basis": a.basis, "cas": [12, 11],
+       "sa_weights": "singlets + 2 triplets, equal" if a.sa_mix else "singlets only, equal",
+       "selection": "AVAS-type projection onto MINAO 2p_z of the 11 dipyrrin atoms, 6 occupied + 5 virtual",
+       "core_atoms": [f"{sym[i]}{i}" for i in core], "core_max_out_of_plane_A": planarity,
+       "nsing": a.nsing, "ntrip": a.ntrip, "timings_s": {}}
+
+
+def save():
+    json.dump(out, open(fout, "w"), indent=1)
+
+
+t0 = time.time()
+mf = scf.RHF(mol).density_fit().run()
+out["timings_s"]["rhf"] = time.time() - t0
+
+# ---------------------------------------------------------------- 3) AVAS-type selection
+pmol = gto.M(atom=to_pyscf_atom([sym[i] for i in core], xyz_r[core]), basis="minao", unit="Angstrom", verbose=0,
+             spin=None)  # odd electron count for aza cores (meso N); only the basis is used
+pz = [k for k, lab in enumerate(pmol.ao_labels()) if lab.split()[2] == "2pz"]
+assert len(pz) == 11
+S = mf.get_ovlp()
+S12 = gto.intor_cross("int1e_ovlp", mol, pmol)[:, pz]
+S22 = pmol.intor("int1e_ovlp")[np.ix_(pz, pz)]
+PS = S12 @ np.linalg.solve(S22, S12.T)            # AO representation of the projector onto core 2p_z (with S)
+nocc = mol.nelectron // 2
+C = mf.mo_coeff
+Co, Cv = C[:, :nocc], C[:, nocc:]
+wo, uo = np.linalg.eigh(Co.T @ PS @ Co)
+wv, uv = np.linalg.eigh(Cv.T @ PS @ Cv)
+io, iv = np.argsort(-wo), np.argsort(-wv)
+Co_r, Cv_r = Co @ uo[:, io], Cv @ uv[:, iv]
+out["avas_occ_eigs"] = [float(x) for x in wo[io][:NOCC_ACT + 4]]
+out["avas_vir_eigs"] = [float(x) for x in wv[iv][:NVIR_ACT + 4]]
+print(a.name, "AVAS occ eigs", np.round(wo[io][:NOCC_ACT + 3], 3), "vir eigs", np.round(wv[iv][:NVIR_ACT + 3], 3),
+      flush=True)
+
+
+def semicanon(Cblk):
+    f = Cblk.T @ mf.get_fock() @ Cblk
+    e, u = np.linalg.eigh(f)
+    return Cblk @ u
+
+
+core_mo = semicanon(Co_r[:, NOCC_ACT:])
+act_mo = semicanon(np.hstack([Co_r[:, :NOCC_ACT], Cv_r[:, :NVIR_ACT]]))
+vir_mo = semicanon(Cv_r[:, NVIR_ACT:])
+mo_avas = np.hstack([core_mo, act_mo, vir_mo])
+ncore = core_mo.shape[1]
+
+heavy = [k for k, lab in enumerate(mol.ao_labels()) if lab.split()[1] in ("I", "Br")]
+core_ao = [k for k, lab in enumerate(mol.ao_labels()) if int(lab.split()[0]) in core]
+
+
+def composition(mo, first=None):
+    """Per active orbital: core 2p_z weight, and Mulliken weights on core atoms, on I/Br, and elsewhere."""
+    first = ncore if first is None else first
+    cas = mo[:, first:first + 11]
+    res = []
+    for k in range(11):
+        c = cas[:, k]
+        mull = c * (S @ c)
+        w_core = float(mull[core_ao].sum())
+        w_heavy = float(mull[heavy].sum()) if heavy else 0.0
+        res.append({"pz_core": float(c @ PS @ c), "mulliken_core_atoms": w_core, "mulliken_I_Br": w_heavy,
+                    "mulliken_rest": 1.0 - w_core - w_heavy})
+    return res
+
+
+out["composition_avas"] = composition(mo_avas)
+# the canonical RHF window (HOMO-5 ... LUMO+4) used by run_sa_nevpt2.py and run_cas_sweep.py, for comparison
+out["composition_canonical_window"] = composition(mf.mo_coeff, nocc - NOCC_ACT)
+out["sum_pz_core"] = {"avas": sum(c["pz_core"] for c in out["composition_avas"]),
+                      "canonical_window": sum(c["pz_core"] for c in out["composition_canonical_window"])}
+
+
+def alpha_so_cm(mo, first):
+    """Block-encoding norm of the one-body SOC operator in the 11 orbitals starting at `first` (alpha_so.py)."""
+    from psscreen.soc import soc_mo_integrals
+    sys.path.insert(0, os.path.join(ROOT, "paper", "quantum"))
+    from alpha_so import HA_CM, spin_orbital_matrix
+    h, _ = soc_mo_integrals(mol, mo, a.basis)
+    idx = list(range(first, first + 11))
+    M = spin_orbital_matrix(h[:, idx][:, :, idx])
+    return 0.5 * float(np.abs(np.linalg.eigvalsh(0.5 * (M + M.conj().T))).sum()) * HA_CM
+
+
+try:
+    out["alpha_so_cm_hf_orbitals"] = {"avas": alpha_so_cm(mo_avas, ncore),
+                                      "canonical_window": alpha_so_cm(mf.mo_coeff, nocc - NOCC_ACT)}
+    print(a.name, "alpha_SO (cm-1)", out["alpha_so_cm_hf_orbitals"], flush=True)
+except Exception as exc:          # never lose the CAS runs to this side calculation
+    out["alpha_so_error"] = repr(exc)
+save()
+if a.select_only:
+    print(a.name, "selection only; core", out["core_atoms"], "planarity", round(planarity, 3), flush=True)
+    sys.exit(0)
+
+
+def casci(mo, spin, nroots):
+    c = mcscf.CASCI(mf, 11, 12)
+    if spin == 0:
+        c.fcisolver = fci.direct_spin0.FCI(mol)
+    else:
+        c.fcisolver = fci.direct_spin1.FCI(mol)
+        c.nelecas = ((12 + spin) // 2, (12 - spin) // 2)
+        c.fix_spin_(ss=spin / 2 * (spin / 2 + 1))
+    c.fcisolver.nroots = nroots
+    c.kernel(mo)
+    return c
+
+
+def natocc(c, nroots, spin):
+    """Natural occupations of each root, and of the equal-weight state-averaged density."""
+    occ, dms = [], []
+    for i in range(nroots):
+        ci = c.ci[i] if nroots > 1 else c.ci
+        dm = c.fcisolver.make_rdm1(ci, 11, c.nelecas)
+        dms.append(dm)
+        occ.append([float(x) for x in np.sort(np.linalg.eigvalsh(dm))[::-1]])
+    sa = [float(x) for x in np.sort(np.linalg.eigvalsh(np.mean(dms, axis=0)))[::-1]]
+    return occ, sa
+
+
+def block(tag, mo):
+    t = time.time()
+    cs = casci(mo, 0, a.nsing)
+    ct = casci(mo, 2, a.ntrip)
+    E0 = cs.e_tot[0]
+    r = {"E_CASCI_singlets_eV": [(e - E0) * EV for e in cs.e_tot],
+         "E_CASCI_triplets_eV": [(e - E0) * EV for e in ct.e_tot],
+         }
+    r["natocc_singlets"], r["natocc_sa_singlets"] = natocc(cs, a.nsing, 0)   # SA: occupations of the averaged density
+    r["natocc_triplets"], r["natocc_sa_triplets"] = natocc(ct, a.ntrip, 2)
+    out[tag] = r
+    out["timings_s"][tag + "_casci"] = time.time() - t
+    print(a.name, tag, "CASCI S:", np.round(r["E_CASCI_singlets_eV"], 3), "T:", np.round(r["E_CASCI_triplets_eV"], 3),
+          flush=True)
+    print(a.name, tag, "SA natocc:", np.round(r["natocc_sa_singlets"], 3), flush=True)
+    save()
+    if a.no_nevpt2:
+        return
+    t = time.time()
+    try:
+        es = [cs.e_tot[i] + mrpt.NEVPT(cs, root=i).kernel() for i in range(a.nsing)]
+        r["E_NEVPT2_singlets_eV"] = [(e - es[0]) * EV for e in es]
+        save()
+        et = [ct.e_tot[i] + mrpt.NEVPT(ct, root=i).kernel() for i in range(a.ntrip)]
+        r["E_NEVPT2_triplets_eV"] = [(e - es[0]) * EV for e in et]
+        print(a.name, tag, "NEVPT2 S:", np.round(r["E_NEVPT2_singlets_eV"], 3), "T:",
+              np.round(r["E_NEVPT2_triplets_eV"], 3), flush=True)
+    except Exception as exc:
+        r["nevpt2_error"] = repr(exc)
+        print(a.name, tag, "NEVPT2 failed:", exc, flush=True)
+    out["timings_s"][tag + "_nevpt2"] = time.time() - t
+    save()
+
+
+# ---------------------------------------------------------------- 4) on the AVAS orbitals
+if not a.skip_avas_block:
+    block("avas_orbitals", mo_avas)
+
+# ---------------------------------------------------------------- 5) SA-CASSCF from the AVAS orbitals
+t = time.time()
+mc = mcscf.CASSCF(mf, 11, 12).density_fit()
+if a.sa_mix:
+    fs = fci.direct_spin1.FCI(mol)
+    fs.spin, fs.nroots = 0, a.nsing
+    fs = fci.addons.fix_spin_(fs, ss=0)
+    ft = fci.direct_spin1.FCI(mol)
+    ft.spin, ft.nroots = 2, 2
+    ft = fci.addons.fix_spin_(ft, ss=2)
+    nst = a.nsing + 2
+    mc = mcscf.addons.state_average_mix_(mc, [fs, ft], [1.0 / nst] * nst)
+else:
+    mc.fcisolver = fci.direct_spin0.FCI(mol)
+    mc.fcisolver.nroots = a.nsing
+    mc = mcscf.state_average_(mc, [1.0 / a.nsing] * a.nsing)
+mc.max_cycle_macro = a.max_macro
+mc.kernel(mo_avas)
+out["sa_casscf_converged"] = bool(mc.converged)
+out["timings_s"]["sa_casscf"] = time.time() - t
+out["composition_sa_casscf"] = composition(mc.mo_coeff)
+save()
+block("sa_casscf_orbitals", mc.mo_coeff)
+out["timings_s"]["total"] = time.time() - t0
+save()
+print(a.name, "done", round(time.time() - t0), "s", flush=True)
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='tars', release='6.5.0-15-generic', version='#15~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Fri Jan 12 18:54:30 UTC 2', machine='x86_64')  Threads 16
+Python 3.12.16 (main, Oct 26 2026, 11:37:43) [GCC 15.3.0]
+numpy 2.5.4  scipy 1.18.1  h5py 3.16.0
+Date: Mon Nov 23 19:44:30 2026
+PySCF version 2.15.0
+PySCF path  /home/parfait/miniconda3/envs/psscreen/lib/python3.12/site-packages/pyscf
+
+[CONFIG] conf_file None
+[INPUT] verbose = 4
+[INPUT] num. atoms = 43
+[INPUT] num. electrons = 170
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 0
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = Angstrom
+[INPUT] Symbol           X                Y                Z      unit          X                Y                Z       unit  Magmom
+[INPUT]  1 C     -3.107473000000  -2.428359000000   0.001752000000 AA   -5.872272909481  -4.588933442123   0.003310800170 Bohr   0.0
+[INPUT]  2 C     -2.586791000000  -1.023463000000   0.000845000000 AA   -4.888326531490  -1.934064768626   0.001596818575 Bohr   0.0
+[INPUT]  3 C     -3.380069000000   0.121559000000   0.002478000000 AA   -6.387404692133   0.229713217976   0.004682741337 Bohr   0.0
+[INPUT]  4 C     -2.531024000000   1.252527000000   0.000071000000 AA   -4.782942174701   2.366932993623   0.000134170555 Bohr   0.0
+[INPUT]  5 C     -2.924571000000   2.693435000000   0.002133000000 AA   -5.526638221845   5.089854484318   0.004030785824 Bohr   0.0
+[INPUT]  6 N     -1.249544000000   0.837595000000  -0.003331000000 AA   -2.361295940594   1.582825153305  -0.006294677721 Bohr   0.0
+[INPUT]  7 C     -1.225138000000  -0.560579000000  -0.002017000000 AA   -2.315175284797  -1.059340781183  -0.003811577593 Bohr   0.0
+[INPUT]  8 C     -0.000007000000  -1.255438000000  -0.000456000000 AA   -0.000013228083  -2.372433986372  -0.000861715113 Bohr   0.0
+[INPUT]  9 C      0.001749000000  -2.752323000000   0.000022000000 AA    0.003305130992  -5.201136676341   0.000041573975 Bohr   0.0
+[INPUT] 10 C      0.003897000000  -3.464873000000  -1.209184000000 AA    0.007364262707  -6.547661026400  -2.285026594206 Bohr   0.0
+[INPUT] 11 C      0.010024000000  -4.862451000000  -1.208682000000 AA    0.018942614673  -9.188700684118  -2.284077951692 Bohr   0.0
+[INPUT] 12 C      0.013979000000  -5.565240000000  -0.000403000000 AA    0.026416481495 -10.516779417474  -0.000761559628 Bohr   0.0
+[INPUT] 13 C      0.011140000000  -4.862761000000   1.208057000000 AA    0.021051549028  -9.189286499216   2.282896872864 Bohr   0.0
+[INPUT] 14 C      0.005078000000  -3.465136000000   1.209117000000 AA    0.009596029261  -6.548158024371   2.284899982556 Bohr   0.0
+[INPUT] 15 C      1.225113000000  -0.560448000000   0.000534000000 AA    2.315128041644  -1.059093227060   0.001009113751 Bohr   0.0
+[INPUT] 16 C      2.586801000000  -1.023525000000   0.000020000000 AA    4.888345428751  -1.934181931645   0.000037794522 Bohr   0.0
+[INPUT] 17 C      3.109004000000  -2.427912000000  -0.000708000000 AA    5.875166080177  -4.588088734545  -0.001337926096 Bohr   0.0
+[INPUT] 18 C      3.379997000000   0.121478000000   0.000017000000 AA    6.387268631852   0.229560150160   0.000032125344 Bohr   0.0
+[INPUT] 19 C      2.531124000000   1.252476000000   0.000816000000 AA    4.783131147314   2.366836617591   0.001542016518 Bohr   0.0
+[INPUT] 20 C      2.925256000000   2.693186000000   0.001252000000 AA    5.527932684241   5.089383942513   0.002365937108 Bohr   0.0
+[INPUT] 21 N      1.249539000000   0.837819000000   0.001023000000 AA    2.361286491963   1.583248451957   0.001933189825 Bohr   0.0
+[INPUT] 22 B     -0.000309000000   1.770270000000  -0.003466000000 AA   -0.000583925372   3.345325466534  -0.006549790748 Bohr   0.0
+[INPUT] 23 F      0.003071000000   2.563659000000  -1.149539000000 AA    0.005803348929   4.844613386776  -2.172313879506 Bohr   0.0
+[INPUT] 24 F     -0.005337000000   2.567443000000   1.139560000000 AA   -0.010085468327   4.851764110432   2.153456302509 Bohr   0.0
+[INPUT] 25 H     -2.769339000000  -2.994735000000  -0.879239000000 AA   -5.233292256077  -5.659228965649  -1.661520908036 Bohr   0.0
+[INPUT] 26 H     -4.206815000000  -2.420081000000   0.002307000000 AA   -7.949728206712  -4.573290289264   0.004359598169 Bohr   0.0
+[INPUT] 27 H     -2.768528000000  -2.994309000000   0.882719000000 AA   -5.231759688190  -5.658423942320   1.668097154950 Bohr   0.0
+[INPUT] 28 H     -4.469191000000   0.151905000000   0.005316000000 AA   -8.445546988371   0.287058846952   0.010045784078 Bohr   0.0
+[INPUT] 29 H     -4.018710000000   2.794341000000   0.003010000000 AA   -7.594261274051   5.280539188643   0.005688075635 Bohr   0.0
+[INPUT] 30 H     -2.513238000000   3.209661000000  -0.879667000000 AA   -4.749331505850   6.065380242698  -1.662329710818 Bohr   0.0
+[INPUT] 31 H     -2.512099000000   3.206988000000   0.884951000000 AA   -4.747179107794   6.060329004767   1.672315023660 Bohr   0.0
+[INPUT] 32 H      0.001518000000  -2.918815000000  -2.155365000000 AA    0.002868604257  -5.515760958272  -4.073049548473 Bohr   0.0
+[INPUT] 33 H      0.012630000000  -5.403915000000  -2.157775000000 AA    0.023867240953 -10.211919350429  -4.077603788433 Bohr   0.0
+[INPUT] 34 H      0.019239000000  -6.657920000000  -0.000568000000 AA    0.036356440911 -12.581645359264  -0.001073364439 Bohr   0.0
+[INPUT] 35 H      0.014563000000  -5.404643000000   2.156924000000 AA    0.027520081552 -10.213295071048   4.075995631501 Bohr   0.0
+[INPUT] 36 H      0.003465000000  -2.919570000000   2.155590000000 AA    0.006547901022  -5.517187701496   4.073474736851 Bohr   0.0
+[INPUT] 37 H      2.771094000000  -2.994343000000  -0.881720000000 AA    5.236608725425  -5.658488193009  -1.666209318552 Bohr   0.0
+[INPUT] 38 H      4.208323000000  -2.417956000000  -0.001129000000 AA    7.952577913708  -4.569274621249  -0.002133500795 Bohr   0.0
+[INPUT] 39 H      2.771704000000  -2.995019000000   0.880094000000 AA    5.237761458361  -5.659765647869   1.663136623873 Bohr   0.0
+[INPUT] 40 H      4.469105000000   0.151274000000  -0.000680000000 AA    8.445384471924   0.285866429767  -0.001285013765 Bohr   0.0
+[INPUT] 41 H      4.019476000000   2.793208000000   0.001254000000 AA    7.595708804262   5.278398128944   0.002369716560 Bohr   0.0
+[INPUT] 42 H      2.513808000000   3.208128000000   0.883748000000 AA    4.750408649741   6.062483292549   1.670041683132 Bohr   0.0
+[INPUT] 43 H      2.513817000000   3.208457000000  -0.881042000000 AA    4.750425657276   6.063105012444  -1.664928084239 Bohr   0.0
+
+nuclear repulsion = 2075.92772300573
+number of shells = 201
+number of NR pGTOs = 709
+number of NR cGTOs = 431
+basis = def2-svp
+ecp = {}
+CPU time:         1.54
+
+
+******** <class 'pyscf.df.df_jk.DFRHF'> ********
+method = DFRHF
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+diis_damp = 0
+SCF conv_tol = 1e-09
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = False
+chkfile to save SCF result = /tmp/tmp_i7bndnr
+max_memory 50000 MB (current use 99 MB)
+Set gradient conv threshold to 3.16228e-05
+Initial guess from minao.
+******** <class 'pyscf.df.df.DF'> ********
+auxbasis = def2-svp-jkfit
+max_memory = 50000.0
+init E= -1069.10625450433
+  HOMO = -0.156737372828052  LUMO = -0.05253728675582  gap/eV = 2.83543
+cycle= 1 E= -1062.07786570748  delta_E= 7.03  |g|= 1.04  |ddm|=  7.4
+  HOMO = -0.3101939076815  LUMO = -0.0478511759145883  gap/eV = 7.13871
+cycle= 2 E= -1062.37214622261  delta_E= -0.294  |g|= 0.46  |ddm|= 1.79
+  HOMO = -0.24811172010001  LUMO = 0.0216427781408228  gap/eV = 7.34039
+cycle= 3 E= -1062.41442727133  delta_E= -0.0423  |g|= 0.16  |ddm|= 0.664
+  HOMO = -0.259487444602559  LUMO = 0.0168879960867772  gap/eV = 7.52056
+cycle= 4 E= -1062.42111159984  delta_E= -0.00668  |g|= 0.0544  |ddm|= 0.324
+  HOMO = -0.259511046307146  LUMO = 0.0193899793322645  gap/eV = 7.58928
+cycle= 5 E= -1062.42193358088  delta_E= -0.000822  |g|= 0.0136  |ddm|= 0.083
+  HOMO = -0.261225306905531  LUMO = 0.0190930825907136  gap/eV = 7.62785
+cycle= 6 E= -1062.42204088  delta_E= -0.000107  |g|= 0.0057  |ddm|= 0.0293
+  HOMO = -0.260924156407893  LUMO = 0.0206792154797331  gap/eV = 7.66282
+cycle= 7 E= -1062.4220717851  delta_E= -3.09e-05  |g|= 0.00262  |ddm|= 0.0164
+  HOMO = -0.261221934327102  LUMO = 0.0209330676342825  gap/eV = 7.67783
+cycle= 8 E= -1062.42207796076  delta_E= -6.18e-06  |g|= 0.00104  |ddm|= 0.00829
+  HOMO = -0.261351675910647  LUMO = 0.0210399837165784  gap/eV = 7.68427
+cycle= 9 E= -1062.42207878584  delta_E= -8.25e-07  |g|= 0.000321  |ddm|= 0.00308
+  HOMO = -0.261344761268926  LUMO = 0.0210785289525948  gap/eV = 7.68513
+cycle= 10 E= -1062.42207884348  delta_E= -5.76e-08  |g|= 9.53e-05  |ddm|= 0.000833
+  HOMO = -0.261345843007569  LUMO = 0.0210818575597997  gap/eV = 7.68525
+cycle= 11 E= -1062.42207884931  delta_E= -5.83e-09  |g|= 4.45e-05  |ddm|= 0.000221
+  HOMO = -0.261349274431165  LUMO = 0.0210782468525492  gap/eV = 7.68524
+cycle= 12 E= -1062.42207885077  delta_E= -1.45e-09  |g|= 1.97e-05  |ddm|= 0.00011
+  HOMO = -0.261346968485671  LUMO = 0.0210795444497176  gap/eV = 7.68522
+cycle= 13 E= -1062.42207885113  delta_E= -3.62e-10  |g|= 9.86e-06  |ddm|= 5.52e-05
+  HOMO = -0.261347263999321  LUMO = 0.0210789537530127  gap/eV = 7.68521
+Extra cycle  E= -1062.4220788512  delta_E= -7.64e-11  |g|= 6.94e-06  |ddm|= 2.01e-05
+converged SCF energy = -1062.4220788512
+BDP AVAS occ eigs [0.995 0.995 0.992 0.991 0.987 0.987 0.086 0.047 0.045] vir eigs [0.972 0.96  0.955 0.952 0.914 0.013 0.013 0.008]
+
+******** <class 'pyscf.mcscf.addons.StateAverageDFCASSCF'> ********
+CAS (6e+6e, 11o), ncore = 79, nvir = 341
+max_cycle_macro = 100
+max_cycle_micro = 4
+conv_tol = 1e-07
+conv_tol_grad = None
+orbital rotation max_stepsize = 0.02
+orbital rotation threshold for CI restart = 0.01
+augmented hessian ah_max_cycle = 30
+augmented hessian ah_conv_tol = 1e-12
+augmented hessian ah_linear dependence = 1e-14
+augmented hessian ah_level shift = 1e-08
+augmented hessian ah_start_tol = 2.5
+augmented hessian ah_start_cycle = 3
+augmented hessian ah_grad_trust_region = 3
+kf_trust_region = 3
+kf_interval = 4
+ci_response_space = 4
+ci_grad_trust_region = 3
+with_dep4 0
+natorb = False
+canonicalization = True
+sorting_mo_energy = False
+ao2mo_level = 2
+chkfile = /tmp/tmp_i7bndnr
+max_memory 50000 MB (current use 1867 MB)
+internal_rotation = False
+******** <class 'pyscf.mcscf.addons.StateAverageFCISolver'> ********
+max. cycles = 100
+conv_tol = 1e-10
+davidson only = False
+linear dependence = 1e-14
+level shift = 0.001
+max iter space = 12
+max_memory 50000 MB
+nroots = 3
+pspace_size = 400
+spin = None
+State-average over 3 states with weights [0.3333333333333333, 0.3333333333333333, 0.3333333333333333]
+DFCASCI/DFCASSCF: density fitting for JK matrix and 2e integral transformation
+CASCI E = -1062.39899419173  S^2 = 0.0000000
+Set conv_tol_grad to 0.000316228
