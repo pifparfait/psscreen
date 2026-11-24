@@ -41,8 +41,8 @@ Quantum algorithms have been proposed for screening triplet photosensitizers, bu
 established how accurate the excited-state energies must be for the screening decision to be right, nor what
 that decision costs on a fault-tolerant computer. We address both for boron-dipyrromethene (BODIPY)
 dyes with measured photophysics. With a Marcus--Levich--Jortner model, a factor-2 intersystem-crossing
-(ISC) rate requires singlet--triplet gaps accurate to about 0.08~eV in a single-mode line shape (0.03--0.13~eV over plausible
-reorganization energies), and to 0.016~eV, close to $k_BT\ln2$, through a near-resonant upper triplet, as for the top
+(ISC) rate requires singlet--triplet gaps accurate to about 0.08~eV (0.05--0.10~eV with a multimode line shape built from
+computed normal modes), and to 0.016~eV, close to $k_BT\ln2$, through a near-resonant upper triplet, as for the top
 candidate of a screening round. A B3LYP/$\Delta$SCF pipeline
 reproduces the one independent measured rate of the compact iodinated dyes within a factor of 2, with an assumed reorganization energy twice the energy-based estimate but 1.3 times a harmonic multimode one, and with an
 effective spin--orbit operator, and it fails for
@@ -233,7 +233,9 @@ with tensor-hypercontraction (THC) qubitization, with $C_\mathrm{walk}=3.25\time
 step (Section~\ref{sec:resources}) and a filter degree $d\propto\lambda'/\Delta$ computed directly for our
 Chebyshev filters at each required precision down to $10^{-7}$ (script \texttt{degree\_direct.py}), where $\Delta=\sqrt{2\lambda_sk_BT}$ is the MLJ width. S$_1$ is prepared as a spin-adapted trial state
 followed by an eigenstate filter ($C_{\mathrm{S}_1}=2.6\times10^{7}$ Toffolis) that succeeds with probability
-$\gamma^2$ (assumed 0.5), so the estimators see $\gamma^2p$; one phase estimation of $E(\mathrm{S}_1)$ to
+$\gamma^2$ (assumed 0.5), so the estimators see $\gamma^2p$; since a D1 estimate of $\kisc$ needs $\gamma^2$
+as well, it is measured once by amplitude estimation of the filter success to 10\% (about $10^{3}$ filter calls,
+$3\times10^{10}$ Toffolis, at most 0.4\% of any D1 cost below); one phase estimation of $E(\mathrm{S}_1)$ to
 0.1~mHa (0.003~eV, a sixth of the 0.016~eV tolerance of a near-resonant channel; $2\times10^{9}$ Toffolis)
 fixes the filter centre. Calls are counted for direct sampling (Dagum--Karp--Luby--Ross rule for
 D1~\cite{Dagum2000}, Wald's sequential test between the edges of the zone for D2~\cite{Wald1945}), for
@@ -375,8 +377,11 @@ depends on the assumed reorganization energy, from 0.03--0.07~eV at $\lambda_s=0
 0.09--0.13~eV at $\lambda_s=0.25$~eV (Figure~\ref{fig:tolcurve}b). The tolerance at small $\lambda_s$ partly reflects the resolved
 progression of the single-mode model: the dominant term of I2-BDP is the $v=3$ line, which sits at resonance
 ($-0.61+0.10+3\times0.17\approx0$), and its factor-2 tolerance is the half-width of that line,
-$\sqrt{4\lambda_sk_BT\ln2}=0.084$~eV. A multimode density of states with the computed reorganization energy would
-be smoother and give a different value, so the 0.08~eV is model dependent. With independent errors on the two states, 0.08~eV corresponds to
+$\sqrt{4\lambda_sk_BT\ln2}=0.084$~eV. The multimode Kubo density of states built from the S$_0$ normal modes (SI Section~S12; script
+\texttt{tolerance\_multimode.py}) gives a factor-2 tolerance of 0.046, 0.079 and 0.098~eV for I2-BDP (0.036, 0.069 and
+0.068~eV for BDP) with an outer-sphere reorganization energy of 0, 0.05 and 0.10~eV, so the 0.08~eV holds in
+solution and halves in the gas phase. For the near-resonant uphill channel of aza-BDP-Br$_2$ the I2-BDP modes give
+0.017--0.020~eV, the same as the single-mode 0.016~eV. With independent errors on the two states, 0.08~eV corresponds to
 about 2~mHa per state. The gap is not the only input: a factor 2 in $\kisc$ is also $\pm41$\% in $V$, so the
 SOC model and the gaps share the same factor of 2, and the two SOC operators of Section~\ref{sec:pipeline} differ by 68\% in
 $V_1$ of I2-BDP.
@@ -615,7 +620,9 @@ four of the light-atom negatives, aza-BDP-Br$_2$ and aza-BDP-BrPh$_2$. Not knowi
 zone; for them the test ends, after $1\times10^{14}$ and $6\times10^{14}$ Toffolis, with the answer that the rate is
 within a factor of 2 of the threshold, which is all the pipeline itself can support. At $10^{6}$ Toffolis per
 second a D1 estimate for I2-BDP takes about 6 years with MLAE, and the deepest canonical circuit among these dyes
-($5\times10^{14}$ Toffolis, I2-BDP-0) needs logical error rates below about $10^{-15}$.
+($5\times10^{14}$ Toffolis, I2-BDP-0) needs logical error rates below about $10^{-15}$. MLAE spreads its calls over
+an exponential schedule of depths with 100 shots each, so its deepest circuit holds about 1/200 of its calls:
+$4\times10^{10}$ (aza-BDP-Br$_2$) to $4\times10^{12}$ Toffolis (I2-BDP-0), 0.4--50 days of coherent evolution.
 
 \paragraph{A channel-resolved route is cheaper here.} In every ISC-active dye one channel carries more than
 99\% of the rate. Phase estimation of that triplet and amplitude estimation of its coupling through a T$_n$

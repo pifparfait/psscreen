@@ -65,7 +65,9 @@ def main():
     L.append(
         r"For both dyes the harmonic S$_1\leftrightarrow$T$_1$ reorganization energy is larger than the one from "
         r"energy differences at the optimized minima (0.09 and 0.12~eV, main text), which points to anharmonicity "
-        r"or Duschinsky mixing along the displacement; the two estimates bracket the line-shape uncertainty."
+        r"or Duschinsky mixing along the displacement. The single-mode MLJ model of the main text assumes 0.24~eV, "
+        r"above both estimates; its factor-2 agreement for I2-BDP survives because the multimode density of states at "
+        r"the pipeline gap is within a factor of 1.7 of the MLJ one."
     )
     open(os.path.join(ROOT, "paper", "si_fcwd.tex"), "w").write("\n".join(L) + "\n")
 
