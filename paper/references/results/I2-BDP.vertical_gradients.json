@@ -1,0 +1,17 @@
+{
+ "name": "I2-BDP",
+ "geometry": "paper/references/results/I2-BDP.adiabatic_S0.xyz",
+ "method": "B3LYP/def2-SVP, no DF, grid 2, TDA",
+ "E_S0_Ha": -1663.3145541929057,
+ "timings_s": {
+  "scf": 191.1966028213501,
+  "S0_grad": 308.235955953598,
+  "S1_grad": 466.17918062210083
+ },
+ "tda_S_conv_tol": 1e-07,
+ "E_S_tda_eV": [
+  2.899234726195862,
+  3.23974424543353,
+  3.548018480688561
+ ]
+}
