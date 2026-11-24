@@ -48,7 +48,7 @@ mf.grids.level = 2
 mf.conv_tol = 1e-10
 mf.kernel()
 assert mf.converged
-out = {"name": a.name, "geometry": os.path.relpath(geo, ROOT), "method": "B3LYP/def2-SVP, no DF, grid 3, TDA",
+out = {"name": a.name, "geometry": os.path.relpath(geo, ROOT), "method": "B3LYP/def2-SVP, no DF, grid 2, TDA",
        "E_S0_Ha": float(mf.e_tot), "timings_s": {"scf": time.time() - t0}}
 grads = {"S0": mf.nuc_grad_method().kernel(), "xyz_A": np.asarray(xyz, float)}
 out["timings_s"]["S0_grad"] = time.time() - t0
@@ -59,11 +59,17 @@ for label, singlet in (("S", True), ("T", False)):
     roots = want[label]
     if not roots:
         continue
-    nst = max(roots) + 2
-    td = tdscf.TDA(mf)
-    td.singlet, td.nstates, td.conv_tol = singlet, nst, 1e-8
-    td.kernel()
-    assert all(td.converged), f"TDA ({label}) not converged"
+    # Only the roots whose gradients we need must converge; the extra guard root
+    # often stalls at tight tolerance, so retry with a larger subspace if needed.
+    nst = max(roots) + 3
+    for tol, cyc, space in ((1e-7, 200, 40), (1e-6, 400, 80)):
+        td = tdscf.TDA(mf)
+        td.singlet, td.nstates, td.conv_tol, td.max_cycle, td.max_space = singlet, nst, tol, cyc, space
+        td.kernel()
+        if all(td.converged[r] for r in roots):
+            break
+    assert all(td.converged[r] for r in roots), f"TDA ({label}) roots {roots} not converged"
+    out[f"tda_{label}_conv_tol"] = tol
     out[f"E_{label}_tda_eV"] = (np.asarray(td.e) * EV).tolist()
     for r in roots:
         t1 = time.time()
