@@ -1,0 +1,194 @@
+{
+ "name": "BDP",
+ "geometry": "paper/references/results/BDP.adiabatic_S0.xyz",
+ "basis": "def2-svp",
+ "cas": [
+  12,
+  11
+ ],
+ "sa_weights": "singlets only, equal",
+ "selection": "AVAS-type projection onto MINAO 2p_z of the 11 dipyrrin atoms, 6 occupied + 5 virtual",
+ "core_atoms": [
+  "C1",
+  "C2",
+  "C3",
+  "N5",
+  "C6",
+  "C7",
+  "C14",
+  "C15",
+  "C17",
+  "C18",
+  "N20"
+ ],
+ "core_max_out_of_plane_A": 0.003331452805616691,
+ "nsing": 3,
+ "ntrip": 3,
+ "timings_s": {
+  "rhf": 36.62224555015564
+ },
+ "avas_occ_eigs": [
+  0.9953964456326776,
+  0.9946114276927065,
+  0.9922766756348234,
+  0.9914660286160563,
+  0.9871648165091199,
+  0.9871249748169968,
+  0.08591796377514528,
+  0.047159107479268554,
+  0.04452530132351494,
+  0.039710527654931674
+ ],
+ "avas_vir_eigs": [
+  0.972424777617468,
+  0.959864224217836,
+  0.9550568448471436,
+  0.9524065442368332,
+  0.9137182987551541,
+  0.01251324249581326,
+  0.012505409175514572,
+  0.008135589627590515,
+  0.007278388658113438
+ ],
+ "composition_avas": [
+  {
+   "pz_core": 0.9925341911057834,
+   "mulliken_core_atoms": 0.9967243470848954,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.0032756529151045655
+  },
+  {
+   "pz_core": 0.9944254720312263,
+   "mulliken_core_atoms": 0.9980206190228743,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.0019793809771256887
+  },
+  {
+   "pz_core": 0.9932101268488307,
+   "mulliken_core_atoms": 0.9920947046455639,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.00790529535443607
+  },
+  {
+   "pz_core": 0.9890539129757232,
+   "mulliken_core_atoms": 0.9854481762527119,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.01455182374728814
+  },
+  {
+   "pz_core": 0.9910771203311914,
+   "mulliken_core_atoms": 0.995089695716288,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.004910304283711975
+  },
+  {
+   "pz_core": 0.9877395455277598,
+   "mulliken_core_atoms": 0.9961041263092795,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.0038958736907205305
+  },
+  {
+   "pz_core": 0.9198865146504897,
+   "mulliken_core_atoms": 0.9719569224002017,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.028043077599798294
+  },
+  {
+   "pz_core": 0.9572302383278188,
+   "mulliken_core_atoms": 0.9871865304058169,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.012813469594183058
+  },
+  {
+   "pz_core": 0.954909300507493,
+   "mulliken_core_atoms": 0.9872961281602564,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.012703871839743641
+  },
+  {
+   "pz_core": 0.9550406473559234,
+   "mulliken_core_atoms": 0.9877782803623297,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.01222171963767027
+  },
+  {
+   "pz_core": 0.9664039889145722,
+   "mulliken_core_atoms": 0.9941755481721521,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.005824451827847854
+  }
+ ],
+ "composition_canonical_window": [
+  {
+   "pz_core": 0.8502332013505718,
+   "mulliken_core_atoms": 0.9091011550305903,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.0908988449694097
+  },
+  {
+   "pz_core": 0.07538633015634966,
+   "mulliken_core_atoms": 0.07570467640142359,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.9242953235985765
+  },
+  {
+   "pz_core": 8.892968456244665e-06,
+   "mulliken_core_atoms": 0.023855946125725003,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.9761440538742749
+  },
+  {
+   "pz_core": 0.8865811182911341,
+   "mulliken_core_atoms": 0.9217287281974631,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.0782712718025369
+  },
+  {
+   "pz_core": 0.830480564038039,
+   "mulliken_core_atoms": 0.8675494650602404,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.13245053493975956
+  },
+  {
+   "pz_core": 0.9103874148457342,
+   "mulliken_core_atoms": 0.9555172975095572,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.04448270249044284
+  },
+  {
+   "pz_core": 0.8691674605690969,
+   "mulliken_core_atoms": 0.9241817145717852,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.07581828542821478
+  },
+  {
+   "pz_core": 8.31919910832484e-07,
+   "mulliken_core_atoms": 0.0251408544229405,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.9748591455770595
+  },
+  {
+   "pz_core": 0.027597458907035008,
+   "mulliken_core_atoms": 0.030450687959700275,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.9695493120402997
+  },
+  {
+   "pz_core": 7.531946847978621e-06,
+   "mulliken_core_atoms": 0.03518866616334796,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.9648113338366521
+  },
+  {
+   "pz_core": 0.7660316630536137,
+   "mulliken_core_atoms": 0.8110474451580173,
+   "mulliken_I_Br": 0.0,
+   "mulliken_rest": 0.1889525548419827
+  }
+ ],
+ "sum_pz_core": {
+  "avas": 10.701511058576813,
+  "canonical_window": 5.2158824680467895
+ },
+ "alpha_so_error": "ModuleNotFoundError(\"No module named 'alpha_so'\")"
+}
