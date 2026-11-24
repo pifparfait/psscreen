@@ -42,11 +42,15 @@ def main():
           r"$\sum S_j$ ($>200$~cm$^{-1}$) & $\langle\hbar\omega\rangle$ (cm$^{-1}$) & leading modes, cm$^{-1}$ ($S_j$) \\ \hline"]
     for n in NAMES:
         r = res[(n, 0.0)]
-        c = r["channels"][0]
         d = r["displacements"]
-        top = ", ".join(f"{m['omega_cm']:.0f} ({m['S']:.2f})" for m in c["top_modes"][:3])
-        L.append(f"{n} & {d['min:S1']['lambda_from_S0_eV']:.3f} & {d['min:T1']['lambda_from_S0_eV']:.3f} & "
-                 f"{c['lambda_total_eV']:.3f} & {c['S_quantum']:.2f} & {c['mean_quantum_mode_cm']:.0f} & {top} \\\\")
+        for c in r["channels"]:
+            if c["channel"] != "S1->T1":
+                continue
+            kind = c["model"]
+            lab = n if kind == "min" else f"{n} (TDA gradients)"
+            top = ", ".join(f"{m['omega_cm']:.0f} ({m['S']:.2f})" for m in c["top_modes"][:3])
+            L.append(f"{lab} & {d[kind + ':S1']['lambda_from_S0_eV']:.3f} & {d[kind + ':T1']['lambda_from_S0_eV']:.3f} & "
+                     f"{c['lambda_total_eV']:.3f} & {c['S_quantum']:.2f} & {c['mean_quantum_mode_cm']:.0f} & {top} \\\\")
     L += [r"\hline\end{tabular}\end{table}", ""]
     L += [r"\begin{table}[h]\centering\small",
           r"\caption{S$_1\to$T$_1$ density of states and rate with the multimode line shape against single-mode MLJ. "
@@ -57,17 +61,25 @@ def main():
           r"$k_\mathrm{multi}$ (s$^{-1}$) & $k_\mathrm{MLJ}$ (s$^{-1}$) \\ \hline"]
     for n in NAMES:
         for l in SOLV:
-            c = res[(n, l)]["channels"][0]
+          for c in res[(n, l)]["channels"]:
+            if c["channel"] != "S1->T1":
+                continue
+            lab = n if c["model"] == "min" else f"{n} (grad.)"
             km = sci(c["k_multimode"]) if c["V_cm"] > 1e-2 else "--"
             kp = sci(c["k_pipeline_channel"]) if c["V_cm"] > 1e-2 else "--"
-            L.append(f"{n} & {l:.2f} & {c['dE_pipeline_eV']:.3f} & {c['ratio_multimode_to_mlj']:.2f} & {km} & {kp} \\\\")
+            L.append(f"{lab} & {l:.2f} & {c['dE_pipeline_eV']:.3f} & {c['ratio_multimode_to_mlj']:.2f} & {km} & {kp} \\\\")
     L += [r"\hline\end{tabular}\end{table}", ""]
     L.append(
         r"For both dyes the harmonic S$_1\leftrightarrow$T$_1$ reorganization energy is larger than the one from "
         r"energy differences at the optimized minima (0.09 and 0.12~eV, main text), which points to anharmonicity "
         r"or Duschinsky mixing along the displacement. The single-mode MLJ model of the main text assumes 0.24~eV, "
         r"above both estimates; its factor-2 agreement for I2-BDP survives because the multimode density of states at "
-        r"the pipeline gap is within a factor of 1.7 of the MLJ one."
+        r"the pipeline gap is within a factor of 1.7 of the MLJ one. "
+        r"For BDP the vertical-gradient model, which describes S$_1$ by TDA rather than $\Delta$SCF, gives an "
+        r"S$_1\leftrightarrow$T$_1$ reorganization energy of 0.18~eV against 0.13~eV from the minima and moves "
+        r"reorganization from T$_1$ to S$_1$ (0.07/0.11~eV against 0.12/0.05~eV), and its density of states at the "
+        r"pipeline gap is 2.2--2.7 times larger; a line shape built from vertical gradients, as for the upper triplets, "
+        r"is therefore uncertain by about a factor of 2--3."
     )
     open(os.path.join(ROOT, "paper", "si_fcwd.tex"), "w").write("\n".join(L) + "\n")
 
