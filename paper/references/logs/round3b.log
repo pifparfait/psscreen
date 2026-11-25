@@ -1,0 +1,14 @@
+nohup: ignoring input
+started hess_BDP
+started hess_I2-BDP
+finished hess_BDP (exit 0)
+started vg_BDP
+finished hess_I2-BDP (exit 0)
+started vg_I2-BDP
+finished vg_BDP (exit 1)
+started pi_BDP_dft
+finished pi_BDP_dft (exit 0)
+started pi_I2-BDP_dft
+finished pi_I2-BDP_dft (exit 0)
+finished vg_I2-BDP (exit 1)
+all round-3 jobs finished

@@ -1,0 +1,6 @@
+BDP-0_c1: λ=704 nm Φ_T=0.00 T1=1.21 eV score=0.00
+I-BDP-0_c1: λ=708 nm Φ_T=0.00 T1=1.20 eV score=0.00
+
+Ranking PDT:
+  I-BDP-0_c1           score=0.00  λ=708 nm  Φ_T=0.00  T1=1.20 eV
+  BDP-0_c1             score=0.00  λ=704 nm  Φ_T=0.00  T1=1.21 eV

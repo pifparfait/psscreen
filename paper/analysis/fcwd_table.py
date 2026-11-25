@@ -19,6 +19,29 @@ def sci(x):
     return f"${m}\\times10^{{{int(e)}}}$"
 
 
+def aza_t2_rows():
+    """S1->T2 of aza-BDP-Br2 from TDA vertical gradients: adiabatic gap and multimode rate."""
+    import math
+    import numpy as np
+    from fcwd_multimode import RES, huang_rhys, normal_modes, rho_multimode
+    from psscreen.rates import CM1_TO_EV, HBAR_EVS, MLJParams, fcwd_mlj
+    hz = np.load(os.path.join(RES, "azaBDP_Br2.s0_hessian.npz"))
+    sym = [str(s) for s in hz["symbols"]]
+    om, L, sm, P = normal_modes(hz["H"], np.asarray(hz["xyz_A"], float), sym)
+    g = np.load(os.path.join(RES, "azaBDP_Br2.vertical_gradients.npz"))
+    q = {st: -(L.T @ (P @ (np.asarray(g[st]).ravel() / sm))) / om ** 2 for st in ("S1", "T1", "T2")}
+    lam = {st: float(huang_rhys(om, q[st])[1].sum()) for st in q}
+    S, l12 = huang_rhys(om, q["S1"] - q["T2"])
+    dEv = 0.107
+    dEa = dEv - (lam["T2"] - lam["S1"])
+    V = 46.77 * CM1_TO_EV
+    pref = 2 * math.pi / HBAR_EVS * V ** 2
+    rows = []
+    for ls in SOLV:
+        rows.append((ls, pref * rho_multimode(dEv, om, S, ls)[0], pref * rho_multimode(dEa, om, S, ls)[0]))
+    return lam, float(l12.sum()), dEv, dEa, pref * fcwd_mlj(dEv, MLJParams()), rows
+
+
 def main():
     res = {(n, l): analyse(n, l) for n in NAMES for l in SOLV}
     L = [r"\section{Multimode line shape for BDP and I2-BDP}", r"\label{sec:si-fcwd}", ""]
@@ -81,6 +104,27 @@ def main():
         r"times smaller for I2-BDP; a line shape built from vertical gradients, as for the upper triplets, is therefore "
         r"uncertain by about a factor of 3 in either direction."
     )
+    lam, l12, dEv, dEa, k_mlj, rows = aza_t2_rows()
+    L += ["", r"\paragraph{Near-resonant S$_1\to$T$_2$ channel of aza-BDP-Br$_2$.} No $\Delta$SCF minimum exists for "
+          r"T$_2$, so its relaxation follows from the vertical-gradient model on the B3LYP S$_0$ Hessian of aza-BDP-Br$_2$. "
+          f"The relaxation energies from the S$_0$ minimum are {lam['S1']:.3f} (S$_1$), {lam['T1']:.3f} (T$_1$) and "
+          f"{lam['T2']:.3f}~eV (T$_2$), so T$_2$ relaxes {lam['T2'] - lam['S1']:.3f}~eV more than S$_1$ and the "
+          f"T$_2-$S$_1$ gap of the pipeline, {dEv:+.3f}~eV, becomes {dEa:+.3f}~eV between the minima. S$_1$ and T$_2$ "
+          f"are displaced almost in parallel: their mutual reorganization energy is only {l12:.3f}~eV, so the width of "
+          r"the line comes from the outer sphere. With the coupling of the pipeline ($V_2=46.8$~cm$^{-1}$) the "
+          r"S$_1\to$T$_2$ rate is (MLJ: " + sci(k_mlj) + r"~s$^{-1}$):", "",
+          r"\begin{table}[h]\centering\small",
+          r"\caption{S$_1\to$T$_2$ rate of aza-BDP-Br$_2$ (s$^{-1}$), multimode line shape from TDA vertical gradients, "
+          r"at the vertical and the adiabatic gap. The adiabatic gap is the consistent input of the displaced-oscillator "
+          r"line shape; the vertical one is shown for comparison with the pipeline.}",
+          r"\begin{tabular}{lcc}\hline",
+          f"$\\lambda_\\mathrm{{out}}$ (eV) & $\\Delta E={dEv:+.3f}$~eV & $\\Delta E={dEa:+.3f}$~eV \\\\ \\hline"]
+    for ls, kv, ka in rows:
+        L.append(f"{ls:.2f} & {sci(kv)} & {sci(ka)} \\\\")
+    L += [r"\hline\end{tabular}\end{table}", "",
+          r"At the adiabatic gap the rate is $3\times10^{9}$--$1.5\times10^{11}$~s$^{-1}$ and $\Phi_T=0.90$--$1.00$, so "
+          r"the class of the candidate holds while its rate spans a factor of 50, set by the outer-sphere width that "
+          r"the gas-phase calculation does not provide."]
     open(os.path.join(ROOT, "paper", "si_fcwd.tex"), "w").write("\n".join(L) + "\n")
 
 

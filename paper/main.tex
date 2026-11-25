@@ -299,8 +299,9 @@ so the S$_1$--T$_1$ gap changes from vertical (xTB geometry) to adiabatic by $+0
 and by $-0.01$~eV for I2-BDP (0.61 to 0.60~eV). Both shifts are within the 0.08~eV budget; the BDP shift is above
 the 0.016~eV tolerance of a near-resonant channel, but BDP has none. For aza-BDP-Br$_2$, which has one, S$_1$ drops
 by 0.08~eV from the vertical value to the adiabatic one, the S$_1$ and T$_1$ relaxation energies are 0.08 and 0.09~eV,
-and S$_1$--T$_1$ changes by $+0.02$~eV (0.68 to 0.70~eV); the relaxation of T$_2$, which sets its rate, needs the
-vertical-gradient model (SI Section~S12). The agreement in absorption does not transfer to the $\pi$-extended distyryl dyes, whose S$_1$ is
+and S$_1$--T$_1$ changes by $+0.02$~eV (0.68 to 0.70~eV); T$_2$, which sets its rate, has no $\Delta$SCF minimum, and the
+vertical-gradient model on the S$_0$ Hessian (SI Section~S12) relaxes it 0.04~eV more than S$_1$, so T$_2-$S$_1$
+drops from 0.11 to 0.07~eV between the minima. The agreement in absorption does not transfer to the $\pi$-extended distyryl dyes, whose S$_1$ is
 0.21--0.23~eV too low.
 
 
@@ -412,8 +413,11 @@ $k_BT\ln2=0.018$~eV whatever the line shape. T$_2$ carries the $\Delta$SCF corre
 S$_1$ carries $-0.44$~eV, so its position rests on the assumption that the upper triplets err like T$_1$. Without
 that shift T$_2$ lies 0.16~eV above S$_1$ and $\kisc$ falls by a factor of 8.7 ($\Phi_T=0.80$; Table~S10); the other
 fourteen dyes do not change, because their rates run through T$_1$. The truncated TDA window moves T$_2$ by only $+0.003$~eV relative to T$_1$: the full TDA puts it 0.110~eV above
-S$_1$ and lowers $\kisc$ by 11\% (Table~S11), and the BODIPY core, I2-BDP and I2-BDP-0 are unchanged. Across these treatments the class
-of the candidate holds ($\Phi_T=0.80$--0.97) and only its rate is fragile.
+S$_1$ and lowers $\kisc$ by 11\% (Table~S11), and the BODIPY core, I2-BDP and I2-BDP-0 are unchanged. The T$_2$ relaxation (0.07~eV adiabatic gap) and a multimode line shape
+in which S$_1$ and T$_2$ are displaced almost in parallel (mutual reorganization 0.014~eV) give
+$3\times10^{9}$--$1.5\times10^{11}$~s$^{-1}$ for this channel depending on the outer-sphere width (SI Section~S12).
+Across these treatments the class of the candidate holds ($\Phi_T=0.80$--1.00) and only its rate is fragile, by a
+factor of about 50.
 Shifting the upper triplets by the much larger correction of S$_1$ ($-0.36$ to $-0.77$~eV) instead opens an
 S$_1\to$T$_{2,3}$ channel in every dye and predicts $\Phi_T=0.37$--0.87 for the BODIPY core, BDP and
 aza-BDP-Ph$_4$, which show no ISC, and 90 times the measured rate for I2-BDP; experiment thus supports
@@ -706,7 +710,8 @@ for nearly identical dyes, and the factor-2 agreement holds for B3LYP (PBE0 is w
 reorganization energy (0.24~eV) is twice the energy-based estimate and 1.3 times the harmonic multimode one, which
 alone leaves an order of magnitude in $\kisc$; $k_r$ and $k_\mathrm{ic}$ are not the measured values. We used def2-SVP (def2-TZVP for two NEVPT2 checks), GFN2-xTB
 geometries, one conformer (three for the distyryl dyes), the gas phase and vertical energies (the adiabatic check covers S$_1$--T$_1$ of BDP, I2-BDP and
-aza-BDP-Br$_2$, not yet the near-resonant S$_1$--T$_2$ channel of aza-BDP-Br$_2$); the SOC model matches an all-electron SOMF treatment for the summed coupling but not channel by
+aza-BDP-Br$_2$; its S$_1$--T$_2$ relaxation rests on the vertical-gradient model, uncertain by a factor of about 3 in the
+line shape); the SOC model matches an all-electron SOMF treatment for the summed coupling but not channel by
 channel (a factor of 2.8 in the rate of the dominant I2-BDP channel); triplets come from a windowed TDA
 (T$_n$--T$_1$ gaps within 0.010~eV of the full TDA) and keep their TDDFT energies while S$_1$ and T$_1$ are $\Delta$SCF-corrected; the near-resonant T$_2-$S$_1$ gaps of aza-BDP-Br$_2$ and I2-BDP-0 have no
 coupled-cluster or ADC(2) reference, and the bromine couplings no all-electron benchmark; and the

@@ -1,0 +1,26 @@
+nohup: ignoring input
+started chain_azaBr2
+started hess_BDP
+started hess_I2-BDP
+started vg_BDP
+finished hess_BDP (exit 1)
+finished hess_I2-BDP (exit 1)
+finished vg_BDP (exit 1)
+remote: 
+remote: Create a pull request for 'results-tars-round3' on GitHub by visiting:        
+remote:      https://github.com/pifparfait/psscreen/pull/new/results-tars-round3        
+remote: 
+started vg_I2-BDP
+started soc_I2-BDP
+started soc_I2-BDP-0
+finished vg_I2-BDP (exit 1)
+started pi_BDP_dft
+finished pi_BDP_dft (exit 1)
+started pi_I2-BDP_dft
+finished pi_I2-BDP_dft (exit 1)
+started conf_c1
+finished conf_c1 (exit 0)
+finished soc_I2-BDP (exit 0)
+finished soc_I2-BDP-0 (exit 0)
+finished chain_azaBr2 (exit 0)
+all round-3 jobs finished

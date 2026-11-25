@@ -1,0 +1,439 @@
+atomic zeta (cm-1): {"B": {"somf": 5.758439968686675, "bp1e": 14.199682879317518, "exp": 10.2}, "C": {"somf": 24.701123074666466, "bp1e": 48.03627472620666, "exp": 28.0}, "F": {"somf": 253.832579951421, "bp1e": 380.08170326391877, "exp": 269.4}, "I": {"somf": 5433.256502049089, "bp1e": 5786.82949679122, "exp": 5068.8}, "N": {"somf": 70.48007449370986, "bp1e": 121.18248828084961, "exp": 76.0}}
+#INFO: **** input file is /home/parfait/psscreen-paper/paper/references/run_soc_benchmark.py ****
+"""All-electron spin-orbit benchmark of the effective SOC operator used by psscreen.
+
+psscreen computes SOC with an effective one-electron operator whose per-element scale reproduces the atomic valence
+spin-orbit constant (psscreen/soc.py); for iodine it acts on ECP pseudo-orbitals. This script recomputes the same
+S1-T_n couplings with a standard treatment:
+  * all-electron scalar-relativistic reference: spin-free X2C-1e B3LYP, def2-SVP on light atoms and an uncontracted
+    DZP-DKH basis on Br/I (default; --heavy-basis to change it);
+  * TDA singlets and triplets (PySCF tdscf);
+  * Breit-Pauli spin-orbit mean-field operator (SOMF): one-electron term plus the Coulomb and exchange mean-field
+    two-electron terms built from the ground-state density,
+        h_SO = (alpha^2/4) [ h1(pnucxp) + J(p1vxp1) - 3/2 (K + K') ] ,
+    without picture-change correction. The one-electron-only (BP1e) couplings are reported as well.
+The matrix elements reuse psscreen.soc (spin-adapted TDA states, sum over M). The script first checks the operator on
+the free atoms (valence np spin-orbit constant versus experiment), then runs the molecule.
+
+Usage (repository root): python paper/references/run_soc_benchmark.py NAME [--nsing 2] [--ntrip 5]
+Environment: OMP_NUM_THREADS, PSS_MAX_MEMORY_MB (default 40000).
+Writes paper/references/results/NAME.soc_benchmark.json.
+"""
+import argparse
+import json
+import os
+import sys
+import time
+
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, ROOT)
+
+import numpy as np  # noqa: E402
+from pyscf import dft, gto, scf, tdscf  # noqa: E402
+from pyscf.scf import jk  # noqa: E402
+
+from psscreen.geometry import read_xyz, to_pyscf_atom  # noqa: E402
+from psscreen.soc import CM1_PER_HARTREE, ZETA_EXP_CM, _me, _spin_blocks, _state  # noqa: E402
+
+ALPHA = 1 / 137.035999084
+EV = 27.211386245988
+
+ap = argparse.ArgumentParser()
+ap.add_argument("name")
+ap.add_argument("--nsing", type=int, default=2)
+ap.add_argument("--ntrip", type=int, default=5)
+ap.add_argument("--light-basis", default="def2-svp")
+ap.add_argument("--heavy-basis", default="unc-dzp-dkh", help="basis for Br/I; prefix unc- to decontract")
+ap.add_argument("--xc", default="b3lyp")
+ap.add_argument("--atom-check-only", action="store_true")
+ap.add_argument("--effective", action="store_true",
+                help="also evaluate the effective one-electron operator of psscreen (per-element 1/r_A terms scaled to the "
+                     "atomic constants, calibrated here in the all-electron X2C basis) on the same TDA states")
+a = ap.parse_args()
+
+OUT = os.path.join(ROOT, "paper", "references", "results", f"{a.name}.soc_benchmark.json")
+res = {"name": a.name, "method": "sf-X2C-1e %s, TDA, Breit-Pauli SOMF (no picture change)" % a.xc.upper(),
+       "light_basis": a.light_basis, "heavy_basis": a.heavy_basis, "timings_s": {}}
+
+
+def save():
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    with open(OUT, "w") as f:
+        json.dump(res, f, indent=1)
+
+
+def heavy_basis(el):
+    b = a.heavy_basis
+    if b.startswith("unc-"):
+        return gto.uncontract(gto.basis.load(b[4:], el))
+    return gto.basis.load(b, el)
+
+
+def basis_for(elements):
+    return {el: (heavy_basis(el) if el in ("Br", "I") else a.light_basis) for el in elements}
+
+
+def somf_ao(mol, dm):
+    """Three Cartesian components (real antisymmetric, Hartree) of h_SO, and its one-electron part alone;
+    H_SO = i * sum_k h_k s_k as in psscreen.soc."""
+    h1 = mol.intor("int1e_pnucxp", comp=3)
+    vj, vk, vk2 = jk.get_jk(mol, [dm, dm, dm], ["ijkl,kl->ij", "ijkl,jk->il", "ijkl,li->kj"],
+                            intor="int2e_p1vxp1", comp=3, aosym="s1")
+    pref = ALPHA ** 2 / 4 * 2          # sigma = 2 s
+    return pref * (h1 + vj - 1.5 * (vk + vk2)), pref * h1
+
+
+def atom_check(el):
+    spin = {"C": 2, "N": 3, "B": 1, "F": 1, "Br": 1, "I": 1}[el]
+    mol = gto.M(atom=f"{el} 0 0 0", basis=basis_for([el]), spin=spin, verbose=0)
+    mf = scf.ROHF(mol).x2c()
+    mf.kernel()
+    dm = mf.make_rdm1()
+    dm = dm[0] + dm[1]
+    C, e = mf.mo_coeff, mf.mo_energy
+    S = mol.intor("int1e_ovlp")
+    pmask = np.array([lab[2].endswith("p") for lab in mol.ao_labels(fmt=False)])
+    pchar = np.einsum("pi,pq,qi->pi", C, S, C)[pmask].sum(0)
+    homo = int(np.ceil(mol.nelectron / 2)) - 1
+    cand = sorted([i for i in range(C.shape[1]) if pchar[i] > 0.9], key=lambda i: abs(e[i] - e[homo]))[:3]
+    out = {}
+    for tag, h in zip(("somf", "bp1e"), somf_ao(mol, dm)):
+        Ip = np.einsum("pi,kpq,qj->kij", C[:, cand], h, C[:, cand])
+        out[tag] = float(np.sqrt((Ip ** 2).sum() / 6.0) * CM1_PER_HARTREE)   # zeta, same invariant as psscreen.soc
+    out["exp"] = ZETA_EXP_CM.get(el)
+    return out
+
+
+t0 = time.time()
+geo = os.path.join(ROOT, "validation", "runs", f"{a.name}.xyz")
+if not os.path.exists(geo):
+    geo = os.path.join(ROOT, "validation", "runs", "set3", f"{a.name}_c0.xyz")
+sym, xyz = read_xyz(geo)
+sym = [s.capitalize() for s in sym]
+elements = sorted(set(sym) - {"H"})
+res["atom_zeta_cm"] = {el: atom_check(el) for el in elements}
+print("atomic zeta (cm-1):", json.dumps(res["atom_zeta_cm"]), flush=True)
+res["timings_s"]["atoms"] = time.time() - t0
+save()
+if a.atom_check_only:
+    sys.exit(0)
+
+mol = gto.M(atom=to_pyscf_atom(sym, np.asarray(xyz, float)), basis=basis_for(sorted(set(sym))), verbose=4,
+            max_memory=int(os.environ.get("PSS_MAX_MEMORY_MB", 40000)))
+res["nao"] = mol.nao
+mf = dft.RKS(mol, xc=a.xc).x2c().density_fit()
+mf.conv_tol = 1e-9
+mf.kernel()
+assert mf.converged, "SCF did not converge"
+res["timings_s"]["scf"] = time.time() - t0
+nocc = mol.nelectron // 2
+
+
+def tda(singlet, n):
+    td = tdscf.TDA(mf)
+    td.singlet = singlet
+    td.nstates = n
+    td.conv_tol = 1e-6
+    td.kernel()
+    X = []
+    for x, _ in td.xy:
+        x = np.asarray(x).reshape(nocc, -1)
+        X.append(x / np.linalg.norm(x))
+    return np.asarray(td.e) * EV, X
+
+
+eS, xS = tda(True, a.nsing)
+eT, xT = tda(False, a.ntrip)
+res["E_singlets_eV"], res["E_triplets_eV"] = eS.tolist(), eT.tolist()
+res["timings_s"]["tda"] = time.time() - t0
+save()
+
+def effective_ao():
+    """sum_A s_A * (p x (1/r_A) p) with s_A from the X2C free atom in this basis (same invariant as psscreen.soc)."""
+    from psscreen.soc import _raw_atom_integrals
+    h = np.zeros((3, mol.nao, mol.nao))
+    scales = {}
+    for ia in range(mol.natm):
+        el = mol.atom_pure_symbol(ia)
+        if el not in ZETA_EXP_CM:
+            continue
+        if el not in scales:
+            spin = {"C": 2, "N": 3, "B": 1, "F": 1, "Br": 1, "I": 1, "Cl": 1}[el]
+            am = gto.M(atom=f"{el} 0 0 0", basis=basis_for([el]), spin=spin, verbose=0)
+            amf = scf.ROHF(am).x2c()
+            amf.kernel()
+            C, e = amf.mo_coeff, amf.mo_energy
+            S = am.intor("int1e_ovlp")
+            pmask = np.array([lab[2].endswith("p") for lab in am.ao_labels(fmt=False)])
+            pchar = np.einsum("pi,pq,qi->pi", C, S, C)[pmask].sum(0)
+            homo = int(np.ceil(am.nelectron / 2)) - 1
+            cand = sorted([i for i in range(C.shape[1]) if pchar[i] > 0.9], key=lambda i: abs(e[i] - e[homo]))[:3]
+            Ip = np.einsum("pi,kpq,qj->kij", C[:, cand], _raw_atom_integrals(am, 0), C[:, cand])
+            scales[el] = (ZETA_EXP_CM[el] / CM1_PER_HARTREE) / np.sqrt((Ip ** 2).sum() / 6.0)
+        h += scales[el] * _raw_atom_integrals(mol, ia)
+    res["effective_scales"] = {k: float(v) for k, v in scales.items()}
+    return h
+
+
+h_somf, h_bp1e = somf_ao(mol, mf.make_rdm1())
+res["timings_s"]["somf"] = time.time() - t0
+ops = [("somf", h_somf), ("bp1e", h_bp1e)]
+if a.effective:
+    ops.append(("eff_ae", effective_ao()))
+for tag, h in ops:
+    blocks = _spin_blocks(1j * np.einsum("pi,kpq,qj->kij", mf.mo_coeff, h, mf.mo_coeff))
+    V = np.zeros((len(xS), len(xT)))
+    for m, Xs in enumerate(xS):
+        for n, Xt in enumerate(xT):
+            V[m, n] = np.sqrt(sum(abs(_me(_state("S", Xs), _state(k, Xt), blocks, nocc)) ** 2
+                                  for k in ("T0", "T+", "T-"))) * CM1_PER_HARTREE
+    res[f"V_S_T_cm_{tag}"] = V.tolist()
+    print(tag, "V(S1,Tn) cm-1:", np.round(V[0], 3), flush=True)
+
+pipe = os.path.join(os.path.dirname(geo), os.path.basename(geo).replace(".xyz", ".json"))
+if os.path.exists(pipe):
+    p = json.load(open(pipe))
+    res["pipeline"] = {"E_S1_eV": p.get("E_S1_eV"), "E_triplets_eV": p.get("E_triplets_eV"),
+                       "SOC_S1_Tn_cm": p.get("SOC_S1_Tn_cm"), "raw_tddft": p.get("raw_tddft")}
+res["timings_s"]["total"] = time.time() - t0
+save()
+print(a.name, "done", round(time.time() - t0), "s")
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='tars', release='6.5.0-15-generic', version='#15~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Fri Jan 12 18:54:30 UTC 2', machine='x86_64')  Threads 16
+Python 3.12.16 (main, Oct 26 2026, 11:37:43) [GCC 15.3.0]
+numpy 2.5.4  scipy 1.18.1  h5py 3.16.0
+Date: Sun Nov 22 19:28:08 2026
+PySCF version 2.15.0
+PySCF path  /home/parfait/miniconda3/envs/psscreen/lib/python3.12/site-packages/pyscf
+
+[CONFIG] conf_file None
+[INPUT] verbose = 4
+[INPUT] num. atoms = 65
+[INPUT] num. electrons = 366
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 0
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = angstrom
+[INPUT] Symbol           X                Y                Z      unit          X                Y                Z       unit  Magmom
+[INPUT]  1 C      2.562943000000   4.216664000000   0.549271000000 AA    4.843260342871   7.968340119313   1.037971758166 Bohr   0.0
+[INPUT]  2 C      2.268602000000   2.769439000000   0.398337000000 AA    4.287036465641   5.233481228689   0.752747835281 Bohr   0.0
+[INPUT]  3 C      3.170971000000   1.727273000000   0.465495000000 AA    5.992266738938   3.264072912356   0.879658062354 Bohr   0.0
+[INPUT]  4 I      5.225940000000   2.018965000000   0.756265000000 AA    9.875595343410   3.815290905083   1.429133727594 Bohr   0.0
+[INPUT]  5 C      2.484775000000   0.500640000000   0.273222000000 AA    4.695544231166   0.946072487002   0.516314751206 Bohr   0.0
+[INPUT]  6 C      2.912139000000  -0.858509000000   0.231934000000 AA    5.503145146665  -1.622346885474   0.438291738975 Bohr   0.0
+[INPUT]  7 C      4.131634000000  -1.358871000000   0.511983000000 AA    7.807656706941  -2.567894028614   0.967507650433 Bohr   0.0
+[INPUT]  8 C      4.493800000000  -2.756627000000   0.452793000000 AA    8.492051258570  -5.209270057581   0.855654761120 Bohr   0.0
+[INPUT]  9 C      5.841702000000  -3.100369000000   0.612557000000 AA   11.039216881324  -5.858848295092   1.157564965685 Bohr   0.0
+[INPUT] 10 C      6.249751000000  -4.417570000000   0.557377000000 AA   11.810317736727  -8.347997436095   1.053289878132 Bohr   0.0
+[INPUT] 11 C      5.319324000000  -5.423811000000   0.349700000000 AA   10.052065527826 -10.249517341403   0.660837225760 Bohr   0.0
+[INPUT] 12 C      3.978796000000  -5.101303000000   0.200293000000 AA    7.518834745515  -9.640065548422   0.378498914668 Bohr   0.0
+[INPUT] 13 C      3.566869000000  -3.785052000000   0.250203000000 AA    6.740405532201  -7.152711647237   0.472815145545 Bohr   0.0
+[INPUT] 14 N      1.178308000000   0.801110000000   0.089212000000 AA    2.226679410384   1.513878495650   0.168586247025 Bohr   0.0
+[INPUT] 15 C      1.003027000000   2.162740000000   0.153613000000 AA    1.895446325544   4.086986278642   0.290286499173 Bohr   0.0
+[INPUT] 16 C     -0.252804000000   2.747364000000  -0.022480000000 AA   -0.477730323195   5.191765524490  -0.042481043280 Bohr   0.0
+[INPUT] 17 C     -0.389684000000   4.218049000000   0.019379000000 AA   -0.736396035125   7.970957389996   0.036621002568 Bohr   0.0
+[INPUT] 18 C     -0.165328000000   4.971019000000  -1.127749000000 AA   -0.312424640722   9.393864470009  -2.131136747252 Bohr   0.0
+[INPUT] 19 C     -0.287028000000   6.348832000000  -1.089396000000 AA   -0.542404310082  11.997553690875  -2.058660081197 Bohr   0.0
+[INPUT] 20 C     -0.634249000000   6.983497000000   0.091404000000 AA   -1.198556904779  13.196896721722   0.172728526690 Bohr   0.0
+[INPUT] 21 C     -0.858416000000   6.237880000000   1.236591000000 AA   -1.622171140945  11.787884797902   2.336818318102 Bohr   0.0
+[INPUT] 22 C     -0.736620000000   4.859704000000   1.203189000000 AA   -1.392010057877   9.183509606453   2.273697686089 Bohr   0.0
+[INPUT] 23 C     -1.374532000000   1.946942000000  -0.247983000000 AA   -2.597489029451   3.679187160413  -0.468619953548 Bohr   0.0
+[INPUT] 24 C     -2.727877000000   2.316936000000  -0.495091000000 AA   -5.154940431500   4.378374488145  -0.935586396737 Bohr   0.0
+[INPUT] 25 C     -3.283385000000   3.689379000000  -0.600501000000 AA   -6.204698411505   6.971915879722  -1.134782427527 Bohr   0.0
+[INPUT] 26 C     -3.416221000000   1.128727000000  -0.632483000000 AA   -6.455722070988   2.132984899402  -1.195219648443 Bohr   0.0
+[INPUT] 27 I     -5.463853000000   1.044678000000  -1.070600000000 AA  -10.325185754883   1.974155308358  -2.023140788959 Bohr   0.0
+[INPUT] 28 C     -2.516389000000   0.042932000000  -0.471931000000 AA   -4.755286032868   0.081129721980  -0.891820339692 Bohr   0.0
+[INPUT] 29 C     -2.684620000000  -1.373648000000  -0.486677000000 AA   -5.073196548530  -2.595818511557  -0.919686241125 Bohr   0.0
+[INPUT] 30 C     -3.832568000000  -2.078234000000  -0.554342000000 AA   -7.242503873772  -3.927293082759  -1.047554559344 Bohr   0.0
+[INPUT] 31 C     -3.935173000000  -3.520411000000  -0.539364000000 AA   -7.436399222783  -6.652612635906  -1.019250241450 Bohr   0.0
+[INPUT] 32 C     -2.832900000000  -4.370068000000  -0.392033000000 AA   -5.353405138280  -8.258231665726  -0.740835001792 Bohr   0.0
+[INPUT] 33 C     -2.998378000000  -5.739975000000  -0.371963000000 AA   -5.666113237921 -10.846980711850  -0.702908198472 Bohr   0.0
+[INPUT] 34 C     -4.261604000000  -6.297533000000  -0.499825000000 AA   -8.053264411351 -11.900612630411  -0.944532360211 Bohr   0.0
+[INPUT] 35 C     -5.364024000000  -5.471122000000  -0.649880000000 AA  -10.136536285594 -10.338922174083  -1.228095213832 Bohr   0.0
+[INPUT] 36 C     -5.203685000000  -4.100379000000  -0.668034000000 AA   -9.833539488507  -7.748593316918  -1.262401301898 Bohr   0.0
+[INPUT] 37 N     -1.290418000000   0.574718000000  -0.255851000000 AA   -2.438536606209   1.086059618858  -0.483488318696 Bohr   0.0
+[INPUT] 38 B      0.030176000000  -0.215479000000  -0.105474000000 AA    0.057024375535  -0.407196295595  -0.199316973262 Bohr   0.0
+[INPUT] 39 F      0.246872000000  -0.965870000000  -1.249348000000 AA    0.466520467824  -1.825229771934  -2.360925554273 Bohr   0.0
+[INPUT] 40 F     -0.035351000000  -1.058311000000   0.989375000000 AA   -0.066803708229  -1.999917944615   1.869647784492 Bohr   0.0
+[INPUT] 41 H      1.942043000000   4.659393000000   1.326282000000 AA    3.669929392129   8.804976676716   2.506309743940 Bohr   0.0
+[INPUT] 42 H      2.364173000000   4.749306000000  -0.380219000000 AA    4.467639481091   8.974887621754  -0.718509777356 Bohr   0.0
+[INPUT] 43 H      3.607374000000   4.363663000000   0.815791000000 AA    6.816948888877   8.246127969898   1.541621564885 Bohr   0.0
+[INPUT] 44 H      2.129993000000  -1.542294000000  -0.054979000000 AA    4.025103417241  -2.914513263560  -0.103895252602 Bohr   0.0
+[INPUT] 45 H      4.940799000000  -0.707569000000   0.802813000000 AA    9.336756946525  -1.337111624232   1.517096699240 Bohr   0.0
+[INPUT] 46 H      6.569519000000  -2.317682000000   0.774934000000 AA   12.414591680127  -4.379784223834   1.464413024614 Bohr   0.0
+[INPUT] 47 H      7.294939000000  -4.663113000000   0.677770000000 AA   13.785436805409  -8.812006457899   1.280799675446 Bohr   0.0
+[INPUT] 48 H      5.637822000000  -6.454738000000   0.305726000000 AA   10.653939519048 -12.197687025823   0.577738409159 Bohr   0.0
+[INPUT] 49 H      3.250941000000  -5.884678000000   0.044907000000 AA    6.143388137120 -11.120429751253   0.084861931076 Bohr   0.0
+[INPUT] 50 H      2.518634000000  -3.554211000000   0.145054000000 AA    4.759528468018  -6.716485378917   0.274112333273 Bohr   0.0
+[INPUT] 51 H      0.101040000000   4.468679000000  -2.046721000000 AA    0.190937927626   8.444579448595  -3.867742143396 Bohr   0.0
+[INPUT] 52 H     -0.111499000000   6.927985000000  -1.983776000000 AA   -0.210702573163  13.091994245095  -3.748793332485 Bohr   0.0
+[INPUT] 53 H     -0.729259000000   8.058198000000   0.118116000000 AA   -1.378099783874  15.227787277518   0.223206890929 Bohr   0.0
+[INPUT] 54 H     -1.130588000000   6.729504000000   2.158838000000 AA   -2.136501679720  12.716919514165   4.079612567304 Bohr   0.0
+[INPUT] 55 H     -0.907356000000   4.273362000000   2.094722000000 AA   -1.714654337481   8.075483811124   3.958450887101 Bohr   0.0
+[INPUT] 56 H     -3.158151000000   4.230355000000   0.336260000000 AA   -5.968040450021   7.994212359684   0.635439306646 Bohr   0.0
+[INPUT] 57 H     -4.343746000000   3.648931000000  -0.839484000000 AA   -8.208490294675   6.895480237435  -1.586394845954 Bohr   0.0
+[INPUT] 58 H     -2.774116000000   4.252830000000  -1.380972000000 AA   -5.242319477774   8.036683954334  -2.609658865693 Bohr   0.0
+[INPUT] 59 H     -1.753976000000  -1.912587000000  -0.410114000000 AA   -3.314534269060  -3.614265619404  -0.775003139850 Bohr   0.0
+[INPUT] 60 H     -4.783579000000  -1.572022000000  -0.614892000000 AA   -9.039654205221  -2.970691041791  -1.161977476186 Bohr   0.0
+[INPUT] 61 H     -1.842649000000  -3.956704000000  -0.285414000000 AA   -3.482101953704  -7.477086915971  -0.539354292117 Bohr   0.0
+[INPUT] 62 H     -2.137183000000  -6.381277000000  -0.252972000000 AA   -4.038690548076 -12.058865854986  -0.478047797183 Bohr   0.0
+[INPUT] 63 H     -4.386899000000  -7.369974000000  -0.480753000000 AA   -8.290037646128 -13.927232405165  -0.908491503563 Bohr   0.0
+[INPUT] 64 H     -6.351062000000  -5.898244000000  -0.750699000000 AA  -12.001767780132 -11.146065775859  -1.418615511985 Bohr   0.0
+[INPUT] 65 H     -6.067736000000  -3.461462000000  -0.785576000000 AA  -11.466359236164  -6.541215170589  -1.484523490031 Bohr   0.0
+
+nuclear repulsion = 6380.03227490489
+number of shells = 389
+number of NR pGTOs = 1309
+number of NR cGTOs = 879
+basis = {'B': 'def2-svp', 'C': 'def2-svp', 'F': 'def2-svp', 'H': 'def2-svp', 'I': [[0, [5464702.08060097, 1]], [0, [849942.52168504, 1]], [0, [207458.86762606, 1]], [0, [64929.86485391, 1]], [0, [23909.80880875, 1]], [0, [9850.71275593, 1]], [0, [4222.34623514, 1]], [0, [1781.76403452, 1]], [0, [749.21394356, 1]], [0, [318.75246448, 1]], [0, [118.0220593, 1]], [0, [59.88344918, 1]], [0, [29.50227605, 1]], [0, [12.24593624, 1]], [0, [6.20345391, 1]], [0, [2.43764323, 1]], [0, [1.14985168, 1]], [0, [0.3063821, 1]], [0, [0.11926836, 1]], [1, [20182.20166081, 1]], [1, [4999.21100888, 1]], [1, [1768.53795847, 1]], [1, [734.7752808, 1]], [1, [317.5116541, 1]], [1, [139.60118455, 1]], [1, [63.12833732, 1]], [1, [28.34086632, 1]], [1, [13.45203045, 1]], [1, [6.52579989, 1]], [1, [3.02467901, 1]], [1, [1.38040546, 1]], [1, [0.52669045, 1]], [1, [0.2221782, 1]], [1, [0.08328104, 1]], [2, [565.9883795, 1]], [2, [168.69681731, 1]], [2, [63.14306896, 1]], [2, [26.1030685, 1]], [2, [11.24530421, 1]], [2, [4.6390732, 1]], [2, [1.91572411, 1]], [2, [0.72024616, 1]], [3, [2.20029999, 1]]], 'N': 'def2-svp'}
+ecp = {}
+CPU time:        41.82
+
+
+******** <class 'pyscf.df.df_jk.DFsfX2C1eRKS'> ********
+method = DFsfX2C1eRKS
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+diis_damp = 0
+SCF conv_tol = 1e-09
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = False
+chkfile to save SCF result = /tmp/tmpu4o376vz
+max_memory 50000 MB (current use 129 MB)
+XC library pyscf.dft.libxc version 7.1.2
+    S. Lehtola, C. Steigemann, M. J. T. Oliveira, and M. A. L. Marques,  SoftwareX 7, 1–5 (2018)
+XC functionals = b3lyp
+    P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch,  J. Phys. Chem. 98, 11623 (1994)
+radial grids: 
+    Treutler-Ahlrichs [JCP 102, 346 (1995); DOI:10.1063/1.469408] (M4) radial grids
+    
+becke partition: Becke, JCP 88, 2547 (1988); DOI:10.1063/1.454033
+pruning grids: <function nwchem_prune at 0x7f7ff1a77920>
+grids dens level: 3
+symmetrized grids: False
+atomic radii adjust function: <function treutler_atomic_radii_adjust at 0x7f7ff1a77880>
+small_rho_cutoff = 0
+
+
+******** <class 'pyscf.x2c.sfx2c1e.SpinFreeX2CHelper'> ********
+approx = 1e
+xuncontract = 1
+Set gradient conv threshold to 3.16228e-05
+Initial guess from minao.
+tot grids = 825384
+******** <class 'pyscf.df.df.DF'> ********
+auxbasis = None
+max_memory = 50000
+Default auxbasis def2-svp-jkfit is used for B def2-svp
+Default auxbasis def2-svp-jkfit is used for C def2-svp
+Default auxbasis def2-svp-jkfit is used for F def2-svp
+Default auxbasis def2-svp-jkfit is used for H def2-svp
+Default auxbasis def2-svp-jkfit is used for N def2-svp
+ETB for B: l = 0, exps = 0.167297732138 * 2^n , n = 0..13
+ETB for B: l = 1, exps = 0.17961133948040967 * 2^n , n = 0..9
+ETB for B: l = 2, exps = 0.192831264702 * 2^n , n = 0..7
+ETB for B: l = 3, exps = 0.43912556826265536 * 2^n , n = 0..3
+ETB for B: l = 4, exps = 1.0 * 2^n , n = 0..0
+ETB for H: l = 0, exps = 0.24389924 * 2^n , n = 0..6
+ETB for H: l = 1, exps = 0.6246909507908691 * 2^n , n = 0..3
+ETB for H: l = 2, exps = 1.6 * 2^n , n = 0..0
+ETB for I: l = 0, exps = 0.23853672 * 2^n , n = 0..25
+ETB for I: l = 1, exps = 0.1993267975952496 * 2^n , n = 0..21
+ETB for I: l = 2, exps = 0.16656208 * 2^n , n = 0..19
+ETB for I: l = 3, exps = 0.48982792595280394 * 2^n , n = 0..13
+ETB for I: l = 4, exps = 0.8561384735641533 * 2^n , n = 0..10
+ETB for I: l = 5, exps = 2.5177431311756475 * 2^n , n = 0..4
+ETB for I: l = 6, exps = 4.40059998 * 2^n , n = 0..0
+ETB for N: l = 0, exps = 0.37529184506 * 2^n , n = 0..13
+ETB for N: l = 1, exps = 0.4059381179630522 * 2^n , n = 0..9
+ETB for N: l = 2, exps = 0.43908696068 * 2^n , n = 0..7
+ETB for N: l = 3, exps = 0.9371093433319294 * 2^n , n = 0..3
+ETB for N: l = 4, exps = 2.0 * 2^n , n = 0..0
+ETB for F: l = 0, exps = 0.66494693496 * 2^n , n = 0..13
+ETB for F: l = 1, exps = 0.6805883229328094 * 2^n , n = 0..9
+ETB for F: l = 2, exps = 0.69659763954 * 2^n , n = 0..7
+ETB for F: l = 3, exps = 1.3965934951559813 * 2^n , n = 0..3
+ETB for F: l = 4, exps = 2.8 * 2^n , n = 0..0
+ETB for C: l = 0, exps = 0.26180365336 * 2^n , n = 0..13
+ETB for C: l = 1, exps = 0.28275002646415065 * 2^n , n = 0..9
+ETB for C: l = 2, exps = 0.3053722759 * 2^n , n = 0..7
+ETB for C: l = 3, exps = 0.6989961669708926 * 2^n , n = 0..3
+ETB for C: l = 4, exps = 1.6 * 2^n , n = 0..0
+
+WARN: Even tempered Gaussians are generated as DF auxbasis for  I
+
+init E= -15844.6972351527
+  HOMO = -0.23295294557724  LUMO = -0.181088242345826  gap/eV = 1.41131
+cycle= 1 E= -15837.750066233  delta_E= 6.95  |g|= 1.05  |ddm|= 11.5
+  HOMO = -0.162651049077976  LUMO = -0.102383030206635  gap/eV = 1.63998
+cycle= 2 E= -15837.5742441728  delta_E= 0.176  |g|= 1.43  |ddm|=  3.1
+  HOMO = -0.175673424009813  LUMO = -0.0927374009612967  gap/eV = 2.25680
+cycle= 3 E= -15837.9630483283  delta_E= -0.389  |g|= 0.309  |ddm|= 1.86
+  HOMO = -0.197013963427882  LUMO = -0.120444493697442  gap/eV = 2.08356
+cycle= 4 E= -15837.9820871585  delta_E= -0.019  |g|= 0.18  |ddm|= 0.685
+  HOMO = -0.196697903467183  LUMO = -0.115639229756787  gap/eV = 2.20572
+cycle= 5 E= -15837.9905130934  delta_E= -0.00843  |g|= 0.0629  |ddm|= 0.296
+  HOMO = -0.193883833004977  LUMO = -0.113383830082886  gap/eV = 2.19052
+cycle= 6 E= -15837.9914352284  delta_E= -0.000922  |g|= 0.0235  |ddm|= 0.111
+  HOMO = -0.193947566526348  LUMO = -0.113057894748006  gap/eV = 2.20112
+cycle= 7 E= -15837.9915617159  delta_E= -0.000126  |g|= 0.00582  |ddm|= 0.0381
+  HOMO = -0.194058590344525  LUMO = -0.113143268945487  gap/eV = 2.20182
+cycle= 8 E= -15837.9915689371  delta_E= -7.22e-06  |g|= 0.0024  |ddm|= 0.0106
+  HOMO = -0.194038221862965  LUMO = -0.1130819397406  gap/eV = 2.20293
+cycle= 9 E= -15837.9915701951  delta_E= -1.26e-06  |g|= 0.000638  |ddm|= 0.00375
+  HOMO = -0.194061082111488  LUMO = -0.113089292404678  gap/eV = 2.20335
+cycle= 10 E= -15837.9915702945  delta_E= -9.94e-08  |g|= 0.000352  |ddm|= 0.0013
+  HOMO = -0.194061894377743  LUMO = -0.113084212825797  gap/eV = 2.20351
+cycle= 11 E= -15837.9915703243  delta_E= -2.98e-08  |g|= 8.07e-05  |ddm|= 0.000463
+  HOMO = -0.194063393191067  LUMO = -0.113084180572763  gap/eV = 2.20356
+cycle= 12 E= -15837.9915703253  delta_E= -1.01e-09  |g|= 6.81e-05  |ddm|= 0.000184
+  HOMO = -0.194063081744239  LUMO = -0.113081812355963  gap/eV = 2.20361
+cycle= 13 E= -15837.9915703263  delta_E= -1e-09  |g|= 1.92e-05  |ddm|= 0.000106
+  HOMO = -0.194063528665885  LUMO = -0.113082427660035  gap/eV = 2.20361
+cycle= 14 E= -15837.9915703263  delta_E=    0  |g|= 2.13e-05  |ddm|= 5.65e-05
+  HOMO = -0.194063570940191  LUMO = -0.113081291030652  gap/eV = 2.20364
+Extra cycle  E= -15837.9915703255  delta_E= 7.6e-10  |g|= 5.51e-05  |ddm|= 0.000108
+converged SCF energy = -15837.9915703255
+
+
+******** <class 'pyscf.tdscf.rks.TDA'> for <class 'pyscf.df.df_jk.DFsfX2C1eRKS'> ********
+nstates = 2 singlet
+deg_eia_thresh = 1.000e-03
+wfnsym = None
+conv_tol = 1e-06
+eigh lindep = 1e-12
+eigh level_shift = 0
+eigh max_cycle = 100
+chkfile = /tmp/tmpu4o376vz
+max_memory 50000 MB (current use 13680 MB)
+
+
+Excitation energies (eV)
+[2.40479129 2.93224792]
+
+
+******** <class 'pyscf.tdscf.rks.TDA'> for <class 'pyscf.df.df_jk.DFsfX2C1eRKS'> ********
+nstates = 5 triplet
+deg_eia_thresh = 1.000e-03
+wfnsym = None
+conv_tol = 1e-06
+eigh lindep = 1e-12
+eigh level_shift = 0
+eigh max_cycle = 100
+chkfile = /tmp/tmpu4o376vz
+max_memory 50000 MB (current use 13771 MB)
+
+
+Excitation energies (eV)
+[1.2045428  2.21058663 2.50738571 2.6784562  2.82685209]
+somf V(S1,Tn) cm-1: [ 0.46   3.476 30.844  6.589  3.022]
+bp1e V(S1,Tn) cm-1: [ 0.468  3.702 32.738  7.131  3.145]
+eff_ae V(S1,Tn) cm-1: [ 0.426  3.237 28.725  6.189  2.784]
+I2-BDP-0 done 75254 s
