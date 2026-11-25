@@ -1,0 +1,7 @@
+{
+ "name": "azaBDP_Br2",
+ "method": "B3LYP/def2-SVP DF, grid 3, analytic",
+ "E_S0_Ha": -6767.009523804301,
+ "max_abs_grad_Ha_bohr": 0.0005193157596088405,
+ "time_s": 42947.95735502243
+}
