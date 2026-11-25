@@ -5,3 +5,4 @@ S1 {'E_S0_Ha': np.float64(-6767.007325250476), 'E_T1_Ha': np.float64(-6766.97015
 summary: {'lambda_S1_eV': np.float64(0.07636021553670654), 'lambda_T1_eV': np.float64(0.09376252122667132), 'gap_vertical_xtb_eV': np.float64(0.6813326363462773), 'gap_vertical_dft_S0_eV': np.float64(0.6865726473614907), 'gap_adiabatic_eV': np.float64(0.7039749530514555), 'correction_vertical_to_adiabatic_eV': np.float64(0.017402305689964787), 'S1_vertical_minus_adiabatic_eV': np.float64(0.07636021553670654)}
 azaBDP_Br2 done 156893 s
 azaBDP_Br2 done analytic 42948 s
+S 1 E = 2.4194 eV, |g| = 7.4096e-02 Ha/Bohr

@@ -1,0 +1,17 @@
+{
+ "name": "azaBDP_Br2",
+ "geometry": "paper/references/results/azaBDP_Br2.adiabatic_S0.xyz",
+ "method": "B3LYP/def2-SVP, no DF, grid 2, TDA",
+ "E_S0_Ha": -6767.009321405987,
+ "timings_s": {
+  "scf": 204.15329432487488,
+  "S0_grad": 346.49452447891235,
+  "S1_grad": 601.3003458976746
+ },
+ "tda_S_conv_tol": 1e-07,
+ "E_S_tda_eV": [
+  2.4194120816831526,
+  2.544565151987516,
+  2.5974986302533636
+ ]
+}
