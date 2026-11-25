@@ -112,7 +112,7 @@ w(r"""\section{Decision costs for all dyes}
 \begin{table}
   \caption{Decision-level costs (Toffolis) with the model of Section~S4 (THC rank 33, confidence 0.95,
   $\gamma^2=0.5$). $p$: success probability of the filter call; D1: $\kisc$ to 20\%, by amplitude estimation
-  (MLAE), by canonical amplitude estimation, and by the channel-resolved route; D2: whether $\Phi_T>0.5$, by MLAE.}
+  (MLAE), by canonical amplitude estimation, and by the channel-resolved route; D2: whether $\Phi_T>0.5$, by MLAE (Table 4 of the main text lists the cheapest estimator, which is sampling for some light-atom dyes).}
   \label{tab:alldecision}
   \footnotesize
   \setlength{\tabcolsep}{4pt}

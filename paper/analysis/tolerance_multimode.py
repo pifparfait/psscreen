@@ -3,8 +3,8 @@
 For the S1<->T1 Huang-Rhys factors of BDP and I2-BDP (S0 normal modes, fcwd_multimode.py) the script
 computes the Kubo density of states rho(dE) and, at each gap dE, the smallest rigid shift |delta| for which
 rho(dE + delta)/rho(dE) leaves [1/2, 2]; the same for the single-mode MLJ model of the pipeline. Evaluated
-at the pipeline T1 gaps and at the near-resonant uphill gap of aza-BDP-Br2 (+0.107 eV, using the I2-BDP
-modes as a proxy, since no aza-BDP-Br2 Hessian is available).
+at the pipeline T1 gaps and at the near-resonant uphill gap of aza-BDP-Br2 with its own S1-T2 vertical-gradient modes (and the I2-BDP
+S1-T1 modes as a proxy, for comparison).
 Usage: python paper/analysis/tolerance_multimode.py  ->  paper/analysis/tolerance_multimode.{json,md}
 """
 import json
@@ -34,6 +34,17 @@ def s1t1_huang_rhys(name):
     return omega, S
 
 
+def s1t2_grad_huang_rhys(name):
+    """S1<->T2 Huang-Rhys factors from TDA vertical gradients (no T2 minimum exists)."""
+    hz = np.load(os.path.join(RES, f"{name}.s0_hessian.npz"))
+    sym = [str(s) for s in hz["symbols"]]
+    omega, L, sm, P = normal_modes(hz["H"], np.asarray(hz["xyz_A"], float), sym)
+    g = np.load(os.path.join(RES, f"{name}.vertical_gradients.npz"))
+    q = {st: -(L.T @ (P @ (np.asarray(g[st]).ravel() / sm))) / omega ** 2 for st in ("S1", "T2")}
+    S, _ = huang_rhys(omega, q["S1"] - q["T2"])
+    return omega, S
+
+
 def tolerance(rho, dE):
     r0 = np.interp(dE, GRID, rho)
     best = np.inf
@@ -49,11 +60,14 @@ def tolerance(rho, dE):
 def main():
     rows = []
     mlj = {ls: np.array([fcwd_mlj(float(x), MLJParams(lambda_s=ls)) for x in GRID]) for ls in (0.05, 0.10, 0.20)}
-    targets = [("BDP", "BDP", -0.718), ("I2-BDP", "I2-BDP", -0.608), ("aza-BDP-Br2 (I2-BDP modes)", "I2-BDP", 0.107)]
+    targets = [("BDP", "BDP", -0.718), ("I2-BDP", "I2-BDP", -0.608),
+               ("aza-BDP-Br2 S1->T2 (I2-BDP S1-T1 modes)", "I2-BDP", 0.107),
+               ("aza-BDP-Br2 S1->T2 (own gradient modes), vertical gap", "azaBDP_Br2", 0.107),
+               ("aza-BDP-Br2 S1->T2 (own gradient modes), adiabatic gap", "azaBDP_Br2", 0.069)]
     cache = {}
     for label, modes, dE in targets:
         if modes not in cache:
-            omega, S = s1t1_huang_rhys(modes)
+            omega, S = s1t2_grad_huang_rhys(modes) if modes == "azaBDP_Br2" else s1t1_huang_rhys(modes)
             cache[modes] = {ls: rho_multimode(GRID, omega, S, ls)[0] for ls in (0.0, 0.05, 0.10)}
         row = {"case": label, "dE_eV": dE,
                "multimode": {f"{ls:.2f}": tolerance(r, dE) for ls, r in cache[modes].items()},

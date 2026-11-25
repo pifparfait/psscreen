@@ -4,6 +4,7 @@ Runs fcwd_multimode.analyse for BDP and I2-BDP at three outer-sphere
 reorganization energies and tabulates lambda, Huang-Rhys factors, the
 leading modes and the S1->T1 rate against the single-mode MLJ value.
 """
+import json
 import os
 import sys
 
@@ -20,11 +21,15 @@ def sci(x):
 
 
 def aza_t2_rows():
-    """S1->T2 of aza-BDP-Br2 from TDA vertical gradients: adiabatic gap and multimode rate."""
+    """S1->T2 of aza-BDP-Br2: multimode line shape from TDA vertical gradients, scanned over the candidate gaps."""
     import math
     import numpy as np
     from fcwd_multimode import RES, huang_rhys, normal_modes, rho_multimode
-    from psscreen.rates import CM1_TO_EV, HBAR_EVS, MLJParams, fcwd_mlj
+    from psscreen.rates import CM1_TO_EV, HBAR_EVS
+    run = json.load(open(os.path.join(ROOT, "screening", "runs", "candidates_round1", "azaBDP_Br2.json")))["photophysics"]
+    ch = {c["T"]: c for c in run["channels"]}[2]
+    kd = run["k_r"] + run["k_ic"]
+    adi = json.load(open(os.path.join(RES, "azaBDP_Br2.adiabatic.json")))["summary"]
     hz = np.load(os.path.join(RES, "azaBDP_Br2.s0_hessian.npz"))
     sym = [str(s) for s in hz["symbols"]]
     om, L, sm, P = normal_modes(hz["H"], np.asarray(hz["xyz_A"], float), sym)
@@ -32,19 +37,20 @@ def aza_t2_rows():
     q = {st: -(L.T @ (P @ (np.asarray(g[st]).ravel() / sm))) / om ** 2 for st in ("S1", "T1", "T2")}
     lam = {st: float(huang_rhys(om, q[st])[1].sum()) for st in q}
     S, l12 = huang_rhys(om, q["S1"] - q["T2"])
-    dEv = 0.107
-    dEa = dEv - (lam["T2"] - lam["S1"])
-    V = 46.77 * CM1_TO_EV
-    pref = 2 * math.pi / HBAR_EVS * V ** 2
+    dEv = ch["dE_eV"]
+    gaps = [("$\\Delta$SCF S$_1$ relaxation, TDA-gradient T$_2$", dEv - lam["T2"] + adi["lambda_S1_eV"]),
+            ("TDA-gradient S$_1$ and T$_2$", dEv - lam["T2"] + lam["S1"]),
+            ("vertical (pipeline)", dEv)]
+    pref = 2 * math.pi / HBAR_EVS * (ch["V_cm"] * CM1_TO_EV) ** 2
     rows = []
-    for ls in SOLV:
-        rows.append((ls, pref * rho_multimode(dEv, om, S, ls)[0], pref * rho_multimode(dEa, om, S, ls)[0]))
-    return lam, float(l12.sum()), dEv, dEa, pref * fcwd_mlj(dEv, MLJParams()), rows
-
+    for lab, dE in gaps:
+        ks = [pref * rho_multimode(dE, om, S, ls)[0] for ls in SOLV]
+        rows.append((lab, dE, ks, [k / (k + kd) for k in ks]))
+    return lam, float(l12.sum()), adi["lambda_S1_eV"], ch["V_cm"], rows
 
 def main():
     res = {(n, l): analyse(n, l) for n in NAMES for l in SOLV}
-    L = [r"\section{Multimode line shape for BDP and I2-BDP}", r"\label{sec:si-fcwd}", ""]
+    L = [r"\section{Multimode line shape for BDP, I2-BDP and aza-BDP-Br$_2$}", r"\label{sec:si-fcwd}", ""]
     L.append(
         r"The B3LYP/def2-SVP S$_0$ Hessian is diagonalized after projecting out translations and rotations. "
         r"The $\Delta$SCF S$_1$ and T$_1$ minima are aligned on the S$_0$ minimum (mass-weighted Kabsch) and their "
@@ -59,10 +65,10 @@ def main():
     L.append("")
     L += [r"\begin{table}[h]\centering\small",
           r"\caption{Reorganization energies from the S$_0$ normal modes (eV) and S$_1\leftrightarrow$T$_1$ line-shape "
-          r"parameters. $\lambda(\mathrm{X})$: relaxation energy of state X from the S$_0$ minimum.}",
-          r"\begin{tabular}{lcccccc}\hline",
+          r"parameters. $\lambda(\mathrm{X})$: relaxation energy of state X from the S$_0$ minimum; $\sum S_j$ over modes above 200~cm$^{-1}$; $\langle\hbar\omega\rangle$ and leading modes in cm$^{-1}$ (Huang--Rhys factor in parentheses).}",
+          r"\begin{tabular}{p{2.6cm}cccccp{4.2cm}}\hline",
           r"Dye & $\lambda(\mathrm{S}_1)$ & $\lambda(\mathrm{T}_1)$ & $\lambda_{\mathrm{S}_1\mathrm{T}_1}$ & "
-          r"$\sum S_j$ ($>200$~cm$^{-1}$) & $\langle\hbar\omega\rangle$ (cm$^{-1}$) & leading modes, cm$^{-1}$ ($S_j$) \\ \hline"]
+          r"$\sum S_j$ & $\langle\hbar\omega\rangle$ & leading modes \\ \hline"]
     for n in NAMES:
         r = res[(n, 0.0)]
         d = r["displacements"]
@@ -104,27 +110,29 @@ def main():
         r"times smaller for I2-BDP; a line shape built from vertical gradients, as for the upper triplets, is therefore "
         r"uncertain by about a factor of 3 in either direction."
     )
-    lam, l12, dEv, dEa, k_mlj, rows = aza_t2_rows()
+    lam, l12, lam_s1_dscf, V2, rows = aza_t2_rows()
     L += ["", r"\paragraph{Near-resonant S$_1\to$T$_2$ channel of aza-BDP-Br$_2$.} No $\Delta$SCF minimum exists for "
           r"T$_2$, so its relaxation follows from the vertical-gradient model on the B3LYP S$_0$ Hessian of aza-BDP-Br$_2$. "
-          f"The relaxation energies from the S$_0$ minimum are {lam['S1']:.3f} (S$_1$), {lam['T1']:.3f} (T$_1$) and "
-          f"{lam['T2']:.3f}~eV (T$_2$), so T$_2$ relaxes {lam['T2'] - lam['S1']:.3f}~eV more than S$_1$ and the "
-          f"T$_2-$S$_1$ gap of the pipeline, {dEv:+.3f}~eV, becomes {dEa:+.3f}~eV between the minima. S$_1$ and T$_2$ "
-          f"are displaced almost in parallel: their mutual reorganization energy is only {l12:.3f}~eV, so the width of "
-          r"the line comes from the outer sphere. With the coupling of the pipeline ($V_2=46.8$~cm$^{-1}$) the "
-          r"S$_1\to$T$_2$ rate is (MLJ: " + sci(k_mlj) + r"~s$^{-1}$):", "",
+          f"The TDA relaxation energies from the S$_0$ minimum are {lam['S1']:.3f} (S$_1$), {lam['T1']:.3f} (T$_1$) and "
+          f"{lam['T2']:.3f}~eV (T$_2$); the $\\Delta$SCF optimization relaxes S$_1$ by {lam_s1_dscf:.3f}~eV only, and "
+          r"projecting the $\Delta$SCF S$_1$ minimum on the S$_0$ modes gives 0.40~eV, so the harmonic model fails along the "
+          r"190--260~cm$^{-1}$ modes of this dye. The adiabatic T$_2-$S$_1$ gap is therefore known only to within the range "
+          r"of the rows below. S$_1$ and T$_2$ are displaced almost in parallel (cosine 0.97 between their gradients, "
+          f"mutual reorganization {l12:.3f}~eV), so the width of the line comes from the outer sphere. The TDA S$_2$ lies "
+          r"0.13~eV above S$_1$ at this geometry, so the S$_1$ gradient may carry S$_1$/S$_2$ mixing; we did not check the "
+          f"state character. Rate and $\\Phi_T$ with the pipeline coupling ($V_2={V2:.1f}$~cm$^{{-1}}$), $k_r$ and $k_\\mathrm{{ic}}$:", "",
           r"\begin{table}[h]\centering\small",
-          r"\caption{S$_1\to$T$_2$ rate of aza-BDP-Br$_2$ (s$^{-1}$), multimode line shape from TDA vertical gradients, "
-          r"at the vertical and the adiabatic gap. The adiabatic gap is the consistent input of the displaced-oscillator "
-          r"line shape; the vertical one is shown for comparison with the pipeline.}",
-          r"\begin{tabular}{lcc}\hline",
-          f"$\\lambda_\\mathrm{{out}}$ (eV) & $\\Delta E={dEv:+.3f}$~eV & $\\Delta E={dEa:+.3f}$~eV \\\\ \\hline"]
-    for ls, kv, ka in rows:
-        L.append(f"{ls:.2f} & {sci(kv)} & {sci(ka)} \\\\")
+          r"\caption{S$_1\to$T$_2$ rate of aza-BDP-Br$_2$ (s$^{-1}$) and $\Phi_T$ (in parentheses), multimode line shape "
+          r"from TDA vertical gradients, at three estimates of the T$_2-$S$_1$ gap.}",
+          r"\begin{tabular}{p{3.3cm}cccc}\hline",
+          r"gap from & $\Delta E$ (eV) & $\lambda_\mathrm{out}=0$ & 0.05~eV & 0.10~eV \\ \hline"]
+    for lab, dE, ks, phis in rows:
+        L.append(f"{lab} & {dE:+.3f} & " + " & ".join(f"{sci(k)} ({p:.2f})" for k, p in zip(ks, phis)) + " \\\\")
     L += [r"\hline\end{tabular}\end{table}", "",
-          r"At the adiabatic gap the rate is $3\times10^{9}$--$1.5\times10^{11}$~s$^{-1}$ and $\Phi_T=0.90$--$1.00$, so "
-          r"the class of the candidate holds while its rate spans a factor of 50, set by the outer-sphere width that "
-          r"the gas-phase calculation does not provide."]
+          r"With an outer-sphere width of 0.05--0.10~eV the class of the candidate holds over the whole gap range; in the "
+          r"gas phase $\\Phi_T$ falls to 0.55 at the vertical gap, close to the threshold, and the rate spans four orders "
+          r"of magnitude. The factor-2 gap tolerance of this "
+          r"channel with these modes is 0.010--0.021~eV (\texttt{tolerance\_multimode.py})."]
     open(os.path.join(ROOT, "paper", "si_fcwd.tex"), "w").write("\n".join(L) + "\n")
 
 
