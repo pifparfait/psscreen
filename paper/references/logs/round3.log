@@ -22,3 +22,5 @@ started conf_c1
 finished conf_c1 (exit 0)
 finished soc_I2-BDP (exit 0)
 finished soc_I2-BDP-0 (exit 0)
+finished chain_azaBr2 (exit 0)
+all round-3 jobs finished

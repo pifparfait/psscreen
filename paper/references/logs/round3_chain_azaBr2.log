@@ -6,3 +6,6 @@ summary: {'lambda_S1_eV': np.float64(0.07636021553670654), 'lambda_T1_eV': np.fl
 azaBDP_Br2 done 156893 s
 azaBDP_Br2 done analytic 42948 s
 S 1 E = 2.4194 eV, |g| = 7.4096e-02 Ha/Bohr
+T 1 E = 1.1432 eV, |g| = 5.3576e-02 Ha/Bohr
+T 2 E = 1.9462 eV, |g| = 8.8538e-02 Ha/Bohr
+azaBDP_Br2 done 7683 s
