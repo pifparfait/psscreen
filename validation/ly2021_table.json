@@ -1,0 +1,17 @@
+{
+  "source": "Ly et al., Phys. Chem. Chem. Phys. 2021, doi:10.1039/D0CP05904H, Tables 1 and 2 (room-temperature toluene; dE_ST from 77 K EEET glass phosphorescence)",
+  "columns": ["lambda_abs_nm", "tau_S_ns", "phi_F", "phi_T", "k_r_s", "k_nr_s", "k_isc_s", "dE_ST_eV"],
+  "note": "null = not measurable/calculable in the source. I3-BDP-0 and I3-BDP-2 could not be made. Benchmark uses BDP, I-BDP, I2-BDP, I3-BDP, BDP-0, I-BDP-0, I2-BDP-0; the -2 (para-styryl iodo) dyes are listed for completeness.",
+  "data": {
+    "BDP":      [503, 3.80, 0.45, null, 1.2e8, 1.5e8, null, 0.77],
+    "I-BDP":    [505, 3.20, 0.44, null, 1.4e8, 1.8e8, null, 0.76],
+    "I2-BDP":   [537, 0.24, 0.03, 0.84, 1.3e8, 5.4e8, 3.5e9, 0.59],
+    "I3-BDP":   [539, 0.21, 0.03, 0.81, 1.4e8, 7.6e8, 3.9e9, 0.58],
+    "BDP-0":    [628, 5.80, 0.84, null, 1.4e8, 2.8e7, null, null],
+    "I-BDP-0":  [631, 5.80, 0.71, null, 1.2e8, 5.0e7, null, null],
+    "BDP-2":    [639, 5.50, 0.81, null, 1.5e8, 3.5e7, null, null],
+    "I-BDP-2":  [641, 5.60, 0.73, null, 1.3e8, 4.8e7, null, null],
+    "I2-BDP-0": [644, 1.70, 0.23, 0.76, 1.3e8, 5.9e6, 4.5e8, null],
+    "I2-BDP-2": [652, 1.70, 0.22, 0.78, 1.3e8, null, 4.6e8, null]
+  }
+}
